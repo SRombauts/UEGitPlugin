@@ -1,0 +1,20 @@
+{
+    "FileVersion" : 3,
+	
+	"FriendlyName" : "Git",
+	"Version" : 0,
+	"VersionName" : "0.0",
+	"EngineVersion" : 1684048,
+	"Description" : "Git source control management",
+	"CategoryPath" : "Editor.Source Control",
+	"CreatedBy" : "SRombauts",
+	"CreatedByURL" : "http://srombauts.github.com",
+	
+    "Modules" :
+	[
+		{
+			"Name" : "GitSourceControl",
+			"Type" : "Developer"
+		}
+	]
+}
