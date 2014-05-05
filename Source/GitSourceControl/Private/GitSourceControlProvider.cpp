@@ -28,6 +28,25 @@ void FGitSourceControlProvider::Init(bool bForceConnection)
 
 void FGitSourceControlProvider::Close()
 {
+	// clear the cache
+	StateCache.Empty();
+}
+
+TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvider::GetStateInternal(const FString& Filename)
+{
+	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe>* State = StateCache.Find(Filename);
+	if(State != NULL)
+	{
+		// found cached item
+		return (*State);
+	}
+	else
+	{
+		// cache an unknown state for this item
+		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> NewState = MakeShareable( new FGitSourceControlState(Filename) );
+		StateCache.Add(Filename, NewState);
+		return NewState;
+	}
 }
 
 FText FGitSourceControlProvider::GetStatusText() const
@@ -55,9 +74,32 @@ const FName& FGitSourceControlProvider::GetName(void) const
 	return ProviderName;
 }
 
-ECommandResult::Type FGitSourceControlProvider::GetState(const TArray<FString>& InFiles, TArray< TSharedRef<ISourceControlState, ESPMode::ThreadSafe> >& OutState, EStateCacheUsage::Type InStateCacheUsage)
+ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>& InFiles, TArray< TSharedRef<ISourceControlState, ESPMode::ThreadSafe> >& OutState, EStateCacheUsage::Type InStateCacheUsage )
 {
-	return ECommandResult::Failed;
+	if(!IsEnabled())
+	{
+		return ECommandResult::Failed;
+	}
+
+    // TODO: why absolute?
+	TArray<FString> AbsoluteFiles;
+	for( TArray<FString>::TConstIterator It(InFiles); It; It++)
+	{
+		AbsoluteFiles.Add(FPaths::ConvertRelativePathToFull(*It));
+	}
+    /* TODO:
+	if(InStateCacheUsage == EStateCacheUsage::ForceUpdate)
+	{
+		Execute(ISourceControlOperation::Create<FUpdateStatus>(), AbsoluteFiles);
+	}
+	*/
+
+	for( TArray<FString>::TConstIterator It(AbsoluteFiles); It; It++)
+	{
+		OutState.Add(GetStateInternal(*It));
+	}
+
+	return ECommandResult::Succeeded;
 }
 
 void FGitSourceControlProvider::RegisterSourceControlStateChanged( const FSourceControlStateChanged::FDelegate& SourceControlStateChanged )

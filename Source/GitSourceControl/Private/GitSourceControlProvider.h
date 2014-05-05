@@ -7,7 +7,7 @@
 
 #include "ISourceControlProvider.h"
 #include "IGitSourceControlWorker.h"
-//#include "GitSourceControlState.h"
+#include "GitSourceControlState.h"
 
 DECLARE_DELEGATE_RetVal(FGitSourceControlWorkerRef, FGetGitSourceControlWorker)
 
@@ -49,6 +49,9 @@ public:
         return PathToContentDir;
     }
 
+	/** Helper function used to update state cache */
+	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> GetStateInternal(const FString& Filename);
+
 	/**
 	 * Register a worker with the provider.
 	 * This is used internally so the provider can maintain a map of all available operations.
@@ -63,6 +66,8 @@ private:
     /** Path to the game Content directory */
     FString PathToContentDir;
 
+    /** State cache */
+	TMap<FString, TSharedRef<class FGitSourceControlState, ESPMode::ThreadSafe> > StateCache;
 
 	/** The currently registered source control operations */
 	TMap<FName, FGetGitSourceControlWorker> WorkersMap;
