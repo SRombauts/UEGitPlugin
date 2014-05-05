@@ -5,11 +5,11 @@
 
 #include "GitSourceControlPrivatePCH.h"
 #include "GitSourceControlProvider.h"
-//#include "GitSourceControlCommand.h"
+#include "GitSourceControlCommand.h"
 #include "ISourceControlModule.h"
 #include "GitSourceControlModule.h"
 #include "GitSourceControlSettings.h"
-//#include "GitSourceControlOperations.h"
+#include "GitSourceControlOperations.h"
 #include "SGitSourceControlSettings.h"
 #include "MessageLog.h"
 #include "ScopedSourceControlProgress.h"

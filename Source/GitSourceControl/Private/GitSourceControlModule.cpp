@@ -8,7 +8,7 @@
 #include "ModuleManager.h"
 #include "ISourceControlModule.h"
 #include "GitSourceControlSettings.h"
-//#include "GitSourceControlOperations.h"
+#include "GitSourceControlOperations.h"
 #include "Runtime/Core/Public/Features/IModularFeatures.h"
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"
@@ -23,7 +23,7 @@ void FGitSourceControlModule::StartupModule()
 {
 	// Register our operations
 // TODO: GitSourceControlOperations
-//	GitSourceControlProvider.RegisterWorker( "Connect", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitConnectWorker> ) );
+	GitSourceControlProvider.RegisterWorker( "Connect", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitConnectWorker> ) );
 //	GitSourceControlProvider.RegisterWorker( "CheckOut", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitCheckOutWorker> ) );
 //	GitSourceControlProvider.RegisterWorker( "UpdateStatus", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitUpdateStatusWorker> ) );
 //	GitSourceControlProvider.RegisterWorker( "MarkForAdd", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitMarkForAddWorker> ) );
