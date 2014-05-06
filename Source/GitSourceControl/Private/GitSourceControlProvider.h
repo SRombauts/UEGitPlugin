@@ -60,6 +60,14 @@ public:
 
 private:
 
+	/** Helper function for Execute() */
+	TSharedPtr<class IGitSourceControlWorker, ESPMode::ThreadSafe> CreateWorker(const FName& InOperationName) const;
+
+	/**
+	 * Run a command synchronously or asynchronously.
+	 */
+	ECommandResult::Type IssueCommand(class FGitSourceControlCommand& InCommand, const bool bSynchronous);
+
     /** Path to the Game directory: shall be the root of the Git repository */
     FString PathToGameDir;
 
@@ -71,6 +79,9 @@ private:
 
 	/** The currently registered source control operations */
 	TMap<FName, FGetGitSourceControlWorker> WorkersMap;
+
+	/** Queue for commands given by the main thread */
+	TArray < FGitSourceControlCommand* > CommandQueue;
 
 	/** For notifying when the source control states in the cache have changed */
 	FSourceControlStateChanged OnSourceControlStateChanged;

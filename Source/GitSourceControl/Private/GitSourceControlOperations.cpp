@@ -19,6 +19,9 @@ FName FGitConnectWorker::GetName() const
 bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	check(InCommand.Operation->GetName() == "Connect");
+
+	//TODO: test 'connection' to the Git local repository
+
 	return InCommand.bCommandSuccessful;
 }
 
