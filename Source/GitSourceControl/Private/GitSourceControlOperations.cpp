@@ -8,6 +8,7 @@
 #include "GitSourceControlState.h"
 #include "GitSourceControlCommand.h"
 #include "GitSourceControlModule.h"
+#include "GitSourceControlUtils.h"
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"
 
@@ -20,8 +21,18 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	check(InCommand.Operation->GetName() == "Connect");
 
-	//TODO: test 'connection' to the Git local repository
-
+	TArray<FString> EmptyParameters;
+	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("status"), InCommand.PathToGameDir, TArray<FString>(), EmptyParameters, InCommand.InfoMessages, InCommand.ErrorMessages);
+	if(InCommand.bCommandSuccessful)
+	{
+		if(InCommand.ErrorMessages.Num() > 0)
+		{
+			TSharedRef<FConnect, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FConnect>(InCommand.Operation);
+			Operation->SetErrorText(LOCTEXT("NotAWorkingCopyError", "Project is not part of a Git working copy."));
+			InCommand.ErrorMessages.Add(LOCTEXT("NotAWorkingCopyErrorHelp", "You should check out a working copy into your project directory.").ToString());
+			InCommand.bCommandSuccessful = false;
+		}	
+	}
 	return InCommand.bCommandSuccessful;
 }
 

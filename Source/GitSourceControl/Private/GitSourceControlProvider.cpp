@@ -10,6 +10,7 @@
 #include "GitSourceControlModule.h"
 #include "GitSourceControlSettings.h"
 #include "GitSourceControlOperations.h"
+#include "GitSourceControlUtils.h"
 #include "SGitSourceControlSettings.h"
 #include "MessageLog.h"
 #include "ScopedSourceControlProgress.h"
