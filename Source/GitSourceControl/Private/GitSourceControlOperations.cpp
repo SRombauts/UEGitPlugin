@@ -40,4 +40,22 @@ bool FGitConnectWorker::UpdateStates() const
 	return false;
 }
 
+
+FName FGitUpdateStatusWorker::GetName() const
+{
+	return "UpdateStatus";
+}
+
+bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
+{
+	return false;
+}
+
+bool FGitUpdateStatusWorker::UpdateStates() const
+{
+	bool bUpdated = false;
+
+	return bUpdated;
+}
+
 #undef LOCTEXT_NAMESPACE

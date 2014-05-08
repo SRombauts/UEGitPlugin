@@ -11,6 +11,12 @@ namespace GitSourceControlUtils
 {
 
 /**
+ * Run a Git "version" command to check the availability of the binary.
+ * @returns true if the command succeeded and returned no errors
+ */
+bool CheckGitAvailability();
+
+/**
  * Run a Git command - output is a string TArray.
  *
  * @param	InCommand			The Git command - e.g. status

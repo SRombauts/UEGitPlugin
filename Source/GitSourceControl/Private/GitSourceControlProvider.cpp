@@ -24,7 +24,10 @@ void FGitSourceControlProvider::Init(bool bForceConnection)
     PathToGameDir = FPaths::ConvertRelativePathToFull(FPaths::GameDir());
     PathToContentDir = FPaths::ConvertRelativePathToFull(FPaths::GameContentDir());
 
-    //TODO Chech Git Binary & User "login" (config user.name & user.email)
+	if(!bGitAvailable)
+	{
+		bGitAvailable = GitSourceControlUtils::CheckGitAvailability();
+	}
 }
 
 void FGitSourceControlProvider::Close()
@@ -66,8 +69,7 @@ bool FGitSourceControlProvider::IsEnabled() const
 
 bool FGitSourceControlProvider::IsAvailable() const
 {
-	//TODO Return result from check of Git Binary & User "login" (config user.name & user.email)
-	return true;
+	return bGitAvailable;
 }
 
 const FName& FGitSourceControlProvider::GetName(void) const

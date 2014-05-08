@@ -16,6 +16,7 @@ class FGitSourceControlProvider : public ISourceControlProvider
 public:
 	/** Constructor */
 	FGitSourceControlProvider() 
+		: bGitAvailable(false)
 	{
 	}
 
@@ -59,6 +60,9 @@ public:
 	void RegisterWorker( const FName& InName, const FGetGitSourceControlWorker& InDelegate );
 
 private:
+
+	/** Is git binary found and working. */
+	bool bGitAvailable;
 
 	/** Helper function for Execute() */
 	TSharedPtr<class IGitSourceControlWorker, ESPMode::ThreadSafe> CreateWorker(const FName& InOperationName) const;

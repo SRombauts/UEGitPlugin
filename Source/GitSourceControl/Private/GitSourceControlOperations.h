@@ -6,6 +6,7 @@
 #pragma once
 
 #include "IGitSourceControlWorker.h"
+#include "GitSourceControlState.h"
 
 class FGitConnectWorker : public IGitSourceControlWorker
 {
@@ -16,3 +17,16 @@ public:
 	virtual bool UpdateStates() const OVERRIDE;
 };
 
+
+class FGitUpdateStatusWorker : public IGitSourceControlWorker
+{
+public:
+	// IGitSourceControlWorker interface
+	virtual FName GetName() const OVERRIDE;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) OVERRIDE;
+	virtual bool UpdateStates() const OVERRIDE;
+
+public:
+	/** Temporary states for results */
+	TArray<FGitSourceControlState> OutStates;
+};

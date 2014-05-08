@@ -77,6 +77,26 @@ static bool RunCommandInternal(const FString& InCommand, const TArray<FString>& 
 	return ReturnCode == 0;
 }
 
+bool CheckGitAvailability()
+{
+	bool bGitAvailable = false;
+
+	FString InfoMessages;
+	FString ErrorMessages;
+	bGitAvailable = GitSourceControlUtils::RunCommandInternal(TEXT("version"), TArray<FString>(), TArray<FString>(), FString(), InfoMessages, ErrorMessages);
+	if (bGitAvailable && ErrorMessages.IsEmpty() && (!InfoMessages.IsEmpty()))
+	{
+		if(InfoMessages.Contains("git"))
+		{
+			bGitAvailable = true;
+		}
+	}
+
+	// @todo also check Git config user.name & user.email
+
+	return bGitAvailable;
+}
+
 bool RunCommand(const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, const FString& InRepositoryRoot, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
 {
 	bool bResult = true;
