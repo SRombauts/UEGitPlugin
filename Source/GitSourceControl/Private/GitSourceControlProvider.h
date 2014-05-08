@@ -63,9 +63,7 @@ private:
 	/** Helper function for Execute() */
 	TSharedPtr<class IGitSourceControlWorker, ESPMode::ThreadSafe> CreateWorker(const FName& InOperationName) const;
 
-	/**
-	 * Run a command synchronously or asynchronously.
-	 */
+	/** Run a command synchronously or asynchronously. */
 	ECommandResult::Type IssueCommand(class FGitSourceControlCommand& InCommand, const bool bSynchronous);
 
     /** Path to the Game directory: shall be the root of the Git repository */

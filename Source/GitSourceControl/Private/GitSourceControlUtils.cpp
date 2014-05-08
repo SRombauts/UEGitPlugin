@@ -12,25 +12,27 @@
 namespace GitSourceControlConstants
 {
 	/** The maximum number of files we submit in a single Git command */
-	const int32 MaxFilesPerBatch = 50;
+	const int32 MaxFilesPerBatch = 20;
 }
 
 namespace GitSourceControlUtils
 {
 
-static bool RunCommandInternal(const FString& InCommand, const FString& InRepositoryRoot, const TArray<FString>& InFiles, const TArray<FString>& InParameters, FString& OutResults, TArray<FString>& OutErrorMessages)
+static bool RunCommandInternal(const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, const FString& InRepositoryRoot, FString& OutResults, FString& OutErrors)
 {
-	int32 ReturnCode = 0;
-	FString StdError;
+	int32	ReturnCode = 0;
 	FString FullCommand;
 
-	// Specify the working copy (the root) of the git repository (before the command itself)
-	FullCommand  = TEXT(" --work-tree=\"");
-	FullCommand += InRepositoryRoot;
-	// and the ".git" subdirectory in it (before the command itself)
-	FullCommand += TEXT("\" --git-dir=\"");
-	FullCommand += InRepositoryRoot;
-	FullCommand += TEXT(".git\" ");
+	if (!InRepositoryRoot.IsEmpty())
+	{
+		// Specify the working copy (the root) of the git repository (before the command itself)
+		FullCommand  = TEXT("--work-tree=\"");
+		FullCommand += InRepositoryRoot;
+		// and the ".git" subdirectory in it (before the command itself)
+		FullCommand += TEXT("\" --git-dir=\"");
+		FullCommand += InRepositoryRoot;
+		FullCommand += TEXT(".git\" ");
+	}
     // then the git command itself ("status", "log", "commit"...)
     FullCommand += InCommand;
 
@@ -42,8 +44,9 @@ static bool RunCommandInternal(const FString& InCommand, const FString& InReposi
 	}
 	for (int32 Index = 0; Index < InFiles.Num(); Index++)
 	{
-		FullCommand += TEXT(" ");
+		FullCommand += TEXT(" \"");
 		FullCommand += InFiles[Index];
+		FullCommand += TEXT("\"");
 	}
 
 	// Git auto-detect non-interactive condition (no connected standard input/output streams)
@@ -64,26 +67,21 @@ static bool RunCommandInternal(const FString& InCommand, const FString& InReposi
 
 	// TODO: test log
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: Attempting '%s %s'"), *GitBinaryPath, *FullCommand);
-	FPlatformProcess::ExecProcess(*GitBinaryPath, *FullCommand, &ReturnCode, &OutResults, &StdError);
+	FPlatformProcess::ExecProcess(*GitBinaryPath, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
     UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
-	if (!StdError.IsEmpty())
+	if(!OutErrors.IsEmpty())
 	{
-		UE_LOG(LogSourceControl, Error, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d StdError='%s'"), ReturnCode, *StdError);
-
-		// parse output & errors
-		TArray<FString> Errors;
-		StdError.ParseIntoArray(&Errors, TEXT("\n"), true);
-		OutErrorMessages.Append(Errors);
+		UE_LOG(LogSourceControl, Error, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutErrors='%s'"), ReturnCode, *OutErrors);
 	}
 
 	return ReturnCode == 0;
 }
 
-bool RunCommand(const FString& InCommand, const FString& InRepositoryRoot, const TArray<FString>& InFiles, const TArray<FString>& InParameters, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
+bool RunCommand(const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, const FString& InRepositoryRoot, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
 {
 	bool bResult = true;
 
-	if(InFiles.Num() > 0)
+	if(InFiles.Num() > GitSourceControlConstants::MaxFilesPerBatch)
 	{
 		// Batch files up so we dont exceed command-line limits
 		int32 FileCount = 0;
@@ -96,15 +94,19 @@ bool RunCommand(const FString& InCommand, const FString& InRepositoryRoot, const
 			}
 
 			FString Results;
-            bResult &= RunCommandInternal(InCommand, InRepositoryRoot, FilesInBatch, InParameters, Results, OutErrorMessages);
+			FString Errors;
+			bResult &= RunCommandInternal(InCommand, InParameters, FilesInBatch, InRepositoryRoot, Results, Errors);
 			Results.ParseIntoArray(&OutResults, TEXT("\n"), true);
+			Errors.ParseIntoArray(&OutErrorMessages, TEXT("\n"), true);
 		}
 	}
 	else
 	{
 		FString Results;
-        bResult &= RunCommandInternal(InCommand, InRepositoryRoot, InFiles, InParameters, Results, OutErrorMessages);
+		FString Errors;
+		bResult &= RunCommandInternal(InCommand, InParameters, InFiles, InRepositoryRoot, Results, Errors);
 		Results.ParseIntoArray(&OutResults, TEXT("\n"), true);
+		Errors.ParseIntoArray(&OutErrorMessages, TEXT("\n"), true);
 	}
 
 	return bResult;

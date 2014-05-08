@@ -21,8 +21,7 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	check(InCommand.Operation->GetName() == "Connect");
 
-	TArray<FString> EmptyParameters;
-	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("status"), InCommand.PathToGameDir, TArray<FString>(), EmptyParameters, InCommand.InfoMessages, InCommand.ErrorMessages);
+	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("status"), TArray<FString>(), TArray<FString>(), InCommand.PathToGameDir, InCommand.InfoMessages, InCommand.ErrorMessages);
 	if(InCommand.bCommandSuccessful)
 	{
 		if(InCommand.ErrorMessages.Num() > 0)
