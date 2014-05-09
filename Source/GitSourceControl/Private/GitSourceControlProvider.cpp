@@ -59,7 +59,7 @@ FText FGitSourceControlProvider::GetStatusText() const
 	Args.Add( TEXT("IsEnabled"), IsEnabled() ? LOCTEXT("Yes", "Yes") : LOCTEXT("No", "No") );
 	Args.Add( TEXT("Repository"), FText::FromString( PathToGameDir ) );
 
-	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Enabled: {IsEnabled}\nRepository: {RepositoryName}"), Args );
+	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Enabled: {IsEnabled}\nRepository: {Repository}"), Args );
 }
 
 bool FGitSourceControlProvider::IsEnabled() const
@@ -97,7 +97,7 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 		Execute(ISourceControlOperation::Create<FUpdateStatus>(), InFiles);
 	}
 
-	for( TArray<FString>::TConstIterator It(InFiles); It; It++)
+	for(TArray<FString>::TConstIterator It(InFiles); It; It++)
 	{
 		OutState.Add(GetStateInternal(*It));
 	}

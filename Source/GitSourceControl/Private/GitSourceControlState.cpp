@@ -36,6 +36,8 @@ FName FGitSourceControlState::GetIconName() const
 {
 	switch(WorkingCopyState)
 	{
+	case EWorkingCopyState::Pristine:
+		return FName("Subversion.CheckedOut");
 	case EWorkingCopyState::Added:
 	case EWorkingCopyState::Modified:
 	case EWorkingCopyState::Renamed:
@@ -55,6 +57,8 @@ FName FGitSourceControlState::GetSmallIconName() const
 {
 	switch(WorkingCopyState)
 	{
+	case EWorkingCopyState::Pristine:
+		return FName("Subversion.CheckedOut_Small");
 	case EWorkingCopyState::Added:
 	case EWorkingCopyState::Modified:
 	case EWorkingCopyState::Renamed:

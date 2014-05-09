@@ -66,6 +66,8 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 	}
 
 	// @todo update using any special hints passed in via the operation
+
+
 	return InCommand.bCommandSuccessful;
 }
 
