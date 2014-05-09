@@ -27,6 +27,10 @@ Use your favorite Git program to manage your whole game project directory Unreal
 
 File->Connect To Source Control... -> Git: Accept Settings
 
+Under Windows 64bits if you already have a Git install ("C:\Program Files (x86)\Git\bin\git.exe"),
+specify it inside Editor in Source Control Settings, or copy a (portable Git)[https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit]
+inside "[UnrealEngine]\Engine\Binaries\ThirdParty\git\Win32\".
+
 [Source Control official Documentation](https://docs.unrealengine.com/latest/INT/Engine/UI/SourceControl/index.html)
 
 ### License
