@@ -28,5 +28,5 @@ public:
 
 public:
 	/** Temporary states for results */
-	TArray<FGitSourceControlState> OutStates;
+	TArray<FGitSourceControlState> States;
 };

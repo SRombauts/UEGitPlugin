@@ -17,6 +17,8 @@ namespace EWorkingCopyState
 		Added,
 		Deleted,
 		Modified,
+		Renamed,
+		Copied,
 		Conflicted,
 		Ignored,
 		NotControlled,

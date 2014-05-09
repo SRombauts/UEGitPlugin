@@ -132,4 +132,136 @@ bool RunCommand(const FString& InCommand, const TArray<FString>& InParameters, c
 	return bResult;
 }
 
+class FGitStatusFileMatcher
+{
+public:
+	FGitStatusFileMatcher(const FString& InAbsoluteFile)
+		: AbsoluteFile(InAbsoluteFile)
+	{
+	}
+
+	bool Matches(const FString& InResult) const
+	{
+		FString File = InResult.RightChop(3);
+		return AbsoluteFile.Contains(File);
+	}
+
+private:
+	const FString& AbsoluteFile;
+};
+
+/** 
+file:///C:/Program%20Files%20(x86)/Git/doc/git/html/git-status.html
+' ' = unmodified
+'M' = modified
+'A' = added
+'D' = deleted
+'R' = renamed
+'C' = copied
+'U' = updated but unmerged
+'?' = unknown/untracked
+'!' = ignored
+*/
+class FGitStatusParser
+{
+public:
+	FGitStatusParser(const FString& InResult)
+	{
+		//FString Filename = InResult.RightChop(3);
+		TCHAR IndexState = InResult[0];
+		TCHAR WCopyState = InResult[1];
+		if(IndexState == 'A')
+		{
+			State = EWorkingCopyState::Added;
+		}
+		else if(IndexState == 'D')
+		{
+			State = EWorkingCopyState::Deleted;
+		}
+		else if(WCopyState == 'D')
+		{
+			State = EWorkingCopyState::Missing;
+		}
+		else if(IndexState == 'M' || WCopyState == 'M')
+		{
+			State = EWorkingCopyState::Modified;
+		}
+		else if(IndexState == 'R')
+		{
+			State = EWorkingCopyState::Renamed;
+		}
+		else if(IndexState == 'C')
+		{
+			State = EWorkingCopyState::Copied;
+		}
+		else if(IndexState == 'U')
+		{
+			// @todo 
+			//State = EWorkingCopyState::Unmerged;
+			State = EWorkingCopyState::Unknown;
+		}
+		else if(IndexState == '?' || WCopyState == '?')
+		{
+			State = EWorkingCopyState::NotControlled;
+		}
+		else if(IndexState == '!' || WCopyState == '!')
+		{
+			State = EWorkingCopyState::Ignored;
+		}
+		else
+		{
+			// "Pristine"/Clean/Unmodified never yield a status
+			State = EWorkingCopyState::Unknown;
+		}
+		// @todo 
+		//State = EWorkingCopyState::Conflicted;
+	}
+
+	EWorkingCopyState::Type State;
+};
+
+
+void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates)
+{
+	for(int32 IdxFile = 0; IdxFile < InFiles.Num(); IdxFile++)
+	{
+		FGitSourceControlState FileState(InFiles[IdxFile]);
+		FGitStatusFileMatcher FileMatcher(InFiles[IdxFile]);
+		int32 IdxResult = InResults.FindMatch(FileMatcher);
+		if(IdxResult != INDEX_NONE)
+		{
+			// File found in status results; only the case for "changed" files
+			FGitStatusParser StatusParser(InResults[IdxResult]);
+			FileState.WorkingCopyState = StatusParser.State;
+		}
+		else
+		{
+			// File not found in status results; only the case for unchanged files
+			FileState.WorkingCopyState = EWorkingCopyState::Pristine;
+		}
+		FileState.TimeStamp.Now();
+		OutStates.Add(FileState);
+	}
+}
+
+bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
+{
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
+	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+	int NbStatesUpdated = 0;
+
+	for(int StatusIndex = 0; StatusIndex < InStates.Num(); StatusIndex++)
+	{
+		const FGitSourceControlState& InState = InStates[StatusIndex];
+		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename);
+		if(State->WorkingCopyState != InState.WorkingCopyState)
+		{
+			State->WorkingCopyState = InState.WorkingCopyState;
+			State->TimeStamp = FDateTime::Now();
+			NbStatesUpdated++;
+		}
+	}
+
+	return (NbStatesUpdated > 0);
+}
 }

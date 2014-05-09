@@ -37,9 +37,15 @@ FName FGitSourceControlState::GetIconName() const
 	switch(WorkingCopyState)
 	{
 	case EWorkingCopyState::Added:
-		return FName("Git.OpenForAdd");
+	case EWorkingCopyState::Modified:
+	case EWorkingCopyState::Renamed:
+		return FName("Subversion.OpenForAdd");
+	case EWorkingCopyState::Missing:
+	case EWorkingCopyState::Copied:
+	case EWorkingCopyState::Conflicted:
+		return FName("Subversion.NotAtHeadRevision");
 	case EWorkingCopyState::NotControlled:
-		return FName("Git.NotInDepot");
+		return FName("Subversion.NotInDepot");
 	}
 
 	return NAME_None;
@@ -50,9 +56,15 @@ FName FGitSourceControlState::GetSmallIconName() const
 	switch(WorkingCopyState)
 	{
 	case EWorkingCopyState::Added:
-		return FName("Git.OpenForAdd_Small");
+	case EWorkingCopyState::Modified:
+	case EWorkingCopyState::Renamed:
+		return FName("Subversion.OpenForAdd_Small");
+	case EWorkingCopyState::Missing:
+	case EWorkingCopyState::Copied:
+	case EWorkingCopyState::Conflicted:
+		return FName("Subversion.NotAtHeadRevision_Small");
 	case EWorkingCopyState::NotControlled:
-		return FName("Git.NotInDepot_Small");
+		return FName("Subversion.NotInDepot_Small");
 	}
 
 	return NAME_None;
@@ -72,6 +84,10 @@ FText FGitSourceControlState::GetDisplayName() const
 		return LOCTEXT("Deleted", "Deleted");
 	case EWorkingCopyState::Modified:
 		return LOCTEXT("Modified", "Modified");
+	case EWorkingCopyState::Renamed:
+		return LOCTEXT("Renamed", "Renamed");
+	case EWorkingCopyState::Copied:
+		return LOCTEXT("Copied", "Copied");
 	case EWorkingCopyState::Conflicted:
 		return LOCTEXT("ContentsConflict", "Contents Conflict");
 	case EWorkingCopyState::Ignored:
@@ -174,7 +190,10 @@ bool FGitSourceControlState::IsUnknown() const
 
 bool FGitSourceControlState::IsModified() const
 {
-	return WorkingCopyState == EWorkingCopyState::Modified || WorkingCopyState == EWorkingCopyState::Conflicted;
+	return WorkingCopyState == EWorkingCopyState::Modified
+		|| WorkingCopyState == EWorkingCopyState::Renamed
+		|| WorkingCopyState == EWorkingCopyState::Copied
+		|| WorkingCopyState == EWorkingCopyState::Conflicted;
 }
 
 #undef LOCTEXT_NAMESPACE

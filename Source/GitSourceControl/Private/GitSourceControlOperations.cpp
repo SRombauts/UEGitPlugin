@@ -48,12 +48,32 @@ FName FGitUpdateStatusWorker::GetName() const
 
 bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 {
-	return false;
+	check(InCommand.Operation->GetName() == "UpdateStatus");
+
+	if(InCommand.Files.Num() > 0)
+	{
+		TArray<FString> Results;
+		TArray<FString> Parameters;
+		Parameters.Add(TEXT("-z")); // similar to --porcelain, but use a NULL character to terminate file names instead of spaces
+		Parameters.Add(TEXT("--ignored"));
+
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("status"), Parameters, InCommand.Files, InCommand.PathToGameDir, Results, InCommand.ErrorMessages);
+		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, InCommand.ErrorMessages, States);
+	}
+	else
+	{
+		InCommand.bCommandSuccessful = true; // nothing to do
+	}
+
+	// @todo update using any special hints passed in via the operation
+	return InCommand.bCommandSuccessful;
 }
 
 bool FGitUpdateStatusWorker::UpdateStates() const
 {
-	bool bUpdated = false;
+	bool bUpdated = GitSourceControlUtils::UpdateCachedStates(States);
+
+	// @todo add history, if any
 
 	return bUpdated;
 }

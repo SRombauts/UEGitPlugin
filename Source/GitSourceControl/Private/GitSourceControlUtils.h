@@ -24,9 +24,24 @@ bool CheckGitAvailability();
  * @param	InFiles				The files to be operated on
  * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
  * @param	OutResults			The results (from StdOut) as an array per-line
- * @param	OutErrorMessages	Any errors (from StdErr)
+ * @param	OutErrorMessages	Any errors (from StdErr) as an array per-line
  * @returns true if the command succeeded and returned no errors
  */
 bool RunCommand(const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, const FString& InRepositoryRoot, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages);
+
+/**
+ * Parse the string results of a 'git status' command
+ * @param	InFiles				The files that have been operated on
+ * @param	InResults			The results (from StdOut) as an array per-line
+ * @param	OutErrorMessages	Any errors (from StdErr) as an array per-line
+ * @param	OutStates			The new states of the files
+ */
+void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates);
+
+/**
+ * Helper function for various commands to update cached states.
+ * @returns true if any states were updated
+ */
+bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates);
 
 }
