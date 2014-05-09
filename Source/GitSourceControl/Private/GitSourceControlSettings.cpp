@@ -5,6 +5,7 @@
 
 #include "GitSourceControlPrivatePCH.h"
 #include "GitSourceControlSettings.h"
+#include "GitSourceControlUtils.h"
 #include "SourceControlHelpers.h"
 
 namespace GitSettingsConstants
@@ -31,7 +32,11 @@ void FGitSourceControlSettings::LoadSettings()
 {
 	FScopeLock ScopeLock(&CriticalSection);
 	const FString& IniFile = SourceControlHelpers::GetSettingsIni();
-	GConfig->GetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), BinaryPath, IniFile);
+	bool bLoaded = GConfig->GetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), BinaryPath, IniFile);
+	if(!bLoaded)
+	{
+		BinaryPath = GitSourceControlUtils::GetGitBinaryPath();
+	}
 }
 
 void FGitSourceControlSettings::SaveSettings() const
@@ -39,4 +44,5 @@ void FGitSourceControlSettings::SaveSettings() const
 	FScopeLock ScopeLock(&CriticalSection);
 	const FString& IniFile = SourceControlHelpers::GetSettingsIni();
 	GConfig->SetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), *BinaryPath, IniFile);
+	GitSourceControlUtils::SetGitBinaryPath(BinaryPath);
 }

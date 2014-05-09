@@ -18,6 +18,31 @@ namespace GitSourceControlConstants
 namespace GitSourceControlUtils
 {
 
+#if PLATFORM_WINDOWS
+	// NOTE using only "git" (or "git.exe") relying on the "PATH" envvar does not always work as expected,
+	// depending on the option selected at installation time:
+	// If the PATH contains "git/cmd" instead of "git/bin/" (with all Linux shell commands),
+	// "git.exe" launch "git/cmd/git.exe" that redirect to "git/bin/git.exe" and ExecProcess() is unable to catch its outputs streams.
+	//  const FString GitBinaryPath = TEXT("git");	// NOK, start a shell! match git.exe on Windows
+
+	// Under Windows, we use the third party "msysgit PortableGit" https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit
+	// NOTE: Win32 platform subdirectory as there is no Git 64bit build available
+	static FString GitBinaryPath(FPaths::EngineDir() / TEXT("Binaries/ThirdParty/git/Win32/bin") / TEXT("git.exe"));
+#else
+	static FString GitBinaryPath(TEXT("/usr/bin/git"));
+#endif
+
+const FString& GetGitBinaryPath()
+{
+	return GitBinaryPath;
+}
+
+void SetGitBinaryPath(const FString& InGitBinaryPath)
+{
+	GitBinaryPath = InGitBinaryPath;
+}
+
+
 static bool RunCommandInternal(const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, const FString& InRepositoryRoot, FString& OutResults, FString& OutErrors)
 {
 	int32	ReturnCode = 0;
@@ -48,24 +73,9 @@ static bool RunCommandInternal(const FString& InCommand, const TArray<FString>& 
 		FullCommand += InFiles[Index];
 		FullCommand += TEXT("\"");
 	}
+	// Also, fit auto-detect non-interactive condition (no connected standard input/output streams)
 
-	// Git auto-detect non-interactive condition (no connected standard input/output streams)
-	
-#if PLATFORM_WINDOWS
-	// NOTE using only "git" (or "git.exe") relying on the "PATH" envvar does not always work as expected,
-	// depending on the option selected at installation time:
-	// If the PATH contains "git/cmd" instead of "git/bin/" (with all Linux shell commands),
-	// "git.exe" launch "git/cmd/git.exe" that redirect to "git/bin/git.exe" and ExecProcess() is unable to catch its outputs streams.
-	//  const FString GitBinaryPath = TEXT("git");	// NOK, start a shell! match git.exe on Windows
-
-	// Under Windows, we use the third party "msysgit PortableGit" https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit
-	// NOTE: Win32 platform subdirectory as there is no Git 64bit build available
-	const FString GitBinaryPath = FPaths::EngineDir() / TEXT("Binaries/ThirdParty/git/Win32/bin") / TEXT("git.exe");
-#else
-	const FString GitBinaryPath = TEXT("/usr/bin/git");
-#endif
-
-	// TODO: test log
+	// @todo: temporary debug logs
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: Attempting '%s %s'"), *GitBinaryPath, *FullCommand);
 	FPlatformProcess::ExecProcess(*GitBinaryPath, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
     UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);

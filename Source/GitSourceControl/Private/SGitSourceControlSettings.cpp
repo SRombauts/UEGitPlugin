@@ -30,7 +30,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				.VAlign(VAlign_Center)
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("BinaryPathLabel", "BinaryPath"))
+					.Text(LOCTEXT("BinaryPathLabel", "Git Path"))
 					.ToolTipText(LOCTEXT("BinaryPathLabel_Tooltip", "Path to Git binary"))
 					.Font(Font)
 				]

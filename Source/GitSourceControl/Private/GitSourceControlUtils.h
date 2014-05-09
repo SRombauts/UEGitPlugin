@@ -11,6 +11,13 @@ namespace GitSourceControlUtils
 {
 
 /**
+ * Get/Set the path to the Git binary
+ * @returns the path to the Git binary
+ */
+const FString& GetGitBinaryPath();
+void SetGitBinaryPath(const FString& InGitBinaryPath);
+
+/**
  * Run a Git "version" command to check the availability of the binary.
  * @returns true if the command succeeded and returned no errors
  */
