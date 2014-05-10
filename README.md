@@ -11,7 +11,15 @@ Pre-Alpha under early development: v0.0 only displays icons to show modified fil
 
 ### Getting started
 
-#### Install into UnrealEngine or Build from sources
+#### Install Git
+
+Under Windows 64bits, you could either:
+- install a standalone Git, usualy in "C:\Program Files (x86)\Git\bin\git.exe".
+- or copy a (portable Git)[https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit]
+inside "[UnrealEngine]\Engine\Binaries\ThirdParty\git\Win32\".
+- TODO What about TortoiseGit ?
+
+#### Install Git Plugin into UnrealEngine
 
 Clone this repository under "[UnrealEngine]\Engine\Plugins\Developer\":
 
@@ -19,17 +27,19 @@ Clone this repository under "[UnrealEngine]\Engine\Plugins\Developer\":
 git clone https://github.com/SRombauts/UE4GitPlugin.git GitSourceControl
 ```
 
-#### Manage your Game Project with Git
+Then launch the UE4 Editor, open Windows->Plugins, enable Editor->Source Control->Git, and restart the Editor.
 
-Use your favorite Git program to manage your whole game project directory Unreal Projects\[YourGameProject].
+Alternatively, you could choose to install the plugin into [YourGameProject]/Plugins/
+
+See also [Plugins official Documentation](https://docs.unrealengine.com/latest/INT/Programming/Plugins/index.html)
+
+#### Initialize your Game Project directory with Git
+
+Use your favorite Git program to initialize your whole game project directory: Unreal Projects\[YourGameProject].
 
 #### Activating Source Control within the Editor
 
 File->Connect To Source Control... -> Git: Accept Settings
-
-Under Windows 64bits if you already have a Git install ("C:\Program Files (x86)\Git\bin\git.exe"),
-specify it inside Editor in Source Control Settings, or copy a (portable Git)[https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit]
-inside "[UnrealEngine]\Engine\Binaries\ThirdParty\git\Win32\".
 
 [Source Control official Documentation](https://docs.unrealengine.com/latest/INT/Engine/UI/SourceControl/index.html)
 
