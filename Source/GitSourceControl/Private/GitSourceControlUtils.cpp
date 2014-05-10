@@ -18,32 +18,7 @@ namespace GitSourceControlConstants
 namespace GitSourceControlUtils
 {
 
-#if PLATFORM_WINDOWS
-	// NOTE using only "git" (or "git.exe") relying on the "PATH" envvar does not always work as expected,
-	// depending on the option selected at installation time:
-	// If the PATH contains "git/cmd" instead of "git/bin/" (with all Linux shell commands),
-	// "git.exe" launch "git/cmd/git.exe" that redirect to "git/bin/git.exe" and ExecProcess() is unable to catch its outputs streams.
-	//  const FString GitBinaryPath = TEXT("git");	// NOK, start a shell! match git.exe on Windows
-
-	// Under Windows, we use the third party "msysgit PortableGit" https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit
-	// NOTE: Win32 platform subdirectory as there is no Git 64bit build available
-	static FString GitBinaryPath(FPaths::EngineDir() / TEXT("Binaries/ThirdParty/git/Win32/bin") / TEXT("git.exe"));
-#else
-	static FString GitBinaryPath(TEXT("/usr/bin/git"));
-#endif
-
-const FString& GetGitBinaryPath()
-{
-	return GitBinaryPath;
-}
-
-void SetGitBinaryPath(const FString& InGitBinaryPath)
-{
-	GitBinaryPath = InGitBinaryPath;
-}
-
-
-static bool RunCommandInternal(const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, const FString& InRepositoryRoot, FString& OutResults, FString& OutErrors)
+static bool RunCommandInternal(const FString& InGitBinaryPath, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors)
 {
 	int32	ReturnCode = 0;
 	FString FullCommand;
@@ -76,8 +51,8 @@ static bool RunCommandInternal(const FString& InCommand, const TArray<FString>& 
 	// Also, fit auto-detect non-interactive condition (no connected standard input/output streams)
 
 	// @todo: temporary debug logs
-	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: Attempting '%s %s'"), *GitBinaryPath, *FullCommand);
-	FPlatformProcess::ExecProcess(*GitBinaryPath, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
+	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: Attempting '%s %s'"), *InGitBinaryPath, *FullCommand);
+	FPlatformProcess::ExecProcess(*InGitBinaryPath, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
     UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
 	if(!OutErrors.IsEmpty())
 	{
@@ -87,18 +62,52 @@ static bool RunCommandInternal(const FString& InCommand, const TArray<FString>& 
 	return ReturnCode == 0;
 }
 
-bool CheckGitAvailability()
+FString FindGitBinaryPath()
+{
+	bool bFound = false;
+
+#if PLATFORM_WINDOWS
+	// 1) First of all, check for the ThirdParty directory as it may contain a specific version of Git for this plugin to work
+	// NOTE using only "git" (or "git.exe") relying on the "PATH" envvar does not always work as expected, depending on the installation:
+	// If the PATH is set with "git/cmd" instead of "git/bin",
+	// "git.exe" launch "git/cmd/git.exe" that redirect to "git/bin/git.exe" and ExecProcess() is unable to catch its outputs streams.
+
+	// Under Windows, we can use the third party "msysgit PortableGit" https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit
+	// NOTE: Win32 platform subdirectory as there is no Git 64bit build available
+	FString GitBinaryPath(FPaths::EngineDir() / TEXT("Binaries/ThirdParty/git/Win32/bin") / TEXT("git.exe"));
+	bFound = CheckGitAvailability(GitBinaryPath);
+#endif
+
+	// 2) If Git is not found in ThirdParty directory, look into standard install directory
+	if(!bFound)
+	{
+#if PLATFORM_WINDOWS
+		// @todo use the Windows registry to find Git
+		GitBinaryPath = TEXT("C:/Program Files (x86)/Git/bin/git.exe");
+#else
+		GitBinaryPath = TEXT("/usr/bin/git");
+#endif
+	}
+
+	return GitBinaryPath;
+}
+
+bool CheckGitAvailability(const FString& InGitBinaryPath)
 {
 	bool bGitAvailable = false;
 
 	FString InfoMessages;
 	FString ErrorMessages;
-	bGitAvailable = GitSourceControlUtils::RunCommandInternal(TEXT("version"), TArray<FString>(), TArray<FString>(), FString(), InfoMessages, ErrorMessages);
-	if (bGitAvailable && ErrorMessages.IsEmpty() && (!InfoMessages.IsEmpty()))
+	bGitAvailable = RunCommandInternal(InGitBinaryPath, FString(), TEXT("version"), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	if(bGitAvailable)
 	{
 		if(InfoMessages.Contains("git"))
 		{
 			bGitAvailable = true;
+		}
+		else
+		{
+			bGitAvailable = false;
 		}
 	}
 
@@ -107,7 +116,7 @@ bool CheckGitAvailability()
 	return bGitAvailable;
 }
 
-bool RunCommand(const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, const FString& InRepositoryRoot, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
+bool RunCommand(const FString& InGitBinaryPath, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
 {
 	bool bResult = true;
 
@@ -125,7 +134,7 @@ bool RunCommand(const FString& InCommand, const TArray<FString>& InParameters, c
 
 			FString Results;
 			FString Errors;
-			bResult &= RunCommandInternal(InCommand, InParameters, FilesInBatch, InRepositoryRoot, Results, Errors);
+			bResult &= RunCommandInternal(InGitBinaryPath, InRepositoryRoot, InCommand, InParameters, FilesInBatch, Results, Errors);
 			Results.ParseIntoArray(&OutResults, TEXT("\n"), true);
 			Errors.ParseIntoArray(&OutErrorMessages, TEXT("\n"), true);
 		}
@@ -134,7 +143,7 @@ bool RunCommand(const FString& InCommand, const TArray<FString>& InParameters, c
 	{
 		FString Results;
 		FString Errors;
-		bResult &= RunCommandInternal(InCommand, InParameters, InFiles, InRepositoryRoot, Results, Errors);
+		bResult &= RunCommandInternal(InGitBinaryPath, InRepositoryRoot, InCommand, InParameters, InFiles, Results, Errors);
 		Results.ParseIntoArray(&OutResults, TEXT("\n"), true);
 		Errors.ParseIntoArray(&OutErrorMessages, TEXT("\n"), true);
 	}

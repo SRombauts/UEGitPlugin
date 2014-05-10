@@ -21,16 +21,14 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	check(InCommand.Operation->GetName() == "Connect");
 
-	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("status"), TArray<FString>(), TArray<FString>(), InCommand.PathToGameDir, InCommand.InfoMessages, InCommand.ErrorMessages);
-	if(InCommand.bCommandSuccessful)
+	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+	if(!InCommand.bCommandSuccessful || InCommand.ErrorMessages.Num() > 0 || InCommand.InfoMessages.Num() == 0)
 	{
-		if(InCommand.ErrorMessages.Num() > 0)
-		{
-			TSharedRef<FConnect, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FConnect>(InCommand.Operation);
-			Operation->SetErrorText(LOCTEXT("NotAWorkingCopyError", "Project is not part of a Git working copy."));
-			InCommand.ErrorMessages.Add(LOCTEXT("NotAWorkingCopyErrorHelp", "You should check out a working copy into your project directory.").ToString());
-			InCommand.bCommandSuccessful = false;
-		}	
+		// @todo popup to propose to initialize the git repository
+		TSharedRef<FConnect, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FConnect>(InCommand.Operation);
+		Operation->SetErrorText(LOCTEXT("NotAWorkingCopyError", "Project is not part of a Git working copy."));
+		InCommand.ErrorMessages.Add(LOCTEXT("NotAWorkingCopyErrorHelp", "You should check out a working copy into your project directory.").ToString());
+		InCommand.bCommandSuccessful = false;
 	}
 	return InCommand.bCommandSuccessful;
 }
@@ -54,10 +52,10 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 	{
 		TArray<FString> Results;
 		TArray<FString> Parameters;
-		Parameters.Add(TEXT("-z")); // similar to --porcelain, but use a NULL character to terminate file names instead of spaces
+		Parameters.Add(TEXT("--porcelain"));
 		Parameters.Add(TEXT("--ignored"));
 
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("status"), Parameters, InCommand.Files, InCommand.PathToGameDir, Results, InCommand.ErrorMessages);
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, InCommand.Files, Results, InCommand.ErrorMessages);
 		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, InCommand.ErrorMessages, States);
 	}
 	else

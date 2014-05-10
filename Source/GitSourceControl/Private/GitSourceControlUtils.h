@@ -11,30 +11,31 @@ namespace GitSourceControlUtils
 {
 
 /**
- * Get/Set the path to the Git binary
- * @returns the path to the Git binary
+ * Find the path to the Git binary, looking in a few standard place (ThirdParty subdirectory and standard sSystem paths)
+ * @returns the path to the Git binary if found, or the last path tested if no git found.
  */
-const FString& GetGitBinaryPath();
-void SetGitBinaryPath(const FString& InGitBinaryPath);
+FString FindGitBinaryPath();
 
 /**
  * Run a Git "version" command to check the availability of the binary.
+ * @param InGitBinaryPath		The path to the Git binary
  * @returns true if the command succeeded and returned no errors
  */
-bool CheckGitAvailability();
+bool CheckGitAvailability(const FString& InGitBinaryPath);
 
 /**
  * Run a Git command - output is a string TArray.
  *
+ * @param	InGitBinaryPath		The path to the Git binary
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
  * @param	InCommand			The Git command - e.g. status
  * @param	InParameters		The parameters to the Git command
  * @param	InFiles				The files to be operated on
- * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
  * @param	OutResults			The results (from StdOut) as an array per-line
  * @param	OutErrorMessages	Any errors (from StdErr) as an array per-line
  * @returns true if the command succeeded and returned no errors
  */
-bool RunCommand(const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, const FString& InRepositoryRoot, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages);
+bool RunCommand(const FString& InGitBinaryPath, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages);
 
 /**
  * Parse the string results of a 'git status' command

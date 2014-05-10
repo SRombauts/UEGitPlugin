@@ -5,6 +5,8 @@
 
 #include "GitSourceControlPrivatePCH.h"
 #include "GitSourceControlSettings.h"
+#include "GitSourceControlModule.h"
+#include "GitSourceControlProvider.h"
 #include "GitSourceControlUtils.h"
 #include "SourceControlHelpers.h"
 
@@ -35,7 +37,7 @@ void FGitSourceControlSettings::LoadSettings()
 	bool bLoaded = GConfig->GetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), BinaryPath, IniFile);
 	if(!bLoaded)
 	{
-		BinaryPath = GitSourceControlUtils::GetGitBinaryPath();
+		BinaryPath = GitSourceControlUtils::FindGitBinaryPath();
 	}
 }
 
@@ -44,5 +46,7 @@ void FGitSourceControlSettings::SaveSettings() const
 	FScopeLock ScopeLock(&CriticalSection);
 	const FString& IniFile = SourceControlHelpers::GetSettingsIni();
 	GConfig->SetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), *BinaryPath, IniFile);
-	GitSourceControlUtils::SetGitBinaryPath(BinaryPath);
+
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	GitSourceControl.GetProvider().CheckGitAvailability();
 }

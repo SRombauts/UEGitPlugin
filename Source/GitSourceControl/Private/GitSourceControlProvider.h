@@ -38,6 +38,11 @@ public:
 	virtual TArray< TSharedRef<class ISourceControlLabel> > GetLabels( const FString& InMatchingSpec ) const OVERRIDE;
 	virtual TSharedRef<class SWidget> MakeSettingsWidget() const OVERRIDE;
 
+	/**
+	 * Run a Git "version" command to check the availability of the binary.
+	 */
+	void CheckGitAvailability();
+
     /** Get the path to the game directory: shall be the root of the Git repository */
     inline const FString& GetPathToGameDir() const
     {
@@ -49,6 +54,9 @@ public:
     {
         return PathToContentDir;
     }
+
+	/** Find and Check path to the Git binary */
+	void CheckPathToGitBinary();
 
 	/** Helper function used to update state cache */
 	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> GetStateInternal(const FString& Filename);

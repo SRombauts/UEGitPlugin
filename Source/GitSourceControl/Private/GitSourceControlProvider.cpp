@@ -21,13 +21,17 @@ static FName ProviderName("Git");
 
 void FGitSourceControlProvider::Init(bool bForceConnection)
 {
-    PathToGameDir = FPaths::ConvertRelativePathToFull(FPaths::GameDir());
-    PathToContentDir = FPaths::ConvertRelativePathToFull(FPaths::GameContentDir());
+	PathToGameDir = FPaths::ConvertRelativePathToFull(FPaths::GameDir());
+	PathToContentDir = FPaths::ConvertRelativePathToFull(FPaths::GameContentDir());
 
-	if(!bGitAvailable)
-	{
-		bGitAvailable = GitSourceControlUtils::CheckGitAvailability();
-	}
+	CheckGitAvailability();
+}
+
+void FGitSourceControlProvider::CheckGitAvailability()
+{
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const FString& PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
+	bGitAvailable = GitSourceControlUtils::CheckGitAvailability(PathToGitBinary);
 }
 
 void FGitSourceControlProvider::Close()
@@ -57,14 +61,14 @@ FText FGitSourceControlProvider::GetStatusText() const
 {
 	FFormatNamedArguments Args;
 	Args.Add( TEXT("IsEnabled"), IsEnabled() ? LOCTEXT("Yes", "Yes") : LOCTEXT("No", "No") );
-	Args.Add( TEXT("Repository"), FText::FromString( PathToGameDir ) );
+	Args.Add( TEXT("RepositoryName"), FText::FromString( PathToGameDir ) );
 
-	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Enabled: {IsEnabled}\nRepository: {Repository}"), Args );
+	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Enabled: {IsEnabled}\nRepository: {RepositoryName}"), Args );
 }
 
 bool FGitSourceControlProvider::IsEnabled() const
 {
-	return true;
+	return bGitAvailable;
 }
 
 bool FGitSourceControlProvider::IsAvailable() const
@@ -83,14 +87,6 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 	{
 		return ECommandResult::Failed;
 	}
-
-    /* TODO: why absolute?
-	TArray<FString> AbsoluteFiles;
-	for( TArray<FString>::TConstIterator It(InFiles); It; It++)
-	{
-		AbsoluteFiles.Add(FPaths::ConvertRelativePathToFull(*It));
-	}
-	*/
 
 	if(InStateCacheUsage == EStateCacheUsage::ForceUpdate)
 	{
@@ -122,14 +118,6 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 		return ECommandResult::Failed;
 	}
 
-	/* TODO: why absolute?
-	TArray<FString> AbsoluteFiles;
-	for( TArray<FString>::TConstIterator It(InFiles); It; It++)
-	{
-		AbsoluteFiles.Add(FPaths::ConvertRelativePathToFull(*It));
-	}
-	*/
-
 	// Query to see if we allow this operation
 	TSharedPtr<IGitSourceControlWorker, ESPMode::ThreadSafe> Worker = CreateWorker(InOperation->GetName());
 	if(!Worker.IsValid())
@@ -153,8 +141,6 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 	FGitSourceControlCommand* Command = new FGitSourceControlCommand(InOperation, Worker.ToSharedRef());
 	Command->bAutoDelete = false;
 	Command->Files = InFiles;
-	// TODO:
-//	GitSourceControlUtils::QuoteFilenames(Command->Files);
 	Command->OperationCompleteDelegate = InOperationCompleteDelegate;
 
 	// fire off operation

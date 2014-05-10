@@ -35,7 +35,11 @@ public:
 	virtual void DoThreadedWork() OVERRIDE;
 
 public:
-    /** Path to the Game directory : shall be the root of the Git repository */
+	/** Path to the Git binary */
+	FString PathToGitBinary;
+    /** Path to the Game directory : shall presently be the root of the Git repository
+	 *  @todo Look for the real root of the git repository (for instance, when the game directory is with the engine in a common repository)
+	 */
     FString PathToGameDir;
     /** Path to the game Content directory */
     FString PathToContentDir;
