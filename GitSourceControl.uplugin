@@ -4,11 +4,13 @@
 	"FriendlyName" : "Git",
 	"Version" : 0,
 	"VersionName" : "0.0",
-	"EngineVersion" : 1684048,
+	"EngineVersion" : "4.1.0",
 	"Description" : "Git source control management",
-	"CategoryPath" : "Editor.Source Control",
+	"Category" : "Editor.Source Control",
 	"CreatedBy" : "SRombauts",
 	"CreatedByURL" : "http://srombauts.github.com",
+	"CanContainContent" : false,
+	"IsBetaVersion" : true,
 	
     "Modules" :
 	[
