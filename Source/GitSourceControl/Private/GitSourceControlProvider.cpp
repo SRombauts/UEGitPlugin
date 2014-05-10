@@ -53,13 +53,23 @@ TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvide
 	}
 }
 
-FText FGitSourceControlProvider::GetStatusText() const
+FString FGitSourceControlProvider::GetStatusText() const
 {
-	FFormatNamedArguments Args;
-	Args.Add( TEXT("IsEnabled"), IsEnabled() ? LOCTEXT("Yes", "Yes") : LOCTEXT("No", "No") );
-	Args.Add( TEXT("Repository"), FText::FromString( PathToGameDir ) );
+	FString StatusText = LOCTEXT("ProviderName", "Provider: Git").ToString();
+	StatusText += LINE_TERMINATOR;
+	{
+		FFormatNamedArguments Arguments;
+		Arguments.Add( TEXT("YesOrNo"), IsEnabled() ? LOCTEXT("Yes", "Yes") : LOCTEXT("No", "No") );
+		StatusText += FText::Format(LOCTEXT("EnabledLabel", "Enabled: {YesOrNo}"), Arguments).ToString();
+	}
+	StatusText += LINE_TERMINATOR;
+	{
+		FFormatNamedArguments Arguments;
+		Arguments.Add(TEXT("Repository"), FText::FromString( PathToGameDir ));
+		StatusText += FText::Format(LOCTEXT("RepositoryLabel", "Repository: {Repository}"), Arguments).ToString();
+	}
 
-	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Enabled: {IsEnabled}\nRepository: {Repository}"), Args );
+	return StatusText;
 }
 
 bool FGitSourceControlProvider::IsEnabled() const

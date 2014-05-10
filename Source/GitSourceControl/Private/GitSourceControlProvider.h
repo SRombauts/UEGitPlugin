@@ -23,7 +23,7 @@ public:
 	/* ISourceControlProvider implementation */
 	virtual void Init(bool bForceConnection = true) OVERRIDE;
 	virtual void Close() OVERRIDE;
-	virtual FText GetStatusText() const OVERRIDE;
+	virtual FString GetStatusText() const OVERRIDE;
 	virtual bool IsEnabled() const OVERRIDE;
 	virtual bool IsAvailable() const OVERRIDE;
 	virtual const FName& GetName(void) const OVERRIDE;

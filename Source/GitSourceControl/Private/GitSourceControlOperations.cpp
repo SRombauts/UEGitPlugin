@@ -27,7 +27,7 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 		if(InCommand.ErrorMessages.Num() > 0)
 		{
 			TSharedRef<FConnect, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FConnect>(InCommand.Operation);
-			Operation->SetErrorText(LOCTEXT("NotAWorkingCopyError", "Project is not part of a Git working copy."));
+// UE>=4.1	Operation->SetErrorText(LOCTEXT("NotAWorkingCopyError", "Project is not part of a Git working copy."));
 			InCommand.ErrorMessages.Add(LOCTEXT("NotAWorkingCopyErrorHelp", "You should check out a working copy into your project directory.").ToString());
 			InCommand.bCommandSuccessful = false;
 		}	
