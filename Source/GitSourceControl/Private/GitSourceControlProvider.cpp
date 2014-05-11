@@ -139,7 +139,6 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 	}
 
 	FGitSourceControlCommand* Command = new FGitSourceControlCommand(InOperation, Worker.ToSharedRef());
-	Command->bAutoDelete = false;
 	Command->Files = InFiles;
 	Command->OperationCompleteDelegate = InOperationCompleteDelegate;
 
@@ -153,7 +152,7 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 		FFormatNamedArguments Arguments;
 		Arguments.Add(TEXT("OperationName"), FText::FromName(InOperation->GetName()));
 		Arguments.Add(TEXT("ProviderName"), FText::FromName(GetName()));
-		FMessageLog("SourceControl").Info(FText::Format(LOCTEXT("ExecuteSynchronousCommand", "Execute: Operation '{OperationName}' by source control provider '{ProviderName}'"), Arguments));
+		FMessageLog("SourceControl").Error(FText::Format(LOCTEXT("ExecuteSynchronousCommand", "FIXME: can not execute Synchronous Operation '{OperationName}' by source control provider '{ProviderName}'"), Arguments));
 		return ECommandResult::Failed;
 	}
 	else

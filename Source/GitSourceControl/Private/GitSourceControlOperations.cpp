@@ -38,6 +38,43 @@ bool FGitConnectWorker::UpdateStates() const
 	return false;
 }
 
+FName FGitRevertWorker::GetName() const
+{
+	return "Revert";
+}
+
+bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
+{
+    // reset any changes already added in index
+    {
+        TArray<FString> Parameters;
+        InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("reset"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+    }
+
+    // revert any changes in working copy
+	{
+		TArray<FString> Parameters;
+        InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("checkout"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+	}
+
+	// now update the status of our files
+	{
+		TArray<FString> Results;
+		TArray<FString> Parameters;
+		Parameters.Add(TEXT("--porcelain"));
+		Parameters.Add(TEXT("--ignored"));
+
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, InCommand.Files, Results, InCommand.ErrorMessages);
+		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, InCommand.ErrorMessages, States);
+	}
+
+	return InCommand.bCommandSuccessful;
+}
+
+bool FGitRevertWorker::UpdateStates() const
+{
+	return GitSourceControlUtils::UpdateCachedStates(States);
+}
 
 FName FGitUpdateStatusWorker::GetName() const
 {

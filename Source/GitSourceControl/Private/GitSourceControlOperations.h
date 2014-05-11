@@ -17,6 +17,18 @@ public:
 	virtual bool UpdateStates() const OVERRIDE;
 };
 
+class FGitRevertWorker : public IGitSourceControlWorker
+{
+public:
+	// IGitSourceControlWorker interface
+	virtual FName GetName() const OVERRIDE;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) OVERRIDE;
+	virtual bool UpdateStates() const OVERRIDE;
+
+public:
+	/** Map of filenames to Git state */
+	TArray<FGitSourceControlState> States;
+};
 
 class FGitUpdateStatusWorker : public IGitSourceControlWorker
 {
