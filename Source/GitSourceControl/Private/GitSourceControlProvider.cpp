@@ -131,7 +131,7 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 	}
 	else
 	{
-		// TODO Temporary debug code
+		// @todo Temporary debug code
 		FFormatNamedArguments Arguments;
 		Arguments.Add(TEXT("OperationName"), FText::FromName(InOperation->GetName()));
 		Arguments.Add(TEXT("ProviderName"), FText::FromName(GetName()));
@@ -146,14 +146,7 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 	if(InConcurrency == EConcurrency::Synchronous)
 	{
 		Command->bAutoDelete = false;
-		// TODO:
-	//	return ExecuteSynchronousCommand(*Command, InOperation->GetInProgressString(), true);
-		// TODO Temporary debug code
-		FFormatNamedArguments Arguments;
-		Arguments.Add(TEXT("OperationName"), FText::FromName(InOperation->GetName()));
-		Arguments.Add(TEXT("ProviderName"), FText::FromName(GetName()));
-		FMessageLog("SourceControl").Error(FText::Format(LOCTEXT("ExecuteSynchronousCommand", "FIXME: can not execute Synchronous Operation '{OperationName}' by source control provider '{ProviderName}'"), Arguments));
-		return ECommandResult::Failed;
+		return ExecuteSynchronousCommand(*Command, InOperation->GetInProgressString(), true);
 	}
 	else
 	{
@@ -192,6 +185,21 @@ void FGitSourceControlProvider::RegisterWorker( const FName& InName, const FGetG
 	WorkersMap.Add( InName, InDelegate );
 }
 
+void FGitSourceControlProvider::OutputCommandMessages(const FGitSourceControlCommand& InCommand) const
+{
+	FMessageLog SourceControlLog("SourceControl");
+
+	for (int32 ErrorIndex = 0; ErrorIndex < InCommand.ErrorMessages.Num(); ++ErrorIndex)
+	{
+		SourceControlLog.Error(FText::FromString(InCommand.ErrorMessages[ErrorIndex]));
+	}
+
+	for (int32 InfoIndex = 0; InfoIndex < InCommand.InfoMessages.Num(); ++InfoIndex)
+	{
+		SourceControlLog.Info(FText::FromString(InCommand.InfoMessages[InfoIndex]));
+	}
+}
+
 void FGitSourceControlProvider::Tick()
 {	
 	bool bStatesUpdated = false;
@@ -206,11 +214,8 @@ void FGitSourceControlProvider::Tick()
 			// let command update the states of any files
 			bStatesUpdated |= Command.Worker->UpdateStates();
 
-			// TODO: update connection state
-		//	UpdateConnectionState(Command);
-
-			// TODO: dump any messages to output log
-		//	OutputCommandMessages(Command);
+			// dump any messages to output log
+			OutputCommandMessages(Command);
 
 			// run the completion delegate if we have one bound
 			Command.OperationCompleteDelegate.ExecuteIfBound(Command.Operation, Command.bCommandSuccessful ? ECommandResult::Succeeded : ECommandResult::Failed);
@@ -246,6 +251,51 @@ TSharedRef<class SWidget> FGitSourceControlProvider::MakeSettingsWidget() const
 	return SNew(SGitSourceControlSettings);
 }
 
+ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSourceControlCommand& InCommand, const FText& Task, bool bSuppressResponseMsg)
+{
+	ECommandResult::Type Result = ECommandResult::Failed;
+
+	// Display the progress dialog if a string was provided
+	{
+		FScopedSourceControlProgress Progress(Task);
+
+		// Perform the command asynchronously
+		IssueCommand( InCommand, false );
+
+		while(!InCommand.bExecuteProcessed)
+		{
+			// Tick the command queue and update progress.
+			Tick();
+			
+			Progress.Tick();
+
+			// Sleep for a bit so we don't busy-wait so much.
+			FPlatformProcess::Sleep(0.01f);
+		}
+	
+		// always do one more Tick() to make sure the command queue is cleaned up.
+		Tick();
+
+		if(InCommand.bCommandSuccessful)
+		{
+			Result = ECommandResult::Succeeded;
+		}
+	}
+	
+
+	// If the command failed, inform the user that they need to try again
+	if ( Result != ECommandResult::Succeeded && !bSuppressResponseMsg )
+	{
+		FMessageDialog::Open( EAppMsgType::Ok, LOCTEXT("Git_ServerUnresponsive", "Git repository is unresponsive. Please check your connection and try again.") );
+	}
+
+	// Delete the command now
+	check(!InCommand.bAutoDelete);
+	delete &InCommand;
+
+	return Result;
+}
+
 ECommandResult::Type FGitSourceControlProvider::IssueCommand(FGitSourceControlCommand& InCommand, const bool bSynchronous)
 {
 	if ( !bSynchronous && GThreadPool != NULL )
@@ -259,13 +309,9 @@ ECommandResult::Type FGitSourceControlProvider::IssueCommand(FGitSourceControlCo
 	{
 		InCommand.bCommandSuccessful = InCommand.DoWork();
 
-		// TODO:
-	//	UpdateConnectionState(InCommand);
-
 		InCommand.Worker->UpdateStates();
 
-		// TODO:
-	//	OutputCommandMessages(InCommand);
+		OutputCommandMessages(InCommand);
 
 		// Callback now if present. When asynchronous, this callback gets called from Tick().
 		ECommandResult::Type Result = InCommand.bCommandSuccessful ? ECommandResult::Succeeded : ECommandResult::Failed;

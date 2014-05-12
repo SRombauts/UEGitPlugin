@@ -55,9 +55,6 @@ public:
         return PathToContentDir;
     }
 
-	/** Find and Check path to the Git binary */
-	void CheckPathToGitBinary();
-
 	/** Helper function used to update state cache */
 	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> GetStateInternal(const FString& Filename);
 
@@ -75,8 +72,14 @@ private:
 	/** Helper function for Execute() */
 	TSharedPtr<class IGitSourceControlWorker, ESPMode::ThreadSafe> CreateWorker(const FName& InOperationName) const;
 
+
+	/** Helper function for running command synchronously. */
+	ECommandResult::Type ExecuteSynchronousCommand(class FGitSourceControlCommand& InCommand, const FText& Task, bool bSuppressResponseMsg);
 	/** Run a command synchronously or asynchronously. */
 	ECommandResult::Type IssueCommand(class FGitSourceControlCommand& InCommand, const bool bSynchronous);
+
+	/** Output any messages this command holds */
+	void OutputCommandMessages(const class FGitSourceControlCommand& InCommand) const;
 
     /** Path to the Game directory: shall be the root of the Git repository */
     FString PathToGameDir;
