@@ -101,7 +101,47 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 	}
 
 	// @todo update using any special hints passed in via the operation
+	TSharedRef<FUpdateStatus, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FUpdateStatus>(InCommand.Operation);
 
+	if(Operation->ShouldUpdateHistory())
+	{
+		for(auto Iter(InCommand.Files.CreateConstIterator()); Iter; Iter++)
+		{
+			TArray<FString> Results;
+			TArray<FString> Parameters;
+
+			// @todo limit to last 100 changes
+			Parameters.Add(TEXT("--limit 100"));
+
+			TArray<FString> Files;
+			Files.Add(*Iter);
+
+			InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("log"), Files, Parameters, Results, InCommand.ErrorMessages);
+// @todo	GitSourceControlUtils::ParseLogResults(Iter->TrimQuotes(), Results, History);
+		}
+	}
+
+	if(Operation->ShouldGetOpenedOnly())
+	{
+		// "Open files" are those that have been modified (or added/deleted)
+
+		TArray<FString> Results;
+		TArray<FString> Parameters;
+		Parameters.Add(TEXT("--porcelain"));
+		Parameters.Add(TEXT("--ignored"));
+
+		TArray<FString> Files;
+		Files.Add(FPaths::GameDir());
+
+		InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Files, Parameters, Results, InCommand.ErrorMessages);
+		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, InCommand.ErrorMessages, States);
+	}
+
+	if(Operation->ShouldUpdateModifiedState())
+	{
+		// @todo: we dont use the ShouldUpdateModifiedState() hint here as a normal Git status will tell us this information?
+		TArray<FString> Results;
+	}
 
 	return InCommand.bCommandSuccessful;
 }

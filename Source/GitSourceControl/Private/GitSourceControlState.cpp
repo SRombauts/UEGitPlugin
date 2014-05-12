@@ -36,18 +36,20 @@ FName FGitSourceControlState::GetIconName() const
 {
 	switch(WorkingCopyState)
 	{
-	case EWorkingCopyState::Pristine:
+	case EWorkingCopyState::Unchanged:
 		return FName("Subversion.CheckedOut");
 	case EWorkingCopyState::Added:
 	case EWorkingCopyState::Modified:
 	case EWorkingCopyState::Renamed:
 		return FName("Subversion.OpenForAdd");
-	case EWorkingCopyState::Missing:
 	case EWorkingCopyState::Copied:
 	case EWorkingCopyState::Conflicted:
 		return FName("Subversion.NotAtHeadRevision");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot");
+//	case EWorkingCopyState::Deleted:
+//	case EWorkingCopyState::Missing:
+		// Deleted and Missing assets cannot appear in the Content Browser
 	}
 
 	return NAME_None;
@@ -57,7 +59,7 @@ FName FGitSourceControlState::GetSmallIconName() const
 {
 	switch(WorkingCopyState)
 	{
-	case EWorkingCopyState::Pristine:
+	case EWorkingCopyState::Unchanged:
 		return FName("Subversion.CheckedOut_Small");
 	case EWorkingCopyState::Added:
 	case EWorkingCopyState::Modified:
@@ -69,6 +71,9 @@ FName FGitSourceControlState::GetSmallIconName() const
 		return FName("Subversion.NotAtHeadRevision_Small");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot_Small");
+	case EWorkingCopyState::Deleted:
+		// @todo Test: don't show deleted as they should not appear?
+		return FName("Subversion.FIXME_DELETED");
 	}
 
 	return NAME_None;
@@ -80,8 +85,8 @@ FText FGitSourceControlState::GetDisplayName() const
 	{
 	case EWorkingCopyState::Unknown:
 		return LOCTEXT("Unknown", "Unknown");
-	case EWorkingCopyState::Pristine:
-		return LOCTEXT("Pristine", "Pristine");
+	case EWorkingCopyState::Unchanged:
+        return LOCTEXT("Unchanged", "Unchanged");
 	case EWorkingCopyState::Added:
 		return LOCTEXT("Added", "Added");
 	case EWorkingCopyState::Deleted:
@@ -111,7 +116,7 @@ FText FGitSourceControlState::GetDisplayTooltip() const
 	{
 	case EWorkingCopyState::Unknown:
 		return LOCTEXT("Unknown_Tooltip", "Unknown source control state");
-	case EWorkingCopyState::Pristine:
+	case EWorkingCopyState::Unchanged:
 		return LOCTEXT("Pristine_Tooltip", "There are no modifications");
 	case EWorkingCopyState::Added:
 		return LOCTEXT("Added_Tooltip", "Item is scheduled for addition");
@@ -144,22 +149,22 @@ const FDateTime& FGitSourceControlState::GetTimeStamp() const
 
 bool FGitSourceControlState::CanCheckout() const
 {
-	return (WorkingCopyState == EWorkingCopyState::Pristine || WorkingCopyState == EWorkingCopyState::Modified);
+	return false; // With Git all tracked files in the working copy are always already checked-out (as oposed to Perforce)
 }
 
 bool FGitSourceControlState::IsCheckedOut() const
 {
-	return true;
+	return true; // With Git all tracked files in the working copy are always checked-out (as oposed to Perforce)
 }
 
 bool FGitSourceControlState::IsCheckedOutOther(FString* Who) const
 {
-	return false;
+	return false; // Git does not lock checked-out files as Perforce does
 }
 
 bool FGitSourceControlState::IsCurrent() const
 {
-	return true;
+	return true; // @todo check the state of the HEAD versus the state of tracked branch on remote
 }
 
 bool FGitSourceControlState::IsSourceControlled() const
@@ -184,7 +189,7 @@ bool FGitSourceControlState::IsIgnored() const
 
 bool FGitSourceControlState::CanEdit() const
 {
-	return WorkingCopyState == EWorkingCopyState::Added;
+	return true; // With Git all files in the working copy are always editable (as oposed to Perforce)
 }
 
 bool FGitSourceControlState::IsUnknown() const
@@ -194,10 +199,25 @@ bool FGitSourceControlState::IsUnknown() const
 
 bool FGitSourceControlState::IsModified() const
 {
-	return WorkingCopyState == EWorkingCopyState::Modified
+	// Warning: for Perforce, a checked-out file is locked for modification (whereas with Git all tracked files are checked-out),
+	// so for a clean "checkin" (commit) checked-out files unmodified should be removed from the changeset (the index)
+	// http://stackoverflow.com/questions/12357971/what-does-revert-unchanged-files-mean-in-perforce
+	//
+	// Thus, before checkin UE4 Editor call RevertUnchangedFiles() in PromptForCheckin() and CheckinFiles().
+	//
+	// So here we must take care to enumerate all states that need to be commited,
+	// all other will be discarded :
+	//  - Unknown
+	//  - Unchanged
+	//  - NotControlled
+	//  - Ignored
+	return WorkingCopyState == EWorkingCopyState::Added
+		|| WorkingCopyState == EWorkingCopyState::Deleted
+		|| WorkingCopyState == EWorkingCopyState::Modified
 		|| WorkingCopyState == EWorkingCopyState::Renamed
 		|| WorkingCopyState == EWorkingCopyState::Copied
-		|| WorkingCopyState == EWorkingCopyState::Conflicted;
+		|| WorkingCopyState == EWorkingCopyState::Conflicted
+		|| WorkingCopyState == EWorkingCopyState::Missing;
 }
 
 #undef LOCTEXT_NAMESPACE

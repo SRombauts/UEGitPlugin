@@ -13,16 +13,16 @@ namespace EWorkingCopyState
 	enum Type
 	{
 		Unknown,
-		Pristine,
+		Unchanged, // often called "clean"
 		Added,
 		Deleted,
 		Modified,
 		Renamed,
 		Copied,
-		Conflicted,
-		Ignored,
-		NotControlled,
 		Missing,
+		Conflicted,
+		NotControlled,
+		Ignored,
 	};
 }
 
@@ -48,7 +48,7 @@ public:
 	virtual const FDateTime& GetTimeStamp() const OVERRIDE;
 	virtual bool CanCheckout() const OVERRIDE;
 	virtual bool IsCheckedOut() const OVERRIDE;
-	virtual bool IsCheckedOutOther(FString* Who = NULL) const OVERRIDE;
+	virtual bool IsCheckedOutOther(FString* Who = nullptr) const OVERRIDE;
 	virtual bool IsCurrent() const OVERRIDE;
 	virtual bool IsSourceControlled() const OVERRIDE;
 	virtual bool IsAdded() const OVERRIDE;

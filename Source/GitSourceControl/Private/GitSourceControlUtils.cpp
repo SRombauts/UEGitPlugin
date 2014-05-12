@@ -22,6 +22,7 @@ static bool RunCommandInternal(const FString& InGitBinaryPath, const FString& In
 {
 	int32	ReturnCode = 0;
 	FString FullCommand;
+	FString LogableCommand; // short version of the command for loging purpose
 
 	if (!InRepositoryRoot.IsEmpty())
 	{
@@ -34,24 +35,26 @@ static bool RunCommandInternal(const FString& InGitBinaryPath, const FString& In
 		FullCommand += TEXT(".git\" ");
 	}
     // then the git command itself ("status", "log", "commit"...)
-    FullCommand += InCommand;
+	LogableCommand += InCommand;
 
     // Append to the command all parameters, and then finalla the files
 	for (int32 Index = 0; Index < InParameters.Num(); Index++)
 	{
-		FullCommand += TEXT(" ");
-		FullCommand += InParameters[Index];
+		LogableCommand += TEXT(" ");
+		LogableCommand += InParameters[Index];
 	}
 	for (int32 Index = 0; Index < InFiles.Num(); Index++)
 	{
-		FullCommand += TEXT(" \"");
-		FullCommand += InFiles[Index];
-		FullCommand += TEXT("\"");
+		LogableCommand += TEXT(" \"");
+		LogableCommand += InFiles[Index];
+		LogableCommand += TEXT("\"");
 	}
-	// Also, fit auto-detect non-interactive condition (no connected standard input/output streams)
+	// Also, Git does not have a "--non-interactive" option, as it auto-detects when ther are no connected standard input/output streams
+
+	FullCommand += LogableCommand;
 
 	// @todo: temporary debug logs
-	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: Attempting '%s %s'"), *InGitBinaryPath, *FullCommand);
+	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: Attempting 'git %s'"), *LogableCommand);
 	FPlatformProcess::ExecProcess(*InGitBinaryPath, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
     UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
 	if(!OutErrors.IsEmpty())
@@ -163,6 +166,7 @@ public:
 	bool Matches(const FString& InResult) const
 	{
 		// Extract the relative filename from the Git status result
+		// @todo this can not work in case of a rename from -> to
 		FString RelativeFilename = InResult.RightChop(3);
 		return AbsoluteFilename.Contains(RelativeFilename);
 	}
@@ -189,7 +193,9 @@ class FGitStatusParser
 public:
 	FGitStatusParser(const FString& InResult)
 	{
+		// @todo Get the second part of a rename "from -> to"
 		//FString Filename = InResult.RightChop(3);
+
 		TCHAR IndexState = InResult[0];
 		TCHAR WCopyState = InResult[1];
 		if(	  (IndexState == 'U' || WCopyState == 'U')
@@ -234,7 +240,7 @@ public:
 		}
 		else
 		{
-			// "Pristine"/Clean/Unmodified never yield a status
+			// Unmodified never yield a status
 			State = EWorkingCopyState::Unknown;
 		}
 	}
@@ -262,7 +268,7 @@ void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& I
 			if(FPaths::FileExists(InFiles[IdxFile]))
 			{
 				// usually means the file is unchanged,
-				FileState.WorkingCopyState = EWorkingCopyState::Pristine;
+				FileState.WorkingCopyState = EWorkingCopyState::Unchanged;
 			}
 			else
 			{
