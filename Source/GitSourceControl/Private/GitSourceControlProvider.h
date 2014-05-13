@@ -74,9 +74,9 @@ private:
 
 
 	/** Helper function for running command synchronously. */
-	ECommandResult::Type ExecuteSynchronousCommand(class FGitSourceControlCommand& InCommand, const FText& Task, bool bSuppressResponseMsg);
-	/** Run a command synchronously or asynchronously. */
-	ECommandResult::Type IssueCommand(class FGitSourceControlCommand& InCommand, const bool bSynchronous);
+	ECommandResult::Type ExecuteSynchronousCommand(class FGitSourceControlCommand& InCommand, const FText& Task);
+	/** Issue a command asynchronously if possible. */
+	ECommandResult::Type IssueCommand(class FGitSourceControlCommand& InCommand);
 
 	/** Output any messages this command holds */
 	void OutputCommandMessages(const class FGitSourceControlCommand& InCommand) const;

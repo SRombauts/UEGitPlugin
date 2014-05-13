@@ -152,6 +152,9 @@ bool FGitUpdateStatusWorker::UpdateStates() const
 
 	// @todo add history, if any
 
+    // @todo debug log
+    UE_LOG(LogSourceControl, Log, TEXT("FGitUpdateStatusWorker::UpdateStates()=%d"), bUpdated);
+
 	return bUpdated;
 }
 

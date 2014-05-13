@@ -147,12 +147,12 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 	if(InConcurrency == EConcurrency::Synchronous)
 	{
 		Command->bAutoDelete = false;
-		return ExecuteSynchronousCommand(*Command, InOperation->GetInProgressString(), true);
+		return ExecuteSynchronousCommand(*Command, InOperation->GetInProgressString());
 	}
 	else
 	{
 		Command->bAutoDelete = true;
-		return IssueCommand(*Command, false);
+		return IssueCommand(*Command);
 	}
 }
 
@@ -190,6 +190,9 @@ void FGitSourceControlProvider::OutputCommandMessages(const FGitSourceControlCom
 {
 	FMessageLog SourceControlLog("SourceControl");
 
+    // @todo debug log
+    SourceControlLog.Info(FText::FromName(InCommand.Operation->GetName()));
+
 	for (int32 ErrorIndex = 0; ErrorIndex < InCommand.ErrorMessages.Num(); ++ErrorIndex)
 	{
 		SourceControlLog.Error(FText::FromString(InCommand.ErrorMessages[ErrorIndex]));
@@ -218,10 +221,11 @@ void FGitSourceControlProvider::Tick()
 			// dump any messages to output log
 			OutputCommandMessages(Command);
 
-			// run the completion delegate if we have one bound
-			Command.OperationCompleteDelegate.ExecuteIfBound(Command.Operation, Command.bCommandSuccessful ? ECommandResult::Succeeded : ECommandResult::Failed);
+			// run the completion delegate callback if we have one bound
+            ECommandResult::Type Result = Command.bCommandSuccessful ? ECommandResult::Succeeded : ECommandResult::Failed;
+            Command.OperationCompleteDelegate.ExecuteIfBound(Command.Operation, Result);
 
-			//commands that are left in the array during a tick need to be deleted
+			// commands that are left in the array during a tick need to be deleted
 			if(Command.bAutoDelete)
 			{
 				// Only delete commands that are not running 'synchronously'
@@ -252,7 +256,7 @@ TSharedRef<class SWidget> FGitSourceControlProvider::MakeSettingsWidget() const
 	return SNew(SGitSourceControlSettings);
 }
 
-ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSourceControlCommand& InCommand, const FText& Task, bool bSuppressResponseMsg)
+ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSourceControlCommand& InCommand, const FText& Task)
 {
 	ECommandResult::Type Result = ECommandResult::Failed;
 
@@ -260,9 +264,10 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 	{
 		FScopedSourceControlProgress Progress(Task);
 
-		// Perform the command asynchronously
-		IssueCommand( InCommand, false );
+		// Issue the command asynchronously...
+		IssueCommand( InCommand );
 
+        // ... then wait for its completion (thus making it synchrounous)
 		while(!InCommand.bExecuteProcessed)
 		{
 			// Tick the command queue and update progress.
@@ -282,24 +287,17 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 			Result = ECommandResult::Succeeded;
 		}
 	}
-	
 
-	// If the command failed, inform the user that they need to try again
-	if ( Result != ECommandResult::Succeeded && !bSuppressResponseMsg )
-	{
-		FMessageDialog::Open( EAppMsgType::Ok, LOCTEXT("Git_ServerUnresponsive", "Git repository is unresponsive. Please check your connection and try again.") );
-	}
-
-	// Delete the command now
+	// Delete the command now (assynchronous commands are deleted in the Tick() method)
 	check(!InCommand.bAutoDelete);
 	delete &InCommand;
 
 	return Result;
 }
 
-ECommandResult::Type FGitSourceControlProvider::IssueCommand(FGitSourceControlCommand& InCommand, const bool bSynchronous)
+ECommandResult::Type FGitSourceControlProvider::IssueCommand(FGitSourceControlCommand& InCommand)
 {
-	if ( !bSynchronous && GThreadPool != NULL )
+	if ( GThreadPool != NULL )
 	{
 		// Queue this to our worker thread(s) for resolving
 		GThreadPool->AddQueuedWork(&InCommand);
@@ -308,15 +306,24 @@ ECommandResult::Type FGitSourceControlProvider::IssueCommand(FGitSourceControlCo
 	}
 	else
 	{
-		InCommand.bCommandSuccessful = InCommand.DoWork();
+        // Fallback to synchronous work
+        // @todo remove this alltogether !? Or is this needed at startup time?
+        InCommand.bCommandSuccessful = InCommand.DoWork();
 
-		InCommand.Worker->UpdateStates();
+        // let command update the states of any files
+        bool bStatesUpdated = InCommand.Worker->UpdateStates();
 
-		OutputCommandMessages(InCommand);
+        // dump any messages to output log
+        OutputCommandMessages(InCommand);
 
-		// Callback now if present. When asynchronous, this callback gets called from Tick().
-		ECommandResult::Type Result = InCommand.bCommandSuccessful ? ECommandResult::Succeeded : ECommandResult::Failed;
+        // run the completion delegate callback if we have one bound. When asynchronous, this callback gets called from Tick().
+        ECommandResult::Type Result = InCommand.bCommandSuccessful ? ECommandResult::Succeeded : ECommandResult::Failed;
 		InCommand.OperationCompleteDelegate.ExecuteIfBound(InCommand.Operation, Result);
+
+        if (bStatesUpdated)
+        {
+            OnSourceControlStateChanged.Broadcast();
+        }
 
 		return Result;
 	}
