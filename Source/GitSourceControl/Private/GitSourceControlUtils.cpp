@@ -294,7 +294,7 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 		if(State->WorkingCopyState != InState.WorkingCopyState)
 		{
 			State->WorkingCopyState = InState.WorkingCopyState;
-			State->TimeStamp = FDateTime::Now();
+		//	State->TimeStamp = FDateTime::Now(); // @todo Workaround a bug with the Source Control Module not updating file state after a "Save"
 			NbStatesUpdated++;
 		}
 	}

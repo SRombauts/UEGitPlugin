@@ -288,7 +288,7 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 		}
 	}
 
-	// Delete the command now (assynchronous commands are deleted in the Tick() method)
+	// Delete the command now (asynchronous commands are deleted in the Tick() method)
 	check(!InCommand.bAutoDelete);
 	delete &InCommand;
 
@@ -306,26 +306,7 @@ ECommandResult::Type FGitSourceControlProvider::IssueCommand(FGitSourceControlCo
 	}
 	else
 	{
-        // Fallback to synchronous work
-        // @todo remove this alltogether !? Or is this needed at startup time?
-        InCommand.bCommandSuccessful = InCommand.DoWork();
-
-        // let command update the states of any files
-        bool bStatesUpdated = InCommand.Worker->UpdateStates();
-
-        // dump any messages to output log
-        OutputCommandMessages(InCommand);
-
-        // run the completion delegate callback if we have one bound. When asynchronous, this callback gets called from Tick().
-        ECommandResult::Type Result = InCommand.bCommandSuccessful ? ECommandResult::Succeeded : ECommandResult::Failed;
-		InCommand.OperationCompleteDelegate.ExecuteIfBound(InCommand.Operation, Result);
-
-        if (bStatesUpdated)
-        {
-            OnSourceControlStateChanged.Broadcast();
-        }
-
-		return Result;
+		return ECommandResult::Failed;
 	}
 }
 #undef LOCTEXT_NAMESPACE

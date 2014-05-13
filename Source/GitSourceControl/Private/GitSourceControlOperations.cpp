@@ -111,12 +111,12 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 			TArray<FString> Parameters;
 
 			// @todo limit to last 100 changes
-			Parameters.Add(TEXT("--limit 100"));
+			Parameters.Add(TEXT("--max-count 100"));
 
 			TArray<FString> Files;
 			Files.Add(*Iter);
 
-			InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("log"), Files, Parameters, Results, InCommand.ErrorMessages);
+			InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("log"), Parameters, Files, Results, InCommand.ErrorMessages);
 // @todo	GitSourceControlUtils::ParseLogResults(Iter->TrimQuotes(), Results, History);
 		}
 	}
@@ -151,9 +151,6 @@ bool FGitUpdateStatusWorker::UpdateStates() const
 	bool bUpdated = GitSourceControlUtils::UpdateCachedStates(States);
 
 	// @todo add history, if any
-
-    // @todo debug log
-    UE_LOG(LogSourceControl, Log, TEXT("FGitUpdateStatusWorker::UpdateStates()=%d"), bUpdated);
 
 	return bUpdated;
 }
