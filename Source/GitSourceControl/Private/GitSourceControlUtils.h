@@ -40,11 +40,10 @@ bool RunCommand(const FString& InGitBinaryPath, const FString& InRepositoryRoot,
 
 /**
  * Parse the array of strings results of a 'git log' command
- * @param	InFilename			The file that have been operated on
  * @param	InResults			The results (from StdOut) as an array per-line
  * @param	OutHistory			The history of the file
  */
-void ParseLogResults(const FString& InFilename, const TArray<FString>& InResults, FGitSourceControlHistory& OutHistory);
+void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory& OutHistory);
 
 /**
  * Parse the array of strings results of a 'git status' command

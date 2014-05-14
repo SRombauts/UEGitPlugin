@@ -105,7 +105,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 
 	if(Operation->ShouldUpdateHistory())
 	{
-		for(auto Iter(InCommand.Files.CreateConstIterator()); Iter; Iter++)
+		for(const auto& ItFile : InCommand.Files)
 		{
 			TArray<FString> Results;
 			TArray<FString> Parameters;
@@ -114,10 +114,12 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 			Parameters.Add(TEXT("--max-count 100"));
 
 			TArray<FString> Files;
-			Files.Add(*Iter);
+			Files.Add(*ItFile);
 
 			InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("log"), Parameters, Files, Results, InCommand.ErrorMessages);
-			GitSourceControlUtils::ParseLogResults(*Iter, Results, History);
+			TGitSourceControlHistory History;
+			GitSourceControlUtils::ParseLogResults(Results, History);
+			Histories.Add(*ItFile, History);
 		}
 	}
 
@@ -133,7 +135,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 		TArray<FString> Files;
 		Files.Add(FPaths::GameDir());
 
-		InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Files, Parameters, Results, InCommand.ErrorMessages);
+		InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, Files, Results, InCommand.ErrorMessages);
 		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
 	}
 
@@ -150,7 +152,17 @@ bool FGitUpdateStatusWorker::UpdateStates() const
 {
 	bool bUpdated = GitSourceControlUtils::UpdateCachedStates(States);
 
-	// @todo add history, if any
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
+	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+
+	// add history, if any
+	for(const auto& ItHistory : Histories)
+	{
+		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(ItHistory.Key);
+		State->History = ItHistory.Value;
+	//	State->TimeStamp = FDateTime::Now(); // @todo Workaround a bug with the Source Control Module not updating file state after a "Save"
+		bUpdated = true;
+	}
 
 	return bUpdated;
 }

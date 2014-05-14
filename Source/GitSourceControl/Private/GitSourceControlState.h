@@ -60,7 +60,7 @@ public:
 
 public:
 	/** History of the item, if any */
-	TArray< TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> > History;
+	TGitSourceControlHistory History;
 
 	/** Filename on disk */
 	FString LocalFilename;

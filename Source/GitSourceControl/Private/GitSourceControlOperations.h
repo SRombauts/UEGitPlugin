@@ -47,5 +47,5 @@ public:
 	TArray<FGitSourceControlState> States;
 
 	/** Map of filenames to history */
-	FGitSourceControlHistory History;
+	TMap<FString, TGitSourceControlHistory> Histories;
 };

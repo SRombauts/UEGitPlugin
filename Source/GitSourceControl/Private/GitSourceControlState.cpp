@@ -21,11 +21,11 @@ TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlS
 
 TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::FindHistoryRevision( int32 RevisionNumber ) const
 {
-	for(auto Iter(History.CreateConstIterator()); Iter; Iter++)
+	for(const auto& Revision : History)
 	{
-		if((*Iter)->GetRevisionNumber() == RevisionNumber)
+		if(Revision->GetRevisionNumber() == RevisionNumber)
 		{
-			return *Iter;
+			return Revision;
 		}
 	}
 

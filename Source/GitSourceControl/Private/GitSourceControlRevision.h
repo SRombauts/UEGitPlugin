@@ -52,4 +52,4 @@ public:
 };
 
 /** @todo doc */
-typedef TMap<FString, TArray< TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> > > FGitSourceControlHistory;
+typedef TArray< TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> >	TGitSourceControlHistory;

@@ -193,12 +193,12 @@ void FGitSourceControlProvider::OutputCommandMessages(const FGitSourceControlCom
     // @todo debug log
     SourceControlLog.Info(FText::FromName(InCommand.Operation->GetName()));
 
-	for (int32 ErrorIndex = 0; ErrorIndex < InCommand.ErrorMessages.Num(); ++ErrorIndex)
+	for(int32 ErrorIndex = 0; ErrorIndex < InCommand.ErrorMessages.Num(); ++ErrorIndex)
 	{
 		SourceControlLog.Error(FText::FromString(InCommand.ErrorMessages[ErrorIndex]));
 	}
 
-	for (int32 InfoIndex = 0; InfoIndex < InCommand.InfoMessages.Num(); ++InfoIndex)
+	for(int32 InfoIndex = 0; InfoIndex < InCommand.InfoMessages.Num(); ++InfoIndex)
 	{
 		SourceControlLog.Info(FText::FromString(InCommand.InfoMessages[InfoIndex]));
 	}
@@ -207,7 +207,7 @@ void FGitSourceControlProvider::OutputCommandMessages(const FGitSourceControlCom
 void FGitSourceControlProvider::Tick()
 {	
 	bool bStatesUpdated = false;
-	for (int32 CommandIndex = 0; CommandIndex < CommandQueue.Num(); ++CommandIndex)
+	for(int32 CommandIndex = 0; CommandIndex < CommandQueue.Num(); ++CommandIndex)
 	{
 		FGitSourceControlCommand& Command = *CommandQueue[CommandIndex];
 		if (Command.bExecuteProcessed)

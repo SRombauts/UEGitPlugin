@@ -37,17 +37,16 @@ static bool RunCommandInternal(const FString& InGitBinaryPath, const FString& In
 	// then the git command itself ("status", "log", "commit"...)
 	LogableCommand += InCommand;
 
-	 // Append to the command all parameters, and then finally the files
-	// @todo range based for
-	for(int32 Index = 0; Index < InParameters.Num(); Index++)
+	// Append to the command all parameters, and then finally the files
+	for(const auto& Parameter : InParameters)
 	{
 		LogableCommand += TEXT(" ");
-		LogableCommand += InParameters[Index];
+		LogableCommand += Parameter;
 	}
-	for(int32 Index = 0; Index < InFiles.Num(); Index++)
+	for(const auto& File : InFiles)
 	{
 		LogableCommand += TEXT(" \"");
-		LogableCommand += InFiles[Index];
+		LogableCommand += File;
 		LogableCommand += TEXT("\"");
 	}
 	// Also, Git does not have a "--non-interactive" option, as it auto-detects when there are no connected standard input/output streams
@@ -156,10 +155,8 @@ bool RunCommand(const FString& InGitBinaryPath, const FString& InRepositoryRoot,
 }
 
 
-void ParseLogResults(const FString& InFilename, const TArray<FString>& InResults, FGitSourceControlHistory& OutHistory)
+void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory& OutHistory)
 {
-	TArray< TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> > Revisions;
-
 	// @todo Example git log results:
 	//
 	//commit 2d92a17eb3f5211d1b874a6530a080ba7d5f10bc
@@ -176,14 +173,14 @@ void ParseLogResults(const FString& InFilename, const TArray<FString>& InResults
 	//
 	//    Added ExectuteSynchronousCommand needed for the "revert" operation
 	//
-	for(auto IdxResult : InResults)
+	for(const auto& Result : InResults)
 	{
 		// @todo parse git logs
-	}
-
-	if(Revisions.Num() > 0)
-	{
-		OutHistory.Add(InFilename, Revisions);
+		TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> SourceControlRevision = MakeShareable(new FGitSourceControlRevision);
+		SourceControlRevision->Filename = "???";
+		SourceControlRevision->Description = Result; // @todo test value
+		// @todo Action, Date, UserName, Revision
+		OutHistory.Add(SourceControlRevision);
 	}
 }
 
@@ -283,11 +280,10 @@ public:
 
 void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
 {
-	// @todo for(auto IdxFile : InFiles)
-	for(int32 IdxFile = 0; IdxFile < InFiles.Num(); IdxFile++)
+	for(const auto& File : InFiles)
 	{
-		FGitSourceControlState FileState(InFiles[IdxFile]);
-		FGitStatusFileMatcher FileMatcher(InFiles[IdxFile]);
+		FGitSourceControlState FileState(File);
+		FGitStatusFileMatcher FileMatcher(File);
 		int32 IdxResult = InResults.FindMatch(FileMatcher);
 		if(IdxResult != INDEX_NONE)
 		{
@@ -298,7 +294,7 @@ void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& I
 		else
 		{
 			// File not found in status
-			if(FPaths::FileExists(InFiles[IdxFile]))
+			if(FPaths::FileExists(File))
 			{
 				// usually means the file is unchanged,
 				FileState.WorkingCopyState = EWorkingCopyState::Unchanged;
@@ -320,10 +316,8 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 	int NbStatesUpdated = 0;
 
-	// @todo range based for
-	for(int StatusIndex = 0; StatusIndex < InStates.Num(); StatusIndex++)
+	for(const auto& InState : InStates)
 	{
-		const FGitSourceControlState& InState = InStates[StatusIndex];
 		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename);
 		if(State->WorkingCopyState != InState.WorkingCopyState)
 		{
