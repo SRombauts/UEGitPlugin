@@ -45,16 +45,16 @@ FName FGitRevertWorker::GetName() const
 
 bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 {
-    // reset any changes already added in index
-    {
-        TArray<FString> Parameters;
-        InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("reset"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
-    }
-
-    // revert any changes in working copy
+	// reset any changes already added in index
 	{
 		TArray<FString> Parameters;
-        InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("checkout"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("reset"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+	}
+
+	// revert any changes in working copy
+	{
+		TArray<FString> Parameters;
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("checkout"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 	}
 
 	// now update the status of our files
@@ -65,7 +65,7 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 		Parameters.Add(TEXT("--ignored"));
 
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, InCommand.Files, Results, InCommand.ErrorMessages);
-		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, InCommand.ErrorMessages, States);
+		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
 	}
 
 	return InCommand.bCommandSuccessful;
@@ -93,7 +93,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 		Parameters.Add(TEXT("--ignored"));
 
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, InCommand.Files, Results, InCommand.ErrorMessages);
-		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, InCommand.ErrorMessages, States);
+		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
 	}
 	else
 	{
@@ -117,7 +117,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 			Files.Add(*Iter);
 
 			InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("log"), Parameters, Files, Results, InCommand.ErrorMessages);
-// @todo	GitSourceControlUtils::ParseLogResults(Iter->TrimQuotes(), Results, History);
+			GitSourceControlUtils::ParseLogResults(*Iter, Results, History);
 		}
 	}
 
@@ -134,7 +134,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 		Files.Add(FPaths::GameDir());
 
 		InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Files, Parameters, Results, InCommand.ErrorMessages);
-		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, InCommand.ErrorMessages, States);
+		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
 	}
 
 	if(Operation->ShouldUpdateModifiedState())

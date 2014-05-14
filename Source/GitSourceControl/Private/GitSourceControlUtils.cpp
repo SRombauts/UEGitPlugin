@@ -20,9 +20,9 @@ namespace GitSourceControlUtils
 
 static bool RunCommandInternal(const FString& InGitBinaryPath, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors)
 {
-	int32	ReturnCode = 0;
+	int32 ReturnCode = 0;
 	FString FullCommand;
-	FString LogableCommand; // short version of the command for loging purpose
+	FString LogableCommand; // short version of the command for logging purpose
 
 	if (!InRepositoryRoot.IsEmpty())
 	{
@@ -34,29 +34,30 @@ static bool RunCommandInternal(const FString& InGitBinaryPath, const FString& In
 		FullCommand += InRepositoryRoot;
 		FullCommand += TEXT(".git\" ");
 	}
-    // then the git command itself ("status", "log", "commit"...)
+	// then the git command itself ("status", "log", "commit"...)
 	LogableCommand += InCommand;
 
-    // Append to the command all parameters, and then finalla the files
-	for (int32 Index = 0; Index < InParameters.Num(); Index++)
+	 // Append to the command all parameters, and then finally the files
+	// @todo range based for
+	for(int32 Index = 0; Index < InParameters.Num(); Index++)
 	{
 		LogableCommand += TEXT(" ");
 		LogableCommand += InParameters[Index];
 	}
-	for (int32 Index = 0; Index < InFiles.Num(); Index++)
+	for(int32 Index = 0; Index < InFiles.Num(); Index++)
 	{
 		LogableCommand += TEXT(" \"");
 		LogableCommand += InFiles[Index];
 		LogableCommand += TEXT("\"");
 	}
-	// Also, Git does not have a "--non-interactive" option, as it auto-detects when ther are no connected standard input/output streams
+	// Also, Git does not have a "--non-interactive" option, as it auto-detects when there are no connected standard input/output streams
 
 	FullCommand += LogableCommand;
 
 	// @todo: temporary debug logs
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: Attempting 'git %s'"), *LogableCommand);
 	FPlatformProcess::ExecProcess(*InGitBinaryPath, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
-    UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
+	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
 	if(!OutErrors.IsEmpty())
 	{
 		UE_LOG(LogSourceControl, Error, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutErrors='%s'"), ReturnCode, *OutErrors);
@@ -154,6 +155,38 @@ bool RunCommand(const FString& InGitBinaryPath, const FString& InRepositoryRoot,
 	return bResult;
 }
 
+
+void ParseLogResults(const FString& InFilename, const TArray<FString>& InResults, FGitSourceControlHistory& OutHistory)
+{
+	TArray< TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> > Revisions;
+
+	// @todo Example git log results:
+	//
+	//commit 2d92a17eb3f5211d1b874a6530a080ba7d5f10bc
+	//Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
+	//Date:   Mon May 12 20:05:36 2014 +0200
+	//
+	//    Fixed some of the bugs with working copy file states
+	//
+	//     - still a bug present; missing an UpdateStatus after saving a Blueprint!
+	//
+	//commit 8220e00289679e202603a83c052584ad9185b140
+	//Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
+	//Date:   Mon May 12 07:12:00 2014 +0200
+	//
+	//    Added ExectuteSynchronousCommand needed for the "revert" operation
+	//
+	for(auto IdxResult : InResults)
+	{
+		// @todo parse git logs
+	}
+
+	if(Revisions.Num() > 0)
+	{
+		OutHistory.Add(InFilename, Revisions);
+	}
+}
+
 /** Match the relative filename of a Git status result with a provided absolute filename */
 class FGitStatusFileMatcher
 {
@@ -202,7 +235,7 @@ public:
 		   || (IndexState == 'A' && WCopyState == 'A')
 		   || (IndexState == 'D' && WCopyState == 'D'))
 		{
-			// "Unmerged" conflict cases are generaly marked with a "U", 
+			// "Unmerged" conflict cases are generally marked with a "U",
 			// but there are also the special cases of both "A"dded, or both "D"eleted
 			State = EWorkingCopyState::Conflicted;
 		}
@@ -248,9 +281,9 @@ public:
 	EWorkingCopyState::Type State;
 };
 
-
-void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates)
+void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
 {
+	// @todo for(auto IdxFile : InFiles)
 	for(int32 IdxFile = 0; IdxFile < InFiles.Num(); IdxFile++)
 	{
 		FGitSourceControlState FileState(InFiles[IdxFile]);
@@ -287,6 +320,7 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 	int NbStatesUpdated = 0;
 
+	// @todo range based for
 	for(int StatusIndex = 0; StatusIndex < InStates.Num(); StatusIndex++)
 	{
 		const FGitSourceControlState& InState = InStates[StatusIndex];
@@ -301,4 +335,5 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 
 	return (NbStatesUpdated > 0);
 }
+
 }

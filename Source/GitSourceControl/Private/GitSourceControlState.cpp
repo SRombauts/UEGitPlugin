@@ -149,12 +149,12 @@ const FDateTime& FGitSourceControlState::GetTimeStamp() const
 
 bool FGitSourceControlState::CanCheckout() const
 {
-	return false; // With Git all tracked files in the working copy are always already checked-out (as oposed to Perforce)
+	return false; // With Git all tracked files in the working copy are always already checked-out (as opposed to Perforce)
 }
 
 bool FGitSourceControlState::IsCheckedOut() const
 {
-	return true; // With Git all tracked files in the working copy are always checked-out (as oposed to Perforce)
+	return true; // With Git all tracked files in the working copy are always checked-out (as opposed to Perforce)
 }
 
 bool FGitSourceControlState::IsCheckedOutOther(FString* Who) const
@@ -189,7 +189,7 @@ bool FGitSourceControlState::IsIgnored() const
 
 bool FGitSourceControlState::CanEdit() const
 {
-	return true; // With Git all files in the working copy are always editable (as oposed to Perforce)
+	return true; // With Git all files in the working copy are always editable (as opposed to Perforce)
 }
 
 bool FGitSourceControlState::IsUnknown() const
@@ -200,10 +200,10 @@ bool FGitSourceControlState::IsUnknown() const
 bool FGitSourceControlState::IsModified() const
 {
 	// Warning: for Perforce, a checked-out file is locked for modification (whereas with Git all tracked files are checked-out),
-	// so for a clean "checkin" (commit) checked-out files unmodified should be removed from the changeset (the index)
+	// so for a clean "check-in" (commit) checked-out files unmodified should be removed from the changeset (the index)
 	// http://stackoverflow.com/questions/12357971/what-does-revert-unchanged-files-mean-in-perforce
 	//
-	// Thus, before checkin UE4 Editor call RevertUnchangedFiles() in PromptForCheckin() and CheckinFiles().
+	// Thus, before check-in UE4 Editor call RevertUnchangedFiles() in PromptForCheckin() and CheckinFiles().
 	//
 	// So here we must take care to enumerate all states that need to be commited,
 	// all other will be discarded :

@@ -7,7 +7,9 @@
 
 #include "IGitSourceControlWorker.h"
 #include "GitSourceControlState.h"
+#include "GitSourceControlRevision.h"
 
+/** @todo doc */
 class FGitConnectWorker : public IGitSourceControlWorker
 {
 public:
@@ -17,6 +19,7 @@ public:
 	virtual bool UpdateStates() const OVERRIDE;
 };
 
+/** @todo doc */
 class FGitRevertWorker : public IGitSourceControlWorker
 {
 public:
@@ -30,6 +33,7 @@ public:
 	TArray<FGitSourceControlState> States;
 };
 
+/** @todo doc */
 class FGitUpdateStatusWorker : public IGitSourceControlWorker
 {
 public:
@@ -41,4 +45,7 @@ public:
 public:
 	/** Temporary states for results */
 	TArray<FGitSourceControlState> States;
+
+	/** Map of filenames to history */
+	FGitSourceControlHistory History;
 };

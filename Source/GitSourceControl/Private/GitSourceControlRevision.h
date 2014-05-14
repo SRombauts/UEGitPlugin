@@ -7,6 +7,7 @@
 
 #include "ISourceControlRevision.h"
 
+/** @todo doc */
 class FGitSourceControlRevision : public ISourceControlRevision, public TSharedFromThis<FGitSourceControlRevision, ESPMode::ThreadSafe>
 {
 public:
@@ -49,3 +50,6 @@ public:
 	/** The date this revision was made */
 	FDateTime Date;
 };
+
+/** @todo doc */
+typedef TMap<FString, TArray< TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> > > FGitSourceControlHistory;

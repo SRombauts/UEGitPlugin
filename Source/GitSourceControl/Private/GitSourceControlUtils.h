@@ -6,6 +6,7 @@
 #pragma once
 
 #include "GitSourceControlState.h"
+#include "GitSourceControlRevision.h"
 
 namespace GitSourceControlUtils
 {
@@ -38,13 +39,20 @@ bool CheckGitAvailability(const FString& InGitBinaryPath);
 bool RunCommand(const FString& InGitBinaryPath, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages);
 
 /**
- * Parse the string results of a 'git status' command
+ * Parse the array of strings results of a 'git log' command
+ * @param	InFilename			The file that have been operated on
+ * @param	InResults			The results (from StdOut) as an array per-line
+ * @param	OutHistory			The history of the file
+ */
+void ParseLogResults(const FString& InFilename, const TArray<FString>& InResults, FGitSourceControlHistory& OutHistory);
+
+/**
+ * Parse the array of strings results of a 'git status' command
  * @param	InFiles				The files that have been operated on
  * @param	InResults			The results (from StdOut) as an array per-line
- * @param	OutErrorMessages	Any errors (from StdErr) as an array per-line
- * @param	OutStates			The new states of the files
+ * @param	OutStates			The current state of the files
  */
-void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates);
+void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates);
 
 /**
  * Helper function for various commands to update cached states.
