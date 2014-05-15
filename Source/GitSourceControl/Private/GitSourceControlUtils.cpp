@@ -154,58 +154,70 @@ bool RunCommand(const FString& InGitBinaryPath, const FString& InRepositoryRoot,
 	return bResult;
 }
 
+/** Example git log results:
+commit 97a4e7626681895e073aaefd68b8ac087db81b0b
+Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
+Date:   2014-05-15 21:32:27 +0200
 
+    Another commit used to test History
+
+     - with many lines
+     - some <xml>
+     - and strange characteres $*+
+
+M       Content/Blueprints/Blueprint_CeilingLight.uasset
+
+commit 355f0df26ebd3888adbb558fd42bb8bd3e565000
+Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
+Date:   2014-05-12 11:28:14 +0200
+
+    Testing git status, edit, and revert
+
+A       Content/Blueprints/Blueprint_CeilingLight.uasset
+*/
 void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory& OutHistory)
 {
-	// @todo Example git log results:
-	//
-	//commit 2d92a17eb3f5211d1b874a6530a080ba7d5f10bc
-	//Author: Sebastien Rombauts <sebastien.rombauts@gmail.com>
-	//Date:   Mon May 12 20:05:36 2014 +0200
-	//
-	//    Fixed some of the bugs with working copy file states
-	//
-	//     - still a bug present; missing an UpdateStatus after saving a Blueprint!
-	//
-	//commit 8220e00289679e202603a83c052584ad9185b140
-	//Author: Sebastien Rombauts <sebastien.rombauts@gmail.com>
-	//Date:   Mon May 12 07:12:00 2014 +0200
-	//
-	//    Added ExectuteSynchronousCommand needed for the "revert" operation
-	//
 	TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> SourceControlRevision = MakeShareable(new FGitSourceControlRevision);
 	for(int32 IdxResult = 0; IdxResult < InResults.Num(); IdxResult++)
 	{
 		const FString& Result = InResults[IdxResult];
 		if(Result.StartsWith(TEXT("commit ")))
 		{
-			// @todo end of previous commit
-			if(SourceControlRevision->RevisionNumber == 0)
+			// End of the previous commit
+			if(SourceControlRevision->RevisionNumber != 0)
 			{
-				SourceControlRevision->Filename = "???";
-				SourceControlRevision->Description = Result; // @todo test value
-				// @todo Action, Date, UserName, Revision
 				OutHistory.Add(SourceControlRevision);
 
 				SourceControlRevision = MakeShareable(new FGitSourceControlRevision);
 			}
-			FString Commit = Result.RightChop(7);
-			int32 Revision = 1234567890; // @todo Commit.ToInt();
-			SourceControlRevision->RevisionNumber = Revision;
+			FString Commit = Result.RightChop(7).Right(8); // Short revision ; first 8 hex characters (max that can hold a 32 bit integer)
+			SourceControlRevision->RevisionNumber = FParse::HexNumber(*Commit);
 		}
 		else if(Result.StartsWith(TEXT("Author: ")))
 		{
 			SourceControlRevision->UserName = Result.RightChop(8);
 		}
-		else if(Result.StartsWith(TEXT("Date: ")))
+		else if(Result.StartsWith(TEXT("Date:   ")))
 		{
-			FString Date = Result.RightChop(6);
-			SourceControlRevision->Date.Now(); // @todo Date
+			FString Date = Result.RightChop(8);
+			SourceControlRevision->Date = FDateTime::FromUnixTimestamp(FCString::Atoi(*Date));
+		}
+	//	else if(Result.IsEmpty()) // empty line before/after commit message has already been taken care by FString::ParseIntoArray()
+		else if(Result.StartsWith(TEXT("    ")))
+		{
+			SourceControlRevision->Description += Result.RightChop(4);
+			SourceControlRevision->Description += TEXT("\n");
 		}
 		else
 		{
-
+			SourceControlRevision->Action = Result.Left(1); // @todo Readable string state
+			SourceControlRevision->Filename = Result.RightChop(8); // relative filename
 		}
+	}
+	// End of the last commit
+	if(SourceControlRevision->RevisionNumber != 0)
+	{
+		OutHistory.Add(SourceControlRevision);
 	}
 }
 

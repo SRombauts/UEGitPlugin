@@ -10,6 +10,7 @@
 
 bool FGitSourceControlRevision::Get( FString& InOutFilename ) const
 {
+	// @todo git show file blob content into a temporary file
 	return false;
 }
 
@@ -67,6 +68,7 @@ int32 FGitSourceControlRevision::GetCheckInIdentifier() const
 
 int32 FGitSourceControlRevision::GetFileSize() const
 {
+	// git log does not give us the file size
 	return 0;
 }
 

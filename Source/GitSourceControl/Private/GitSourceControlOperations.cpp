@@ -110,8 +110,10 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 			TArray<FString> Results;
 			TArray<FString> Parameters;
 
-			// @todo limit to last 100 changes
 			Parameters.Add(TEXT("--max-count 100"));
+			Parameters.Add(TEXT("--follow")); // follow file renames
+			Parameters.Add(TEXT("--date=raw"));
+			Parameters.Add(TEXT("--name-status")); // relative filename at this revision, preceded by a status character
 
 			TArray<FString> Files;
 			Files.Add(*ItFile);
