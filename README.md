@@ -7,7 +7,17 @@ See the website http://srombauts.github.com/UE4GitPlugin on GitHub.
 
 ### Status
 
-Pre-Alpha under early development: v0.0 only displays icons to show modified files for UE 4.1
+Pre-Alpha under early development: v0.0 only displays status icons to show modified files for UE 4.1, and can revert modifications.
+
+What cannot be done presently:
+- initialize a new Git repository: you have to do it by yourself when creating a new UE4 Game Project.
+- log history of a file (but work in progress)
+- diff with a previous version of a file
+- delete a file
+- checkout a file
+- checkin/commit a file
+- Pull/Fetch/Push are not possible within the current Editor workflow
+- Branch and Merge are not possible within the current Editor workflow (but this is on Epic Roadmap)
 
 ### Getting started
 
@@ -15,33 +25,80 @@ Pre-Alpha under early development: v0.0 only displays icons to show modified fil
 
 Under Windows 64bits, you could either:
 - install a standalone Git, usualy in "C:\Program Files (x86)\Git\bin\git.exe".
-- or copy a (portable Git)[https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit]
-inside "[UnrealEngine]\Engine\Binaries\ThirdParty\git\Win32\".
-- TODO What about TortoiseGit ?
+- or copy a [portable Git](https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit)
+inside "<UnrealEngine>/Engine/Binaries/ThirdParty/git/Win32".
+- TODO: What about TortoiseGit?
 
-#### Install Git Plugin into UnrealEngine
+#### Initialize your Game Project directory with Git
 
-Clone this repository under "[UnrealEngine]\Engine\Plugins\Developer\":
+Use your favorite Git program to initialize and manage your whole game project directory.
+For instance:
+
+```
+C:/Users/<username>/Documents/Unreal Projects/<YourGameProject>
+```
+
+#### Install this Git Plugin
+
+There are a few differents means to use a Plugin with UE4
+
+See also the [Plugins official Documentation](https://docs.unrealengine.com/latest/INT/Programming/Plugins/index.html)
+
+##### Within a standard installed Unreal Engine binary release:
+
+Clone the plugin repository under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:
+
+```
+<UnrealEngineInstallation>/4.1/Engine/Plugins/Developer
+```
+
+The name of the directory is unimportant:
+
+```bash
+git clone https://github.com/SRombauts/UE4GitPlugin.git
+```
+
+##### Within an Unreal Engine source release from GitHub:
+
+Clone the plugin repository under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:
+
+```
+<UnrealEngineClone>/Engine/Plugins/Developer
+```
+
+taking care of using the name **GitSourceControl** as destination directory (same name as the "GitSourceControl.uplugin" file):
 
 ```bash
 git clone https://github.com/SRombauts/UE4GitPlugin.git GitSourceControl
 ```
 
-Then launch the UE4 Editor, open Windows->Plugins, enable Editor->Source Control->Git, and restart the Editor.
+##### Within your Game Project only
 
-Alternatively, you could choose to install the plugin into [YourGameProject]/Plugins/
+Alternatively, you could choose to install the plugin into a subfolder or your Game Project "Plugins" directory:
 
-See also [Plugins official Documentation](https://docs.unrealengine.com/latest/INT/Programming/Plugins/index.html)
+```
+<YourGameProject>/Plugins
+```
 
-#### Initialize your Game Project directory with Git
+#### Enable Git Plugin within the Editor
 
-Use your favorite Git program to initialize your whole game project directory: Unreal Projects\[YourGameProject].
+Launch the UE4 Editor, then open:
 
-#### Activating Source Control within the Editor
+```
+Windows->Plugins, enable Editor->Source Control->Git
+```
 
+click Enable and restart the Editor.
+
+#### Activate Git Source Control for your Game Project
+
+Load your Game Project, then open:
+
+```
 File->Connect To Source Control... -> Git: Accept Settings
+```
 
-[Source Control official Documentation](https://docs.unrealengine.com/latest/INT/Engine/UI/SourceControl/index.html)
+See also the [Source Control official Documentation](https://docs.unrealengine.com/latest/INT/Engine/UI/SourceControl/index.html)
 
 ### License
 
@@ -54,7 +111,7 @@ or copy at http://opensource.org/licenses/MIT)
 ### GitHub website
 The most efficient way to help and contribute to this wrapper project is to
 use the tools provided by GitHub:
-- please fill bug reports and feature requests here: https://github.com/SRombauts/SQLiteCpp/issues
+- please fill bug reports and feature requests here: https://github.com/SRombauts/UE4GitPlugin/issues
 - fork the repository, make some small changes and submit them with independant pull-request
 
 ### Contact
@@ -71,4 +128,5 @@ The source code follow the UnreaEngine official [Coding Standard](https://docs.u
 
 ## See also - Some other useful UE4 plugins:
 
- - [ue4-hg-plugin](https://github.com/enlight/ue4-hg-plugin)
+- [ue4-hg-plugin](https://github.com/enlight/ue4-hg-plugin)
+
