@@ -85,6 +85,8 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	check(InCommand.Operation->GetName() == "UpdateStatus");
 
+	TSharedRef<FUpdateStatus, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FUpdateStatus>(InCommand.Operation);
+
 	// @todo cleanup the following if/else if if conditions (see mercurial plugin)
 	if(InCommand.Files.Num() > 0)
 	{
@@ -95,57 +97,54 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, InCommand.Files, Results, InCommand.ErrorMessages);
 		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
+
+		if(Operation->ShouldUpdateHistory())
+		{
+			for(const auto& ItFile : InCommand.Files)
+			{
+				TArray<FString> Results;
+				TArray<FString> Parameters;
+
+				Parameters.Add(TEXT("--max-count 100"));
+				Parameters.Add(TEXT("--follow")); // follow file renames
+				Parameters.Add(TEXT("--date=raw"));
+				Parameters.Add(TEXT("--name-status")); // relative filename at this revision, preceded by a status character
+
+				TArray<FString> Files;
+				Files.Add(*ItFile);
+
+				InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("log"), Parameters, Files, Results, InCommand.ErrorMessages);
+				TGitSourceControlHistory History;
+				GitSourceControlUtils::ParseLogResults(Results, History);
+				Histories.Add(*ItFile, History);
+			}
+		}
 	}
 	else
 	{
-		InCommand.bCommandSuccessful = true; // nothing to do
-	}
-
-	TSharedRef<FUpdateStatus, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FUpdateStatus>(InCommand.Operation);
-
-	if(Operation->ShouldUpdateHistory())
-	{
-		for(const auto& ItFile : InCommand.Files)
+		// Perforce "opened files" are those that have been modified (or added/deleted): that is what we get with a simple Git status from the root
+		if(Operation->ShouldGetOpenedOnly())
 		{
 			TArray<FString> Results;
 			TArray<FString> Parameters;
-
-			Parameters.Add(TEXT("--max-count 100"));
-			Parameters.Add(TEXT("--follow")); // follow file renames
-			Parameters.Add(TEXT("--date=raw"));
-			Parameters.Add(TEXT("--name-status")); // relative filename at this revision, preceded by a status character
+			Parameters.Add(TEXT("--porcelain"));
+			Parameters.Add(TEXT("--ignored"));
 
 			TArray<FString> Files;
-			Files.Add(*ItFile);
+			Files.Add(FPaths::ConvertRelativePathToFull(FPaths::GameDir()));
 
-			InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("log"), Parameters, Files, Results, InCommand.ErrorMessages);
-			TGitSourceControlHistory History;
-			GitSourceControlUtils::ParseLogResults(Results, History);
-			Histories.Add(*ItFile, History);
+			InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, Files, Results, InCommand.ErrorMessages);
+			GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
+		}
+		else
+		{
+			// @todo is this normal/possible?
+			UE_LOG(LogSourceControl, Error, TEXT("FGitUpdateStatusWorker: InCommand.Files.Num() == 0"));
+			InCommand.bCommandSuccessful = true; // nothing to do
 		}
 	}
 
-	if(Operation->ShouldGetOpenedOnly())
-	{
-		// "Open files" are those that have been modified (or added/deleted)
-
-		TArray<FString> Results;
-		TArray<FString> Parameters;
-		Parameters.Add(TEXT("--porcelain"));
-		Parameters.Add(TEXT("--ignored"));
-
-		TArray<FString> Files;
-		Files.Add(FPaths::ConvertRelativePathToFull(FPaths::GameDir()));
-
-		InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, Files, Results, InCommand.ErrorMessages);
-		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
-	}
-
-	if(Operation->ShouldUpdateModifiedState())
-	{
-		// @todo: we dont use the ShouldUpdateModifiedState() hint here as a normal Git status will tell us this information?
-		TArray<FString> Results;
-	}
+	// don't use the ShouldUpdateModifiedState() hint here as it is specific to Perforce: a normal Git status will tell us this information (like SVN and Mercurial)
 
 	return InCommand.bCommandSuccessful;
 }
