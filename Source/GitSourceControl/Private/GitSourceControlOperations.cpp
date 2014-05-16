@@ -49,15 +49,7 @@ bool FGitMarkForAddWorker::Execute(FGitSourceControlCommand& InCommand)
 	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("add"), TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 
 	// now update the status of our files
-	{
-		TArray<FString> Results;
-		TArray<FString> Parameters;
-		Parameters.Add(TEXT("--porcelain"));
-		Parameters.Add(TEXT("--ignored"));
-
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, InCommand.Files, Results, InCommand.ErrorMessages);
-		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
-	}
+	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToGameDir, InCommand.Files, InCommand.ErrorMessages, States);
 
 	return InCommand.bCommandSuccessful;
 }
@@ -77,15 +69,7 @@ bool FGitDeleteWorker::Execute(FGitSourceControlCommand& InCommand)
 	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("rm"), TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 
 	// now update the status of our files
-	{
-		TArray<FString> Results;
-		TArray<FString> Parameters;
-		Parameters.Add(TEXT("--porcelain"));
-		Parameters.Add(TEXT("--ignored"));
-
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, InCommand.Files, Results, InCommand.ErrorMessages);
-		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
-	}
+	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToGameDir, InCommand.Files, InCommand.ErrorMessages, States);
 
 	return InCommand.bCommandSuccessful;
 }
@@ -117,15 +101,7 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 	}
 
 	// now update the status of our files
-	{
-		TArray<FString> Results;
-		TArray<FString> Parameters;
-		Parameters.Add(TEXT("--porcelain"));
-		Parameters.Add(TEXT("--ignored"));
-
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, InCommand.Files, Results, InCommand.ErrorMessages);
-		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
-	}
+	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToGameDir, InCommand.Files, InCommand.ErrorMessages, States);
 
 	return InCommand.bCommandSuccessful;
 }
@@ -149,13 +125,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 	// @todo cleanup the following if/else if if conditions (see mercurial plugin)
 	if(InCommand.Files.Num() > 0)
 	{
-		TArray<FString> Results;
-		TArray<FString> Parameters;
-		Parameters.Add(TEXT("--porcelain"));
-		Parameters.Add(TEXT("--ignored"));
-
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, InCommand.Files, Results, InCommand.ErrorMessages);
-		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToGameDir, InCommand.Files, InCommand.ErrorMessages, States);
 
 		if(Operation->ShouldUpdateHistory())
 		{
@@ -184,16 +154,9 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 		// Perforce "opened files" are those that have been modified (or added/deleted): that is what we get with a simple Git status from the root
 		if(Operation->ShouldGetOpenedOnly())
 		{
-			TArray<FString> Results;
-			TArray<FString> Parameters;
-			Parameters.Add(TEXT("--porcelain"));
-			Parameters.Add(TEXT("--ignored"));
-
 			TArray<FString> Files;
 			Files.Add(FPaths::ConvertRelativePathToFull(FPaths::GameDir()));
-
-			InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, Files, Results, InCommand.ErrorMessages);
-			GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
+			InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToGameDir, Files, InCommand.ErrorMessages, States);
 		}
 		else
 		{

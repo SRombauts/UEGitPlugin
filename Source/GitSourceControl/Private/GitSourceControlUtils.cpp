@@ -18,7 +18,7 @@ namespace GitSourceControlConstants
 namespace GitSourceControlUtils
 {
 
-static bool RunCommandInternal(const FString& InGitBinaryPath, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors)
+static bool RunCommandInternal(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors)
 {
 	int32 ReturnCode = 0;
 	FString FullCommand;
@@ -55,7 +55,7 @@ static bool RunCommandInternal(const FString& InGitBinaryPath, const FString& In
 
 	// @todo: temporary debug logs
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: Attempting 'git %s'"), *LogableCommand);
-	FPlatformProcess::ExecProcess(*InGitBinaryPath, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
+	FPlatformProcess::ExecProcess(*InPathToGitBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
 	if(!OutErrors.IsEmpty())
 	{
@@ -95,13 +95,13 @@ FString FindGitBinaryPath()
 	return GitBinaryPath;
 }
 
-bool CheckGitAvailability(const FString& InGitBinaryPath)
+bool CheckGitAvailability(const FString& InPathToGitBinary)
 {
 	bool bGitAvailable = false;
 
 	FString InfoMessages;
 	FString ErrorMessages;
-	bGitAvailable = RunCommandInternal(InGitBinaryPath, FString(), TEXT("version"), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	bGitAvailable = RunCommandInternal(InPathToGitBinary, FString(), TEXT("version"), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
 	if(bGitAvailable)
 	{
 		if(InfoMessages.Contains("git"))
@@ -119,7 +119,7 @@ bool CheckGitAvailability(const FString& InGitBinaryPath)
 	return bGitAvailable;
 }
 
-bool RunCommand(const FString& InGitBinaryPath, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
+bool RunCommand(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
 {
 	bool bResult = true;
 
@@ -137,7 +137,7 @@ bool RunCommand(const FString& InGitBinaryPath, const FString& InRepositoryRoot,
 
 			FString Results;
 			FString Errors;
-			bResult &= RunCommandInternal(InGitBinaryPath, InRepositoryRoot, InCommand, InParameters, FilesInBatch, Results, Errors);
+			bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, InCommand, InParameters, FilesInBatch, Results, Errors);
 			Results.ParseIntoArray(&OutResults, TEXT("\n"), true);
 			Errors.ParseIntoArray(&OutErrorMessages, TEXT("\n"), true);
 		}
@@ -146,10 +146,23 @@ bool RunCommand(const FString& InGitBinaryPath, const FString& InRepositoryRoot,
 	{
 		FString Results;
 		FString Errors;
-		bResult &= RunCommandInternal(InGitBinaryPath, InRepositoryRoot, InCommand, InParameters, InFiles, Results, Errors);
+		bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, InCommand, InParameters, InFiles, Results, Errors);
 		Results.ParseIntoArray(&OutResults, TEXT("\n"), true);
 		Errors.ParseIntoArray(&OutErrorMessages, TEXT("\n"), true);
 	}
+
+	return bResult;
+}
+
+bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates)
+{
+	TArray<FString> Results;
+	TArray<FString> Parameters;
+	Parameters.Add(TEXT("--porcelain"));
+	Parameters.Add(TEXT("--ignored"));
+
+	bool bResult = GitSourceControlUtils::RunCommand(InPathToGitBinary, InRepositoryRoot, TEXT("status"), Parameters, InFiles, Results, OutErrorMessages);
+	GitSourceControlUtils::ParseStatusResults(InFiles, Results, OutStates);
 
 	return bResult;
 }
