@@ -30,12 +30,41 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 		InCommand.ErrorMessages.Add(LOCTEXT("NotAWorkingCopyErrorHelp", "You should check out a working copy into your project directory.").ToString());
 		InCommand.bCommandSuccessful = false;
 	}
+
 	return InCommand.bCommandSuccessful;
 }
 
 bool FGitConnectWorker::UpdateStates() const
 {
 	return false;
+}
+
+FName FGitMarkForAddWorker::GetName() const
+{
+	return "MarkForAdd";
+}
+
+bool FGitMarkForAddWorker::Execute(FGitSourceControlCommand& InCommand)
+{
+	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("add"), TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+
+	// now update the status of our files
+	{
+		TArray<FString> Results;
+		TArray<FString> Parameters;
+		Parameters.Add(TEXT("--porcelain"));
+		Parameters.Add(TEXT("--ignored"));
+
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, InCommand.Files, Results, InCommand.ErrorMessages);
+		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
+	}
+
+	return InCommand.bCommandSuccessful;
+}
+
+bool FGitMarkForAddWorker::UpdateStates() const
+{
+	return GitSourceControlUtils::UpdateCachedStates(States);
 }
 
 FName FGitRevertWorker::GetName() const

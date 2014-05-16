@@ -19,6 +19,19 @@ public:
 	virtual bool UpdateStates() const OVERRIDE;
 };
 
+class FGitMarkForAddWorker : public IGitSourceControlWorker
+{
+public:
+	// IGitSourceControlWorker interface
+	virtual FName GetName() const OVERRIDE;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) OVERRIDE;
+	virtual bool UpdateStates() const OVERRIDE;
+
+public:
+	/** Temporary states for results */
+	TArray<FGitSourceControlState> States;
+};
+
 /** @todo doc */
 class FGitRevertWorker : public IGitSourceControlWorker
 {
