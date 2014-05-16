@@ -147,6 +147,15 @@ const FDateTime& FGitSourceControlState::GetTimeStamp() const
 	return TimeStamp;
 }
 
+/* @todo for UE4.3: OVERRIDE */
+bool FGitSourceControlState::CanCheckIn() const
+{
+	return WorkingCopyState == EWorkingCopyState::Added
+		|| WorkingCopyState == EWorkingCopyState::Deleted
+		|| WorkingCopyState == EWorkingCopyState::Modified
+		|| WorkingCopyState == EWorkingCopyState::Renamed;
+}
+
 bool FGitSourceControlState::CanCheckout() const
 {
 	return false; // With Git all tracked files in the working copy are always already checked-out (as opposed to Perforce)
@@ -154,7 +163,7 @@ bool FGitSourceControlState::CanCheckout() const
 
 bool FGitSourceControlState::IsCheckedOut() const
 {
-	return true; // With Git all tracked files in the working copy are always checked-out (as opposed to Perforce)
+	return IsSourceControlled(); // With Git all tracked files in the working copy are always checked-out (as opposed to Perforce)
 }
 
 bool FGitSourceControlState::IsCheckedOutOther(FString* Who) const
@@ -169,7 +178,7 @@ bool FGitSourceControlState::IsCurrent() const
 
 bool FGitSourceControlState::IsSourceControlled() const
 {
-	return WorkingCopyState != EWorkingCopyState::NotControlled && WorkingCopyState != EWorkingCopyState::Unknown;
+	return WorkingCopyState != EWorkingCopyState::NotControlled && WorkingCopyState != EWorkingCopyState::Ignored && WorkingCopyState != EWorkingCopyState::Unknown;
 }
 
 bool FGitSourceControlState::IsAdded() const
@@ -220,4 +229,11 @@ bool FGitSourceControlState::IsModified() const
 		|| WorkingCopyState == EWorkingCopyState::Missing;
 }
 
+
+/* @todo for UE4.2: OVERRIDE */
+bool FGitSourceControlState::CanAdd() const
+{
+	// @todo Not accurate for Git
+	return WorkingCopyState == EWorkingCopyState::NotControlled;
+}
 #undef LOCTEXT_NAMESPACE

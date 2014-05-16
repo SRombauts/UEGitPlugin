@@ -46,6 +46,7 @@ public:
 	virtual FText GetDisplayTooltip() const OVERRIDE;
 	virtual const FString& GetFilename() const OVERRIDE;
 	virtual const FDateTime& GetTimeStamp() const OVERRIDE;
+	virtual bool CanCheckIn() const /* @todo for UE4.3: OVERRIDE */;
 	virtual bool CanCheckout() const OVERRIDE;
 	virtual bool IsCheckedOut() const OVERRIDE;
 	virtual bool IsCheckedOutOther(FString* Who = nullptr) const OVERRIDE;
@@ -57,6 +58,7 @@ public:
 	virtual bool CanEdit() const OVERRIDE;
 	virtual bool IsUnknown() const OVERRIDE;
 	virtual bool IsModified() const OVERRIDE;
+	virtual bool CanAdd() const /* @todo for UE4.2: OVERRIDE */;
 
 public:
 	/** History of the item, if any */
