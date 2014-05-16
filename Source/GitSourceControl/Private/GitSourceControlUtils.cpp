@@ -160,7 +160,7 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
 	// @todo Example git log results:
 	//
 	//commit 2d92a17eb3f5211d1b874a6530a080ba7d5f10bc
-	//Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
+	//Author: Sebastien Rombauts <sebastien.rombauts@gmail.com>
 	//Date:   Mon May 12 20:05:36 2014 +0200
 	//
 	//    Fixed some of the bugs with working copy file states
@@ -168,19 +168,44 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
 	//     - still a bug present; missing an UpdateStatus after saving a Blueprint!
 	//
 	//commit 8220e00289679e202603a83c052584ad9185b140
-	//Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
+	//Author: Sebastien Rombauts <sebastien.rombauts@gmail.com>
 	//Date:   Mon May 12 07:12:00 2014 +0200
 	//
 	//    Added ExectuteSynchronousCommand needed for the "revert" operation
 	//
-	for(const auto& Result : InResults)
+	TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> SourceControlRevision = MakeShareable(new FGitSourceControlRevision);
+	for(int32 IdxResult = 0; IdxResult < InResults.Num(); IdxResult++)
 	{
-		// @todo parse git logs
-		TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> SourceControlRevision = MakeShareable(new FGitSourceControlRevision);
-		SourceControlRevision->Filename = "???";
-		SourceControlRevision->Description = Result; // @todo test value
-		// @todo Action, Date, UserName, Revision
-		OutHistory.Add(SourceControlRevision);
+		const FString& Result = InResults[IdxResult];
+		if(Result.StartsWith(TEXT("commit ")))
+		{
+			// @todo end of previous commit
+			if(SourceControlRevision->RevisionNumber == 0)
+			{
+				SourceControlRevision->Filename = "???";
+				SourceControlRevision->Description = Result; // @todo test value
+				// @todo Action, Date, UserName, Revision
+				OutHistory.Add(SourceControlRevision);
+
+				SourceControlRevision = MakeShareable(new FGitSourceControlRevision);
+			}
+			FString Commit = Result.RightChop(7);
+			int32 Revision = 1234567890; // @todo Commit.ToInt();
+			SourceControlRevision->RevisionNumber = Revision;
+		}
+		else if(Result.StartsWith(TEXT("Author: ")))
+		{
+			SourceControlRevision->UserName = Result.RightChop(8);
+		}
+		else if(Result.StartsWith(TEXT("Date: ")))
+		{
+			FString Date = Result.RightChop(6);
+			SourceControlRevision->Date.Now(); // @todo Date
+		}
+		else
+		{
+
+		}
 	}
 }
 
