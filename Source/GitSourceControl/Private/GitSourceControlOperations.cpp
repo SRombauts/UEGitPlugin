@@ -67,6 +67,34 @@ bool FGitMarkForAddWorker::UpdateStates() const
 	return GitSourceControlUtils::UpdateCachedStates(States);
 }
 
+FName FGitDeleteWorker::GetName() const
+{
+	return "Delete";
+}
+
+bool FGitDeleteWorker::Execute(FGitSourceControlCommand& InCommand)
+{
+	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("rm"), TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+
+	// now update the status of our files
+	{
+		TArray<FString> Results;
+		TArray<FString> Parameters;
+		Parameters.Add(TEXT("--porcelain"));
+		Parameters.Add(TEXT("--ignored"));
+
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, InCommand.Files, Results, InCommand.ErrorMessages);
+		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
+	}
+
+	return InCommand.bCommandSuccessful;
+}
+
+bool FGitDeleteWorker::UpdateStates() const
+{
+	return GitSourceControlUtils::UpdateCachedStates(States);
+}
+
 FName FGitRevertWorker::GetName() const
 {
 	return "Revert";
@@ -76,13 +104,15 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	// reset any changes already added in index
 	{
-		TArray<FString> Parameters;
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("reset"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("reset"), TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 	}
 
 	// revert any changes in working copy
 	{
 		TArray<FString> Parameters;
+		// @todo does not alarm when reverting added file
+		//Parameters.Add(TEXT("--quiet"));
+		//Parameters.Add(TEXT("--force"));
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("checkout"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 	}
 
@@ -173,7 +203,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 		}
 	}
 
-	// don't use the ShouldUpdateModifiedState() hint here as it is specific to Perforce: a normal Git status will tell us this information (like SVN and Mercurial)
+	// don't use the ShouldUpdateModifiedState() hint here as it is specific to Perforce: the above normal Git status has already told us this information (like SVN and Mercurial)
 
 	return InCommand.bCommandSuccessful;
 }
