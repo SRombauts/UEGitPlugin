@@ -186,12 +186,15 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
 			// End of the previous commit
 			if(SourceControlRevision->RevisionNumber != 0)
 			{
+				SourceControlRevision->Description += TEXT("\nCommit Id: ");
+				SourceControlRevision->Description += SourceControlRevision->CommitId;
 				OutHistory.Add(SourceControlRevision);
 
 				SourceControlRevision = MakeShareable(new FGitSourceControlRevision);
 			}
-			FString Commit = Result.RightChop(7).Right(8); // Short revision ; first 8 hex characters (max that can hold a 32 bit integer)
-			SourceControlRevision->RevisionNumber = FParse::HexNumber(*Commit);
+			SourceControlRevision->CommitId = Result.RightChop(7);
+			FString ShortCommitId = SourceControlRevision->CommitId.Right(8); // Short revision ; first 8 hex characters (max that can hold a 32 bit integer)
+			SourceControlRevision->RevisionNumber = FParse::HexNumber(*ShortCommitId);
 		}
 		else if(Result.StartsWith(TEXT("Author: ")))
 		{
@@ -217,6 +220,8 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
 	// End of the last commit
 	if(SourceControlRevision->RevisionNumber != 0)
 	{
+		SourceControlRevision->Description += TEXT("\nCommit Id: ");
+		SourceControlRevision->Description += SourceControlRevision->CommitId;
 		OutHistory.Add(SourceControlRevision);
 	}
 }
@@ -359,7 +364,7 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 		if(State->WorkingCopyState != InState.WorkingCopyState)
 		{
 			State->WorkingCopyState = InState.WorkingCopyState;
-		//	State->TimeStamp = FDateTime::Now(); // @todo Workaround a bug with the Source Control Module not updating file state after a "Save"
+		//	State->TimeStamp = InState.TimeStamp; // @todo Workaround a bug with the Source Control Module not updating file state after a "Save"
 			NbStatesUpdated++;
 		}
 	}

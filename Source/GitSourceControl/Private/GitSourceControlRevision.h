@@ -7,7 +7,7 @@
 
 #include "ISourceControlRevision.h"
 
-/** @todo doc */
+/** Revision of a file, linked to a specific commit */
 class FGitSourceControlRevision : public ISourceControlRevision, public TSharedFromThis<FGitSourceControlRevision, ESPMode::ThreadSafe>
 {
 public:
@@ -35,6 +35,9 @@ public:
 	/** The filename this revision refers to */
 	FString Filename;
 
+	/** The SHA1 id of the commit this revision refers to */
+	FString CommitId;
+
 	/** The revision number */
 	int32 RevisionNumber;
 
@@ -51,5 +54,5 @@ public:
 	FDateTime Date;
 };
 
-/** @todo doc */
+/** History composed of the last 100 revisions of the file */
 typedef TArray< TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> >	TGitSourceControlHistory;

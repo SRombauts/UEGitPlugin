@@ -85,6 +85,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	check(InCommand.Operation->GetName() == "UpdateStatus");
 
+	// @todo cleanup the following if/else if if conditions (see mercurial plugin)
 	if(InCommand.Files.Num() > 0)
 	{
 		TArray<FString> Results;
@@ -100,7 +101,6 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 		InCommand.bCommandSuccessful = true; // nothing to do
 	}
 
-	// @todo update using any special hints passed in via the operation
 	TSharedRef<FUpdateStatus, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FUpdateStatus>(InCommand.Operation);
 
 	if(Operation->ShouldUpdateHistory())
@@ -162,7 +162,7 @@ bool FGitUpdateStatusWorker::UpdateStates() const
 	{
 		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(ItHistory.Key);
 		State->History = ItHistory.Value;
-	//	State->TimeStamp = FDateTime::Now(); // @todo Workaround a bug with the Source Control Module not updating file state after a "Save"
+		State->TimeStamp = FDateTime::Now();
 		bUpdated = true;
 	}
 
