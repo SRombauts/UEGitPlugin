@@ -198,7 +198,13 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
 		}
 		else if(Result.StartsWith(TEXT("Author: ")))
 		{
-			SourceControlRevision->UserName = Result.RightChop(8);
+			// Remove the 'email' part of the UserName
+			FString UserNameEmail = Result.RightChop(8);
+			int32 EmailIndex = 0;
+			if(UserNameEmail.FindLastChar('<', EmailIndex))
+			{
+				SourceControlRevision->UserName = UserNameEmail.Left(EmailIndex - 1);
+			}
 		}
 		else if(Result.StartsWith(TEXT("Date:   ")))
 		{
