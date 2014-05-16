@@ -135,7 +135,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 		Parameters.Add(TEXT("--ignored"));
 
 		TArray<FString> Files;
-		Files.Add(FPaths::GameDir());
+		Files.Add(FPaths::ConvertRelativePathToFull(FPaths::GameDir()));
 
 		InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToGameDir, TEXT("status"), Parameters, Files, Results, InCommand.ErrorMessages);
 		GitSourceControlUtils::ParseStatusResults(InCommand.Files, Results, States);
