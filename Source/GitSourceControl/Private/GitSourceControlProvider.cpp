@@ -22,7 +22,6 @@ static FName ProviderName("Git");
 void FGitSourceControlProvider::Init(bool bForceConnection)
 {
 	PathToGameDir = FPaths::ConvertRelativePathToFull(FPaths::GameDir());
-	PathToContentDir = FPaths::ConvertRelativePathToFull(FPaths::GameContentDir());
 
 	CheckGitAvailability();
 }
@@ -217,6 +216,12 @@ void FGitSourceControlProvider::Tick()
 
 			// let command update the states of any files
 			bStatesUpdated |= Command.Worker->UpdateStates();
+
+			// if connect operation: obtain the path to the Git root directory of the repository
+			if(Command.Operation->GetName() == "Connect" && Command.bCommandSuccessful)
+			{
+				PathToRepositoryRoot = Command.PathToRepositoryRoot;
+			}
 
 			// dump any messages to output log
 			OutputCommandMessages(Command);

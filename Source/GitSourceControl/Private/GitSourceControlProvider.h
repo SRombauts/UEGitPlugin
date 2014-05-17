@@ -43,17 +43,17 @@ public:
 	 */
 	void CheckGitAvailability();
 
-    /** Get the path to the game directory: shall be the root of the Git repository */
-    inline const FString& GetPathToGameDir() const
-    {
-        return PathToGameDir;
-    }
+	/** Get the path to the root of the Git repository: can be the GameDir itself, or any parent directory */
+	inline const FString& GetPathToRepositoryRoot() const
+	{
+		return PathToRepositoryRoot;
+	}
 
-    /** Get the path to the game Content directory */
-    inline const FString& GetPathToContentDir() const
-    {
-        return PathToContentDir;
-    }
+	/** Get the path to the Game directory: shall be inside of the Git repository */
+	inline const FString& GetPathToGameDir() const
+	{
+		return PathToGameDir;
+	}
 
 	/** Helper function used to update state cache */
 	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> GetStateInternal(const FString& Filename);
@@ -72,7 +72,6 @@ private:
 	/** Helper function for Execute() */
 	TSharedPtr<class IGitSourceControlWorker, ESPMode::ThreadSafe> CreateWorker(const FName& InOperationName) const;
 
-
 	/** Helper function for running command synchronously. */
 	ECommandResult::Type ExecuteSynchronousCommand(class FGitSourceControlCommand& InCommand, const FText& Task);
 	/** Issue a command asynchronously if possible. */
@@ -81,11 +80,11 @@ private:
 	/** Output any messages this command holds */
 	void OutputCommandMessages(const class FGitSourceControlCommand& InCommand) const;
 
-    /** Path to the Game directory: shall be the root of the Git repository */
-    FString PathToGameDir;
+	/** Path to the root of the Git repository: can be the GameDir itself, or any parent directory */
+	FString PathToRepositoryRoot;
 
-    /** Path to the game Content directory */
-    FString PathToContentDir;
+	/** Path to the Game directory: shall be inside of the Git repository */
+	FString PathToGameDir;
 
     /** State cache */
 	TMap<FString, TSharedRef<class FGitSourceControlState, ESPMode::ThreadSafe> > StateCache;

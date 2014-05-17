@@ -1,9 +1,9 @@
 {
-    "FileVersion" : 3,
+	"FileVersion" : 3,
 	
 	"FriendlyName" : "Git",
 	"Version" : 0,
-	"VersionName" : "0.0",
+	"VersionName" : "0.1",
 	"EngineVersion" : "4.1.0",
 	"Description" : "Git source control management",
 	"Category" : "Editor.Source Control",
@@ -12,7 +12,7 @@
 	"CanContainContent" : false,
 	"IsBetaVersion" : true,
 	
-    "Modules" :
+	"Modules" :
 	[
 		{
 			"Name" : "GitSourceControl",

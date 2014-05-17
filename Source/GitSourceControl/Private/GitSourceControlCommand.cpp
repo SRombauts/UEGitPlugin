@@ -22,9 +22,9 @@ FGitSourceControlCommand::FGitSourceControlCommand(const TSharedRef<class ISourc
 	// grab the providers settings here, so we don't access them once the worker thread is launched
 	check(IsInGameThread());
 	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
-	PathToGameDir = GitSourceControl.GetProvider().GetPathToGameDir();
-	PathToContentDir = GitSourceControl.GetProvider().GetPathToContentDir();
 	PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
+	PathToRepositoryRoot = GitSourceControl.GetProvider().GetPathToRepositoryRoot();
+	PathToGameDir = GitSourceControl.GetProvider().GetPathToGameDir();
 }
 
 bool FGitSourceControlCommand::DoWork()

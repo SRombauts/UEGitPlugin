@@ -37,12 +37,12 @@ public:
 public:
 	/** Path to the Git binary */
 	FString PathToGitBinary;
-    /** Path to the Game directory : shall presently be the root of the Git repository
-	 *  @todo Look for the real root of the git repository (for instance, when the game directory is with the engine in a common repository)
-	 */
-    FString PathToGameDir;
-    /** Path to the game Content directory */
-    FString PathToContentDir;
+
+	/** Path to the root of the Git repository: can be the GameDir itself, or any parent directory */
+	FString PathToRepositoryRoot;
+
+	/** Path to the Game directory: shall be inside of the Git repository */
+	FString PathToGameDir;
 
 	/** Operation we want to perform - contains outward-facing parameters & results */
 	TSharedRef<class ISourceControlOperation, ESPMode::ThreadSafe> Operation;

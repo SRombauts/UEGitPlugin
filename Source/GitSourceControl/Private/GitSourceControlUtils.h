@@ -25,6 +25,14 @@ FString FindGitBinaryPath();
 bool CheckGitAvailability(const FString& InPathToGitBinary);
 
 /**
+ * Find the root of the Git repository, looking from the GameDir and upward in its parent directories
+ * @param InPathToGameDir		The path to the Game Directory
+ * @param OutRepositoryRoot		The path to the root directory of the Git repository if found
+ * @returns true if the command succeeded and returned no errors
+*/
+bool FindRootDirectory(const FString& InPathToGameDir, FString& OutRepositoryRoot);
+
+/**
  * Run a Git command - output is a string TArray.
  *
  * @param	InPathToGitBinary	The path to the Git binary
@@ -40,7 +48,7 @@ bool RunCommand(const FString& InPathToGitBinary, const FString& InRepositoryRoo
 
 /**
  * Run a Git status command and parse it.
- */
+*/
 bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates);
 
 /**

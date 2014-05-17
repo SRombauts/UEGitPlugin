@@ -7,7 +7,7 @@ See the website http://srombauts.github.com/UE4GitPlugin on GitHub.
 
 ### Status
 
-Pre-Alpha under early development: v0.0 only displays status icons to show modified files for UE 4.1, and can revert modifications.
+Alpha version under early development: v0.1 displays status icons to show modified files, show history, can revert modifications, and add or delete files.
 
 What cannot be done presently:
 - initialize a new Git repository: you have to do it by yourself when creating a new UE4 Game Project.

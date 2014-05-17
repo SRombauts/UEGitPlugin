@@ -53,15 +53,16 @@ static bool RunCommandInternal(const FString& InPathToGitBinary, const FString& 
 
 	FullCommand += LogableCommand;
 
-	// @todo: temporary debug logs
-	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: Attempting 'git %s'"), *LogableCommand);
+	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: 'git %s'"), *LogableCommand);
+// @todo: temporary debug logs
+//	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: 'git %s'"), *FullCommand);
 	FPlatformProcess::ExecProcess(*InPathToGitBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
-	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
+/*	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
 	if(!OutErrors.IsEmpty())
 	{
 		UE_LOG(LogSourceControl, Error, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutErrors='%s'"), ReturnCode, *OutErrors);
 	}
-
+*/
 	return ReturnCode == 0;
 }
 
@@ -117,6 +118,35 @@ bool CheckGitAvailability(const FString& InPathToGitBinary)
 	// @todo also check Git config user.name & user.email
 
 	return bGitAvailable;
+}
+
+bool FindRootDirectory(const FString& InPathToGameDir, FString& OutRepositoryRoot)
+{
+	bool bFound = false;
+	FString PathToGitSubdirectory;
+	OutRepositoryRoot = InPathToGameDir;
+
+	while(!bFound && !OutRepositoryRoot.IsEmpty())
+	{
+		PathToGitSubdirectory = OutRepositoryRoot;
+		PathToGitSubdirectory += TEXT(".git"); // Look for the ".git" subdirectory at the root of every Git repository
+		bFound = IFileManager::Get().DirectoryExists(*PathToGitSubdirectory);
+		if(!bFound)
+		{
+			int32 LastSlashIndex;
+			OutRepositoryRoot = OutRepositoryRoot.LeftChop(5);
+			if(OutRepositoryRoot.FindLastChar('/', LastSlashIndex))
+			{
+				OutRepositoryRoot = OutRepositoryRoot.Left(LastSlashIndex + 1);
+			}
+			else
+			{
+				OutRepositoryRoot.Empty();
+			}
+		}
+	}
+
+	return bFound;
 }
 
 bool RunCommand(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
