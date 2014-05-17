@@ -7,15 +7,19 @@ See the website http://srombauts.github.com/UE4GitPlugin on GitHub.
 
 ### Status
 
-Alpha version under early development: v0.1 displays status icons to show modified files, show history, can revert modifications, and add or delete files.
-
-What cannot be done presently:
-- initialize a new Git repository: you have to do it by yourself when creating a new UE4 Game Project.
-- log history of a file (but work in progress)
-- diff with a previous version of a file
+Alpha version 0.1 under heavy developments:
+- display status icons to show modified/added/deleted/untracked files
+- show history of a file
+- revert modifications of a file
+- add a file
 - delete a file
-- checkout a file
+
+What *cannot* be done presently (TODO list):
+- initialize a new Git repository: you have to do it by yourself when creating a new UE4 Game Project.
+- configure user name & email
+- diff with a previous version of a file
 - checkin/commit a file
+- checkout a specific version of a file
 - Pull/Fetch/Push are not possible within the current Editor workflow
 - Branch and Merge are not possible within the current Editor workflow (but this is on Epic Roadmap)
 
