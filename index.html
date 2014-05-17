@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="UE4GitPlugin : GitSourceControl UE4 Plugin (alpha 0.1)" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>UE4GitPlugin</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/SRombauts/UE4GitPlugin">View on GitHub</a>
+
+          <h1 id="project_title">UE4GitPlugin</h1>
+          <h2 id="project_tagline">GitSourceControl UE4 Plugin (alpha 0.1)</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/SRombauts/UE4GitPlugin/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/SRombauts/UE4GitPlugin/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>
+<a name="unreal-engine-4-git-source-control-plugin" class="anchor" href="#unreal-engine-4-git-source-control-plugin"><span class="octicon octicon-link"></span></a>Unreal Engine 4 Git Source Control Plugin</h2>
+
+<p>UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.x</p>
+
+<p>See the website <a href="http://srombauts.github.com/UE4GitPlugin">http://srombauts.github.com/UE4GitPlugin</a> on GitHub.</p>
+
+<h3>
+<a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h3>
+
+<p>Alpha version 0.1 under heavy developments:</p>
+
+<ul>
+<li>display status icons to show modified/added/deleted/untracked files</li>
+<li>show history of a file</li>
+<li>revert modifications of a file</li>
+<li>add a file</li>
+<li>delete a file</li>
+</ul><p>What <em>cannot</em> be done presently (TODO list):</p>
+
+<ul>
+<li>initialize a new Git repository: you have to do it by yourself when creating a new UE4 Game Project.</li>
+<li>configure user name &amp; email</li>
+<li>diff with a previous version of a file</li>
+<li>checkin/commit a file</li>
+<li>checkout a specific version of a file</li>
+<li>Pull/Fetch/Push are not possible within the current Editor workflow</li>
+<li>Branch and Merge are not possible within the current Editor workflow (but this is on Epic Roadmap)</li>
+</ul><h3>
+<a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting started</h3>
+
+<h4>
+<a name="install-git" class="anchor" href="#install-git"><span class="octicon octicon-link"></span></a>Install Git</h4>
+
+<p>Under Windows 64bits, you could either:</p>
+
+<ul>
+<li>install a standalone Git, usualy in "C:\Program Files (x86)\Git\bin\git.exe".</li>
+<li>or copy a <a href="https://code.google.com/p/msysgit/downloads/list?can=1&amp;q=PortableGit">portable Git</a>
+inside "/Engine/Binaries/ThirdParty/git/Win32".</li>
+<li>TODO: What about TortoiseGit?</li>
+</ul><h4>
+<a name="initialize-your-game-project-directory-with-git" class="anchor" href="#initialize-your-game-project-directory-with-git"><span class="octicon octicon-link"></span></a>Initialize your Game Project directory with Git</h4>
+
+<p>Use your favorite Git program to initialize and manage your whole game project directory.
+For instance:</p>
+
+<pre><code>C:/Users/&lt;username&gt;/Documents/Unreal Projects/&lt;YourGameProject&gt;
+</code></pre>
+
+<h4>
+<a name="install-this-git-plugin" class="anchor" href="#install-this-git-plugin"><span class="octicon octicon-link"></span></a>Install this Git Plugin</h4>
+
+<p>There are a few differents means to use a Plugin with UE4</p>
+
+<p>See also the <a href="https://docs.unrealengine.com/latest/INT/Programming/Plugins/index.html">Plugins official Documentation</a></p>
+
+<h5>
+<a name="within-a-standard-installed-unreal-engine-binary-release" class="anchor" href="#within-a-standard-installed-unreal-engine-binary-release"><span class="octicon octicon-link"></span></a>Within a standard installed Unreal Engine binary release:</h5>
+
+<p>Clone the plugin repository under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:</p>
+
+<pre><code>&lt;UnrealEngineInstallation&gt;/4.1/Engine/Plugins/Developer
+</code></pre>
+
+<p>The name of the directory is unimportant:</p>
+
+<div class="highlight highlight-bash"><pre>git clone https://github.com/SRombauts/UE4GitPlugin.git
+</pre></div>
+
+<h5>
+<a name="within-an-unreal-engine-source-release-from-github" class="anchor" href="#within-an-unreal-engine-source-release-from-github"><span class="octicon octicon-link"></span></a>Within an Unreal Engine source release from GitHub:</h5>
+
+<p>Clone the plugin repository under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:</p>
+
+<pre><code>&lt;UnrealEngineClone&gt;/Engine/Plugins/Developer
+</code></pre>
+
+<p>taking care of using the name <strong>GitSourceControl</strong> as destination directory (same name as the "GitSourceControl.uplugin" file):</p>
+
+<div class="highlight highlight-bash"><pre>git clone https://github.com/SRombauts/UE4GitPlugin.git GitSourceControl
+</pre></div>
+
+<h5>
+<a name="within-your-game-project-only" class="anchor" href="#within-your-game-project-only"><span class="octicon octicon-link"></span></a>Within your Game Project only</h5>
+
+<p>Alternatively, you could choose to install the plugin into a subfolder or your Game Project "Plugins" directory:</p>
+
+<pre><code>&lt;YourGameProject&gt;/Plugins
+</code></pre>
+
+<h4>
+<a name="enable-git-plugin-within-the-editor" class="anchor" href="#enable-git-plugin-within-the-editor"><span class="octicon octicon-link"></span></a>Enable Git Plugin within the Editor</h4>
+
+<p>Launch the UE4 Editor, then open:</p>
+
+<pre><code>Windows-&gt;Plugins, enable Editor-&gt;Source Control-&gt;Git
+</code></pre>
+
+<p>click Enable and restart the Editor.</p>
+
+<h4>
+<a name="activate-git-source-control-for-your-game-project" class="anchor" href="#activate-git-source-control-for-your-game-project"><span class="octicon octicon-link"></span></a>Activate Git Source Control for your Game Project</h4>
+
+<p>Load your Game Project, then open:</p>
+
+<pre><code>File-&gt;Connect To Source Control... -&gt; Git: Accept Settings
+</code></pre>
+
+<p>See also the <a href="https://docs.unrealengine.com/latest/INT/Engine/UI/SourceControl/index.html">Source Control official Documentation</a></p>
+
+<h3>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h3>
+
+<p>Copyright (c) 2014 Sébastien Rombauts (<a href="mailto:sebastien.rombauts@gmail.com">sebastien.rombauts@gmail.com</a>)</p>
+
+<p>Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
+or copy at <a href="http://opensource.org/licenses/MIT">http://opensource.org/licenses/MIT</a>)</p>
+
+<h2>
+<a name="how-to-contribute" class="anchor" href="#how-to-contribute"><span class="octicon octicon-link"></span></a>How to contribute</h2>
+
+<h3>
+<a name="github-website" class="anchor" href="#github-website"><span class="octicon octicon-link"></span></a>GitHub website</h3>
+
+<p>The most efficient way to help and contribute to this wrapper project is to
+use the tools provided by GitHub:</p>
+
+<ul>
+<li>please fill bug reports and feature requests here: <a href="https://github.com/SRombauts/UE4GitPlugin/issues">https://github.com/SRombauts/UE4GitPlugin/issues</a>
+</li>
+<li>fork the repository, make some small changes and submit them with independant pull-request</li>
+</ul><h3>
+<a name="contact" class="anchor" href="#contact"><span class="octicon octicon-link"></span></a>Contact</h3>
+
+<p>You can also email me directly, I will answer any questions and requests.</p>
+
+<h3>
+<a name="coding-style-guidelines" class="anchor" href="#coding-style-guidelines"><span class="octicon octicon-link"></span></a>Coding Style Guidelines</h3>
+
+<p>The source code follow the UnreaEngine official <a href="https://docs.unrealengine.com/latest/INT/Programming/Development/CodingStandard/index.html">Coding Standard</a> :</p>
+
+<ul>
+<li>CamelCase naming convention, with a prefix letter to differentiate classes ('F'), interfaces ('I'), templates ('T')</li>
+<li>files (.cpp/.h) are named like the class they contains</li>
+<li>Doxygen comments, documentation is located with declaration, on headers</li>
+<li>Use portable common features of C++11 like nullptr, auto, range based for, OVERRIDE macro</li>
+<li>Braces on their own line</li>
+<li>Tabs to indent code, with a width of 4 characters</li>
+</ul><h2>
+<a name="see-also---some-other-useful-ue4-plugins" class="anchor" href="#see-also---some-other-useful-ue4-plugins"><span class="octicon octicon-link"></span></a>See also - Some other useful UE4 plugins:</h2>
+
+<ul>
+<li><a href="https://github.com/enlight/ue4-hg-plugin">ue4-hg-plugin</a></li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">UE4GitPlugin maintained by <a href="https://github.com/SRombauts">SRombauts</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
