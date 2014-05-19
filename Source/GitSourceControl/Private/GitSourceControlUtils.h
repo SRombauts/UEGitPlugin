@@ -37,7 +37,7 @@ bool FindRootDirectory(const FString& InPathToGameDir, FString& OutRepositoryRoo
  *
  * @param	InPathToGitBinary	The path to the Git binary
  * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
- * @param	InCommand			The Git command - e.g. status
+ * @param	InCommand			The Git command - e.g. commit
  * @param	InParameters		The parameters to the Git command
  * @param	InFiles				The files to be operated on
  * @param	OutResults			The results (from StdOut) as an array per-line
@@ -48,8 +48,25 @@ bool RunCommand(const FString& InPathToGitBinary, const FString& InRepositoryRoo
 
 /**
  * Run a Git status command and parse it.
-*/
+ *
+ * @param	InPathToGitBinary	The path to the Git binary
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+ * @param	InFiles				The files to be operated on
+ * @param	OutErrorMessages	Any errors (from StdErr) as an array per-line
+ * @returns true if the command succeeded and returned no errors
+ */
 bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates);
+
+/**
+* Run a Git show command to dump the binary content of a revision into a file.
+*
+* @param	InPathToGitBinary	The path to the Git binary
+* @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+* @param	InParameter			The parameters to the Git show command (rev:path)
+* @param	InDumpFileName		The temporaty file to dump the revision
+* @returns true if the command succeeded and returned no errors
+*/
+bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InParameter, const FString& InDumpFileName);
 
 /**
  * Parse the array of strings results of a 'git log' command
@@ -71,5 +88,14 @@ void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& I
  * @returns true if any states were updated
  */
 bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates);
+
+/**
+ * Reads all pending data from an anonymous pipe, such as STDOUT or STDERROR of a process.
+ *
+ * @param InReadPipe The handle to the pipe to read from.
+ *
+ * @return A dynamic array containing all data.
+*/
+TArray<uint8> ReadPipeToArray(void* InReadPipe);
 
 }

@@ -10,6 +10,7 @@ See the website http://srombauts.github.com/UE4GitPlugin on GitHub.
 Alpha version 0.1 under heavy developments:
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
+- diff against depot
 - revert modifications of a file
 - add a file
 - delete a file
@@ -56,7 +57,7 @@ Clone the plugin repository under the "Plugins" directory of the Engine, beside 
 <UnrealEngineInstallation>/4.1/Engine/Plugins/Developer
 ```
 
-The name of the directory is unimportant:
+The name of the destination directory is unimportant, so you can just:
 
 ```bash
 git clone https://github.com/SRombauts/UE4GitPlugin.git
@@ -70,7 +71,7 @@ Clone the plugin repository under the "Plugins" directory of the Engine, beside 
 <UnrealEngineClone>/Engine/Plugins/Developer
 ```
 
-taking care of using the name **GitSourceControl** as destination directory (same name as the "GitSourceControl.uplugin" file):
+Take care of using the name **GitSourceControl** as destination directory (same name as the "GitSourceControl.uplugin" file):
 
 ```bash
 git clone https://github.com/SRombauts/UE4GitPlugin.git GitSourceControl
@@ -83,6 +84,8 @@ Alternatively, you could choose to install the plugin into a subfolder or your G
 ```
 <YourGameProject>/Plugins
 ```
+
+In this case, you will obviously only be able to use the plugin within this project.
 
 #### Enable Git Plugin within the Editor
 

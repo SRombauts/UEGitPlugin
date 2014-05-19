@@ -5,13 +5,37 @@
 
 #include "GitSourceControlPrivatePCH.h"
 #include "GitSourceControlRevision.h"
+#include "GitSourceControlModule.h"
+#include "GitSourceControlProvider.h"
+#include "GitSourceControlUtils.h"
+#include "SGitSourceControlSettings.h"
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"
 
 bool FGitSourceControlRevision::Get( FString& InOutFilename ) const
 {
-	// @todo git show file blob content into a temporary file
-	return false;
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	FString PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
+	FString PathToRepositoryRoot = GitSourceControl.GetProvider().GetPathToRepositoryRoot();
+
+	// if a filename for the temp file wasn't supplied generate a unique-ish one
+	if(InOutFilename.Len() == 0)
+	{
+		// create the diff dir if we don't already have it (SVN wont)
+		IFileManager::Get().MakeDirectory(*FPaths::DiffDir(), true);
+
+		FString TempFileName = FString::Printf(TEXT("%stemp-%s-%s"), *FPaths::DiffDir(), *CommitId, *FPaths::GetCleanFilename(Filename));
+		InOutFilename = FPaths::ConvertRelativePathToFull(TempFileName);
+	}
+
+	// Diff against the revision
+	FString Parameter = CommitId;
+	Parameter += TEXT(":");
+	Parameter += *Filename;
+
+	bool bCommandSuccessful = GitSourceControlUtils::RunDumpToFile(PathToGitBinary, PathToRepositoryRoot, Parameter, InOutFilename);
+
+	return bCommandSuccessful;
 }
 
 bool FGitSourceControlRevision::GetAnnotated( TArray<FAnnotationLine>& OutLines ) const

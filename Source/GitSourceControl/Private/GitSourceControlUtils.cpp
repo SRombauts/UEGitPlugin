@@ -197,6 +197,96 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 	return bResult;
 }
 
+/**
+* Run a Git show command to dump the binary content of a revision into a file.
+*/
+bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InParameter, const FString& InDumpFileName)
+{
+	bool bResult = false;
+	FString FullCommand;
+
+	if(!InRepositoryRoot.IsEmpty())
+	{
+		// Specify the working copy (the root) of the git repository (before the command itself)
+		FullCommand = TEXT("--work-tree=\"");
+		FullCommand += InRepositoryRoot;
+		// and the ".git" subdirectory in it (before the command itself)
+		FullCommand += TEXT("\" --git-dir=\"");
+		FullCommand += InRepositoryRoot;
+		FullCommand += TEXT(".git\" ");
+	}
+	// then the git command itself
+	FullCommand += TEXT("show ");
+
+	// Append to the command the parameter
+	FullCommand += InParameter;
+
+	const bool bLaunchDetached = false;
+	const bool bLaunchHidden = true;
+	const bool bLaunchReallyHidden = bLaunchHidden;
+
+	// Setup output redirection pipes, so that we can harvest compiler output and display it ourselves
+#if PLATFORM_LINUX
+	int pipefd[2];
+	pipe(pipefd);
+	void* PipeRead = &pipefd[0];
+	void* PipeWrite = &pipefd[1];
+#else
+	void* PipeRead = NULL;
+	void* PipeWrite = NULL;
+#endif
+
+	verify(FPlatformProcess::CreatePipe(PipeRead, PipeWrite));
+
+	// @todo temp debug log
+	//UE_LOG(LogSourceControl, Log, TEXT("RunDumpToFile: 'git %s'"), *FullCommand);
+	FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*InPathToGitBinary, *FullCommand, bLaunchDetached, bLaunchHidden, bLaunchReallyHidden, NULL, 0, NULL, PipeWrite);
+	//UE_LOG(LogSourceControl, Log, TEXT("RunDumpToFile: ProcessHandle=%x"), ProcessHandle.Get());
+	if(ProcessHandle.IsValid())
+	{
+		FPlatformProcess::Sleep(0.01);
+
+		TArray<uint8> BinaryFileContent;
+		while(FPlatformProcess::IsProcRunning(ProcessHandle))
+		{
+			TArray<uint8> BinaryData = GitSourceControlUtils::ReadPipeToArray(PipeRead);
+			if(BinaryData.Num() > 0)
+			{
+				BinaryFileContent.Append(BinaryData);
+			}
+		}
+		TArray<uint8> BinaryData = GitSourceControlUtils::ReadPipeToArray(PipeRead);
+		if(BinaryData.Num() > 0)
+		{
+			BinaryFileContent.Append(BinaryData);
+		}
+		//UE_LOG(LogSourceControl, Log, TEXT("RunDumpToFile: size='%s'o"), BinaryFileContent.Num());
+		// Save buffer into temp file
+		if(FFileHelper::SaveArrayToFile(BinaryFileContent, *InDumpFileName))
+		{
+			UE_LOG(LogSourceControl, Log, TEXT("Writed '%s'"), *InDumpFileName);
+			bResult = true;
+		}
+		else
+		{
+			UE_LOG(LogSourceControl, Error, TEXT("Could not write %s"), *InDumpFileName);
+		}
+	}
+	else
+	{
+		UE_LOG(LogSourceControl, Error, TEXT("Failed to launch 'git show'"));
+	}
+
+#if PLATFORM_LINUX
+	close(*(int*)ReadPipe);
+	close(*(int*)PipeWrite);
+#else
+	FPlatformProcess::ClosePipe(PipeRead, PipeWrite);
+#endif
+
+	return bResult;
+}
+
 /** Example git log results:
 commit 97a4e7626681895e073aaefd68b8ac087db81b0b
 Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
@@ -263,7 +353,7 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
 		else
 		{
 			SourceControlRevision->Action = Result.Left(1); // @todo Readable string state
-			SourceControlRevision->Filename = Result.RightChop(8); // relative filename
+			SourceControlRevision->Filename = Result.RightChop(2); // relative filename
 		}
 	}
 	// End of the last commit
@@ -420,5 +510,38 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 
 	return (NbStatesUpdated > 0);
 }
+
+#if PLATFORM_WINDOWS
+TArray<uint8> ReadPipeToArray(void* ReadPipe)
+{
+	TArray<uint8> Output;
+
+	uint32 BytesAvailable = 0;
+	if(::PeekNamedPipe(ReadPipe, NULL, 0, NULL, (::DWORD*)&BytesAvailable, NULL) && (BytesAvailable > 0))
+	{
+		Output.Init(BytesAvailable);
+		uint32 BytesRead = 0;
+		if(::ReadFile(ReadPipe, Output.GetData(), BytesAvailable, (::DWORD*)&BytesRead, NULL))
+		{
+			if(BytesRead < BytesAvailable)
+			{
+				Output.SetNum(BytesRead);
+			}
+		}
+	}
+
+	return Output;
+}
+#endif // PLATFORM_WINDOWS
+#if PLATFORM_LINUX
+TArray<uint8> ReadPipeToArray(void* ReadPipe)
+{
+	TArray<uint8> Output;
+
+	// @todo ReadPipeToArray for Linux
+
+	return Output;
+}
+#endif // PLATFORM_LINUX
 
 }
