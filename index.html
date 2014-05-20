@@ -4,7 +4,7 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="UE4GitPlugin : GitSourceControl UE4 Plugin (alpha 0.1)" />
+    <meta name="description" content="UE4GitPlugin : GitSourceControl UE4 Plugin (alpha 0.2)" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -19,7 +19,7 @@
           <a id="forkme_banner" href="https://github.com/SRombauts/UE4GitPlugin">View on GitHub</a>
 
           <h1 id="project_title">UE4GitPlugin</h1>
-          <h2 id="project_tagline">GitSourceControl UE4 Plugin (alpha 0.1)</h2>
+          <h2 id="project_tagline">GitSourceControl UE4 Plugin (alpha 0.2)</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/SRombauts/UE4GitPlugin/zipball/master">Download this project as a .zip file</a>
@@ -39,12 +39,12 @@
 <h3>
 <a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h3>
 
-<p>Alpha version 0.1 under heavy developments:</p>
+<p>Alpha version 0.2 under heavy developments:</p>
 
 <ul>
 <li>display status icons to show modified/added/deleted/untracked files</li>
 <li>show history of a file</li>
-<li>diff against depot</li>
+<li>diff against depot or between previous versions of a file</li>
 <li>revert modifications of a file</li>
 <li>add a file</li>
 <li>delete a file</li>
@@ -53,11 +53,19 @@
 <ul>
 <li>initialize a new Git repository: you have to do it by yourself when creating a new UE4 Game Project.</li>
 <li>configure user name &amp; email</li>
-<li>diff with a previous version of a file</li>
 <li>checkin/commit a file</li>
 <li>checkout a specific version of a file</li>
 <li>Pull/Fetch/Push are not possible within the current Editor workflow</li>
 <li>Branch and Merge are not possible within the current Editor workflow (but this is on Epic Roadmap)</li>
+<li>Amend a commit, Add file to index...</li>
+</ul><p>Known issues:</p>
+
+<ul>
+<li>reverting an asset does not seem to update content in Editor! Pb might be in Editor itself...</li>
+<li>renaming an asset does not seem to be handled correctly by the Editor...</li>
+<li>renamed file may not be tracked correctly (not yet tested, see above)</li>
+<li>a false error is logged when reverting newly added file</li>
+<li>file history does not report file size</li>
 </ul><h3>
 <a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting started</h3>
 
@@ -95,7 +103,7 @@ For instance:</p>
 <pre><code>&lt;UnrealEngineInstallation&gt;/4.1/Engine/Plugins/Developer
 </code></pre>
 
-<p>The name of the directory is unimportant:</p>
+<p>The name of the destination directory is unimportant, so you can just:</p>
 
 <div class="highlight highlight-bash"><pre>git clone https://github.com/SRombauts/UE4GitPlugin.git
 </pre></div>
@@ -108,7 +116,7 @@ For instance:</p>
 <pre><code>&lt;UnrealEngineClone&gt;/Engine/Plugins/Developer
 </code></pre>
 
-<p>taking care of using the name <strong>GitSourceControl</strong> as destination directory (same name as the "GitSourceControl.uplugin" file):</p>
+<p>Take care of using the name <strong>GitSourceControl</strong> as destination directory (same name as the "GitSourceControl.uplugin" file):</p>
 
 <div class="highlight highlight-bash"><pre>git clone https://github.com/SRombauts/UE4GitPlugin.git GitSourceControl
 </pre></div>
@@ -120,6 +128,8 @@ For instance:</p>
 
 <pre><code>&lt;YourGameProject&gt;/Plugins
 </code></pre>
+
+<p>In this case, you will obviously only be able to use the plugin within this project.</p>
 
 <h4>
 <a name="enable-git-plugin-within-the-editor" class="anchor" href="#enable-git-plugin-within-the-editor"><span class="octicon octicon-link"></span></a>Enable Git Plugin within the Editor</h4>
@@ -180,10 +190,9 @@ use the tools provided by GitHub:</p>
 <li>Braces on their own line</li>
 <li>Tabs to indent code, with a width of 4 characters</li>
 </ul><h2>
-<a name="see-also-" class="anchor" href="#see-also-"><span class="octicon octicon-link"></span></a>See also :</h2>
+<a name="see-also---some-other-useful-ue4-plugins" class="anchor" href="#see-also---some-other-useful-ue4-plugins"><span class="octicon octicon-link"></span></a>See also - Some other useful UE4 plugins:</h2>
 
 <ul>
-<li><a href="https://github.com/SRombauts/UE4GitPlugin">UE4GitPlugin</a></li>
 <li><a href="https://github.com/enlight/ue4-hg-plugin">ue4-hg-plugin</a></li>
 </ul>
       </section>
