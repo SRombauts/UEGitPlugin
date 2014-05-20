@@ -298,7 +298,7 @@ Date:   2014-05-15 21:32:27 +0200
      - some <xml>
      - and strange characteres $*+
 
-M       Content/Blueprints/Blueprint_CeilingLight.uasset
+M	Content/Blueprints/Blueprint_CeilingLight.uasset
 
 commit 355f0df26ebd3888adbb558fd42bb8bd3e565000
 Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
@@ -306,7 +306,7 @@ Date:   2014-05-12 11:28:14 +0200
 
     Testing git status, edit, and revert
 
-A       Content/Blueprints/Blueprint_CeilingLight.uasset
+A		 Content/Blueprints/Blueprint_CeilingLight.uasset
 */
 void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory& OutHistory)
 {
@@ -528,20 +528,70 @@ TArray<uint8> ReadPipeToArray(void* ReadPipe)
 				Output.SetNum(BytesRead);
 			}
 		}
+		else
+		{
+			Output.Empty();
+		}
 	}
 
 	return Output;
 }
-#endif // PLATFORM_WINDOWS
-#if PLATFORM_LINUX
+#elif PLATFORM_MAC
+TArray<uint8> ReadPipeToArray(void* ReadPipe)
+{
+	SCOPED_AUTORELEASE_POOL;
+
+	TArray<uint8> Output;
+	const int32 READ_SIZE = 4096;
+	ANSICHAR Buffer[READ_SIZE+1];
+	int32 BytesRead = 0;
+
+	if(ReadPipe)
+	{
+		BytesRead = read([(NSFileHandle*)ReadPipe fileDescriptor], Buffer, READ_SIZE);
+		if (BytesRead > 0)
+		{
+			// @todo ReadPipeToArray Mac
+			// Output.Append(Buffer, BytesRead);
+		}
+	}
+
+	return Output;
+}
+#elif PLATFORM_LINUX
 TArray<uint8> ReadPipeToArray(void* ReadPipe)
 {
 	TArray<uint8> Output;
 
-	// @todo ReadPipeToArray for Linux
+	if (ReadPipe)
+	{
+		FPipeHandle * PipeHandle = reinterpret_cast< FPipeHandle* >(ReadPipe);
+		int PipeDesc = PipeHandle->GetHandle();
+
+		int BytesAvailable = 0;
+		if (ioctl(PipeDesc, FIONREAD, &BytesAvailable) == 0)
+		{
+			if (BytesAvailable > 0)
+			{
+				Output.Init(BytesAvailable);
+				int BytesRead = read(PipeDesc, Buffer, kBufferSize - 1);
+				if (BytesRead > 0)
+				{
+					if(BytesRead < BytesAvailable)
+					{
+						Output.SetNum(BytesRead);
+					}
+					else
+					{
+						Output.Empty();
+					}
+				}
+			}
+		}
+	}
 
 	return Output;
 }
-#endif // PLATFORM_LINUX
+#endif
 
 }
