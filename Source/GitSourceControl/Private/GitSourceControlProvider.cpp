@@ -60,7 +60,7 @@ FText FGitSourceControlProvider::GetStatusText() const
 {
 	FFormatNamedArguments Args;
 	Args.Add( TEXT("IsEnabled"), IsEnabled() ? LOCTEXT("Yes", "Yes") : LOCTEXT("No", "No") );
-	Args.Add( TEXT("RepositoryName"), FText::FromString( PathToGameDir ) );
+	Args.Add( TEXT("RepositoryName"), FText::FromString( PathToRepositoryRoot ) );
 	// @todo Add current branch name
 
 	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Enabled: {IsEnabled}\nRepository: {RepositoryName}"), Args );

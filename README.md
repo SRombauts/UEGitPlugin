@@ -7,10 +7,10 @@ See the website http://srombauts.github.com/UE4GitPlugin on GitHub.
 
 ### Status
 
-Alpha version 0.1 under heavy developments:
+Alpha version 0.2 under heavy developments:
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
-- diff against depot
+- diff against depot or between previous versions of a file
 - revert modifications of a file
 - add a file
 - delete a file
@@ -18,18 +18,25 @@ Alpha version 0.1 under heavy developments:
 What *cannot* be done presently (TODO list):
 - initialize a new Git repository: you have to do it by yourself when creating a new UE4 Game Project.
 - configure user name & email
-- diff with a previous version of a file
 - checkin/commit a file
 - checkout a specific version of a file
 - Pull/Fetch/Push are not possible within the current Editor workflow
 - Branch and Merge are not possible within the current Editor workflow (but this is on Epic Roadmap)
+- Amend a commit, Add file to index...
+
+Known issues:
+- reverting an asset does not seem to update content in Editor! Pb might be in Editor itself...
+- renaming an asset does not seem to be handled correctly by the Editor...
+- renamed file may not be tracked correctly (not yet tested, see above)
+- a false error is logged when reverting newly added file
+- file history does not report file size
 
 ### Getting started
 
 #### Install Git
 
 Under Windows 64bits, you could either:
-- install a standalone Git, usualy in "C:\Program Files (x86)\Git\bin\git.exe".
+- install a standalone Git, usually in "C:\Program Files (x86)\Git\bin\git.exe".
 - or copy a [portable Git](https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit)
 inside "<UnrealEngine>/Engine/Binaries/ThirdParty/git/Win32".
 - TODO: What about TortoiseGit?
@@ -45,7 +52,7 @@ C:/Users/<username>/Documents/Unreal Projects/<YourGameProject>
 
 #### Install this Git Plugin
 
-There are a few differents means to use a Plugin with UE4
+There are a few ways to use a Plugin with UE4.
 
 See also the [Plugins official Documentation](https://docs.unrealengine.com/latest/INT/Programming/Plugins/index.html)
 
