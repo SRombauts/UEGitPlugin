@@ -24,7 +24,9 @@ bool FGitSourceControlRevision::Get( FString& InOutFilename ) const
 		// create the diff dir if we don't already have it (SVN wont)
 		IFileManager::Get().MakeDirectory(*FPaths::DiffDir(), true);
 
-		FString TempFileName = FString::Printf(TEXT("%stemp-%s-%s"), *FPaths::DiffDir(), *CommitId, *FPaths::GetCleanFilename(Filename));
+		// @todo why is a counter needed to avoid overlapping files; temp files are not released by Editor!
+		static int32 TempFileCount = 0;
+		FString TempFileName = FString::Printf(TEXT("%stemp-%d-%s-%s"), *FPaths::DiffDir(), TempFileCount++, *CommitId, *FPaths::GetCleanFilename(Filename));
 		InOutFilename = FPaths::ConvertRelativePathToFull(TempFileName);
 	}
 
