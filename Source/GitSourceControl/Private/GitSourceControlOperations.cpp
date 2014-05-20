@@ -98,7 +98,7 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 	// revert any changes in working copy
 	{
 		TArray<FString> Parameters;
-		// @todo does not alarm when reverting added file
+		// @todo do not alarm when reverting newly added file
 		//Parameters.Add(TEXT("--quiet"));
 		//Parameters.Add(TEXT("--force"));
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("checkout"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
@@ -126,7 +126,6 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 
 	TSharedRef<FUpdateStatus, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FUpdateStatus>(InCommand.Operation);
 
-	// @todo cleanup the following if/else if if conditions (see mercurial plugin)
 	if(InCommand.Files.Num() > 0)
 	{
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.Files, InCommand.ErrorMessages, States);

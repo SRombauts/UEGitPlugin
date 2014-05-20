@@ -9,7 +9,8 @@
 #include "GitSourceControlState.h"
 #include "GitSourceControlRevision.h"
 
-/** @todo doc */
+/** Called when first activated on a project, and then at project load time.
+ *  Look for the root directory of the git repository (where the ".git/" subdirectory is located). */
 class FGitConnectWorker : public IGitSourceControlWorker
 {
 public:
@@ -49,7 +50,7 @@ public:
 };
 */
 
-/** @todo doc */
+/** Add an untraked file to source control (so only a subset of the git add command). */
 class FGitMarkForAddWorker : public IGitSourceControlWorker
 {
 public:
@@ -63,7 +64,7 @@ public:
 	TArray<FGitSourceControlState> States;
 };
 
-/** @todo doc */
+/** Delete a file and remove it from source control. */
 class FGitDeleteWorker : public IGitSourceControlWorker
 {
 public:
@@ -77,7 +78,7 @@ public:
 	TArray<FGitSourceControlState> States;
 };
 
-/** @todo doc */
+/** Revert any change to a file to its state on the local depot. */
 class FGitRevertWorker : public IGitSourceControlWorker
 {
 public:
@@ -106,7 +107,7 @@ public:
 };
 */
 
-/** @todo doc */
+/** Get source control status of files on local working copy. */
 class FGitUpdateStatusWorker : public IGitSourceControlWorker
 {
 public:
