@@ -129,14 +129,6 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 		FMessageLog("SourceControl").Error(FText::Format(LOCTEXT("UnsupportedOperation", "Operation '{OperationName}' not supported by source control provider '{ProviderName}'"), Arguments));
 		return ECommandResult::Failed;
 	}
-	else
-	{
-		// @todo Temporary debug code
-		FFormatNamedArguments Arguments;
-		Arguments.Add(TEXT("OperationName"), FText::FromName(InOperation->GetName()));
-		Arguments.Add(TEXT("ProviderName"), FText::FromName(GetName()));
-		FMessageLog("SourceControl").Info(FText::Format(LOCTEXT("Execute", "Execute: Operation '{OperationName}' by source control provider '{ProviderName}'"), Arguments));
-	}
 
 	FGitSourceControlCommand* Command = new FGitSourceControlCommand(InOperation, Worker.ToSharedRef());
 	Command->Files = InFiles;
@@ -188,9 +180,6 @@ void FGitSourceControlProvider::RegisterWorker( const FName& InName, const FGetG
 void FGitSourceControlProvider::OutputCommandMessages(const FGitSourceControlCommand& InCommand) const
 {
 	FMessageLog SourceControlLog("SourceControl");
-
-    // @todo debug log
-    SourceControlLog.Info(FText::FromName(InCommand.Operation->GetName()));
 
 	for(int32 ErrorIndex = 0; ErrorIndex < InCommand.ErrorMessages.Num(); ++ErrorIndex)
 	{
