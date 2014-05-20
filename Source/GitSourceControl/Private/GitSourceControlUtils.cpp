@@ -287,6 +287,50 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	return bResult;
 }
 
+
+/**
+* Extract and interpret the file state from the given Git log --name-status.
+* @see https://www.kernel.org/pub/software/scm/git/docs/git-log.html
+* ' ' = unmodified
+* 'M' = modified
+* 'A' = added
+* 'D' = deleted
+* 'R' = renamed
+* 'C' = copied
+* 'T' = type changed
+* 'U' = updated but unmerged
+* 'X' = unknown
+* 'B' = broken pairing
+*/
+FString LogStatusToString(TCHAR InStatus)
+{
+	switch(InStatus)
+	{
+	case TEXT(' '):
+		return FString("unmodified");
+	case TEXT('M'):
+		return FString("modified");
+	case TEXT('A'):
+		return FString("added");
+	case TEXT('D'):
+		return FString("deleted");
+	case TEXT('R'):
+		return FString("renamed");
+	case TEXT('C'):
+		return FString("copied");
+	case TEXT('T'):
+		return FString("type changed");
+	case TEXT('U'):
+		return FString("unmerged");
+	case TEXT('X'):
+		return FString("unknown");
+	case TEXT('B'):
+		return FString("broked pairing");
+	}
+
+	return FString();
+}
+
 /** Example git log results:
 commit 97a4e7626681895e073aaefd68b8ac087db81b0b
 Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
@@ -352,7 +396,8 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
 		}
 		else
 		{
-			SourceControlRevision->Action = Result.Left(1); // @todo Readable string state
+			TCHAR Status = Result[0];
+			SourceControlRevision->Action = LogStatusToString(Status); // Readable action string ("Added", Modified"...) instead of "A"/"M"...
 			SourceControlRevision->Filename = Result.RightChop(2); // relative filename
 		}
 	}
