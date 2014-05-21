@@ -19,11 +19,13 @@ Alpha version 0.3 under developments:
 What *cannot* be done presently (TODO list):
 - initialize a new Git local repository ('git init') to manager your UE4 Game Project.
 - configure user name & email ('git config user.name' & git config user.email')
+- commit description message cannot take more than one line (Editor limitation)
 - Pull/Fetch/Push are not in the current Editor workflow
 - Branch and Merge are not in the current Editor workflow (but on Epic Roadmap)
 - Amend a commit & Add file to Index are not in the current Editor workflow
 
 Known issues:
+- checkin/commit a lot of files (cannot handle atomically more than 20 files)
 - reverting an asset does not seem to update content in Editor! Issue in Editor?
 - renaming an asset does not seem to be handled correctly by the Editor...
 - renamed file may not be tracked correctly (not yet tested, see above)
