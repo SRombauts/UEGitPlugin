@@ -63,7 +63,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 * @param	InPathToGitBinary	The path to the Git binary
 * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
 * @param	InParameter			The parameters to the Git show command (rev:path)
-* @param	InDumpFileName		The temporaty file to dump the revision
+* @param	InDumpFileName		The temporary file to dump the revision
 * @returns true if the command succeeded and returned no errors
 */
 bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InParameter, const FString& InDumpFileName);

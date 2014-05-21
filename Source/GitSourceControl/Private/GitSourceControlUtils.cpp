@@ -556,6 +556,7 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 	return (NbStatesUpdated > 0);
 }
 
+// @todo PullRequest to integrate this in FGenericPlatformProcess, FWindowsPlatformProcess, FMacPlatformProcess and FLinuxPlatformProcess
 #if PLATFORM_WINDOWS
 TArray<uint8> ReadPipeToArray(void* ReadPipe)
 {
@@ -587,17 +588,16 @@ TArray<uint8> ReadPipeToArray(void* ReadPipe)
 	SCOPED_AUTORELEASE_POOL;
 
 	TArray<uint8> Output;
-	const int32 READ_SIZE = 4096;
-	ANSICHAR Buffer[READ_SIZE+1];
-	int32 BytesRead = 0;
+   const int32 READ_SIZE = 32768;
 
 	if(ReadPipe)
 	{
-		BytesRead = read([(NSFileHandle*)ReadPipe fileDescriptor], Buffer, READ_SIZE);
-		if (BytesRead > 0)
+	   Output.Init(READ_SIZE);
+	   int32 BytesRead = 0;
+		BytesRead = read([(NSFileHandle*)ReadPipe fileDescriptor], Output.GetData(), READ_SIZE);
+		if ( (BytesRead > 0) && (BytesRead < READ_SIZE))
 		{
-			// @todo ReadPipeToArray Mac
-			// Output.Append(Buffer, BytesRead);
+         Output.SetNum(BytesRead);
 		}
 	}
 

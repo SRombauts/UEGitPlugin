@@ -39,7 +39,6 @@ Under Windows 64bits, you could either:
 - install a standalone Git, usually in "C:\Program Files (x86)\Git\bin\git.exe".
 - or copy a [portable Git](https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit)
 inside "<UnrealEngine>/Engine/Binaries/ThirdParty/git/Win32".
-- TODO: What about TortoiseGit?
 
 #### Initialize your Game Project directory with Git
 
