@@ -7,29 +7,29 @@ See the website http://srombauts.github.com/UE4GitPlugin on GitHub.
 
 ### Status
 
-Alpha version 0.2 under heavy developments:
+Alpha version 0.3 under developments:
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
 - diff against depot or between previous versions of a file
 - revert modifications of a file
 - add a file
 - delete a file
+- checkin/commit a file (cannot handle atomically more than 20 files)
 
 What *cannot* be done presently (TODO list):
-- initialize a new Git repository: you have to do it by yourself when creating a new UE4 Game Project.
-- configure user name & email
-- checkin/commit a file
-- checkout a specific version of a file
-- Pull/Fetch/Push are not possible within the current Editor workflow
-- Branch and Merge are not possible within the current Editor workflow (but this is on Epic Roadmap)
-- Amend a commit, Add file to index...
+- initialize a new Git local repository ('git init') to manager your UE4 Game Project.
+- configure user name & email ('git config user.name' & git config user.email')
+- Pull/Fetch/Push are not in the current Editor workflow
+- Branch and Merge are not in the current Editor workflow (but on Epic Roadmap)
+- Amend a commit & Add file to Index are not in the current Editor workflow
 
 Known issues:
-- reverting an asset does not seem to update content in Editor! Pb might be in Editor itself...
+- reverting an asset does not seem to update content in Editor! Issue in Editor?
 - renaming an asset does not seem to be handled correctly by the Editor...
 - renamed file may not be tracked correctly (not yet tested, see above)
 - a false error is logged when reverting newly added file
 - file history does not report file size
+- Windows only (64bits)
 
 ### Getting started
 
