@@ -4,7 +4,7 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="UE4GitPlugin : GitSourceControl UE4 Plugin (alpha 0.2)" />
+    <meta name="description" content="UE4GitPlugin : GitSourceControl UE4 Plugin (alpha 0.3)" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -19,7 +19,7 @@
           <a id="forkme_banner" href="https://github.com/SRombauts/UE4GitPlugin">View on GitHub</a>
 
           <h1 id="project_title">UE4GitPlugin</h1>
-          <h2 id="project_tagline">GitSourceControl UE4 Plugin (alpha 0.2)</h2>
+          <h2 id="project_tagline">GitSourceControl UE4 Plugin (alpha 0.3)</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/SRombauts/UE4GitPlugin/zipball/master">Download this project as a .zip file</a>
@@ -39,7 +39,7 @@
 <h3>
 <a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h3>
 
-<p>Alpha version 0.2 under heavy developments:</p>
+<p>Alpha version 0.3 under developments:</p>
 
 <ul>
 <li>display status icons to show modified/added/deleted/untracked files</li>
@@ -48,24 +48,24 @@
 <li>revert modifications of a file</li>
 <li>add a file</li>
 <li>delete a file</li>
+<li>checkin/commit a file (cannot handle atomically more than 20 files)</li>
 </ul><p>What <em>cannot</em> be done presently (TODO list):</p>
 
 <ul>
-<li>initialize a new Git repository: you have to do it by yourself when creating a new UE4 Game Project.</li>
-<li>configure user name &amp; email</li>
-<li>checkin/commit a file</li>
-<li>checkout a specific version of a file</li>
-<li>Pull/Fetch/Push are not possible within the current Editor workflow</li>
-<li>Branch and Merge are not possible within the current Editor workflow (but this is on Epic Roadmap)</li>
-<li>Amend a commit, Add file to index...</li>
+<li>initialize a new Git local repository ('git init') to manager your UE4 Game Project.</li>
+<li>configure user name &amp; email ('git config user.name' &amp; git config user.email')</li>
+<li>Pull/Fetch/Push are not in the current Editor workflow</li>
+<li>Branch and Merge are not in the current Editor workflow (but on Epic Roadmap)</li>
+<li>Amend a commit &amp; Add file to Index are not in the current Editor workflow</li>
 </ul><p>Known issues:</p>
 
 <ul>
-<li>reverting an asset does not seem to update content in Editor! Pb might be in Editor itself...</li>
+<li>reverting an asset does not seem to update content in Editor! Issue in Editor?</li>
 <li>renaming an asset does not seem to be handled correctly by the Editor...</li>
 <li>renamed file may not be tracked correctly (not yet tested, see above)</li>
 <li>a false error is logged when reverting newly added file</li>
 <li>file history does not report file size</li>
+<li>Windows only (64bits)</li>
 </ul><h3>
 <a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting started</h3>
 
