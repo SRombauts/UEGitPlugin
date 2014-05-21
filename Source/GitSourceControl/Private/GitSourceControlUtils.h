@@ -8,6 +8,27 @@
 #include "GitSourceControlState.h"
 #include "GitSourceControlRevision.h"
 
+/**
+ * Helper struct for maintaining temporary files for passing to commands
+ */
+class FScopedTempFile
+{
+public:
+
+	/** Constructor - open & write string to temp file */
+	FScopedTempFile(const FText& InText);
+
+	/** Destructor - delete temp file */
+	~FScopedTempFile();
+
+	/** Get the filename of this temp file - empty if it failed to be created */
+	const FString& GetFilename() const;
+
+private:
+	/** The filename we are writing to */
+	FString Filename;
+};
+
 namespace GitSourceControlUtils
 {
 

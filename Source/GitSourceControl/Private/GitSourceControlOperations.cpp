@@ -52,53 +52,28 @@ FName FGitCheckInWorker::GetName() const
 bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	check(InCommand.Operation->GetName() == "CheckIn");
+
 	TSharedRef<FCheckIn, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FCheckIn>(InCommand.Operation);
 
-	/* @todo: implement GitCheckInWorker
-	// make a temp file to place our message in
-	FScopedTempFile DescriptionFile(Operation->GetDescription());
-	if(DescriptionFile.GetFilename().Len() > 0)
+	// make a temp file to place our commit message in
+	FScopedTempFile CommitMsgFile(Operation->GetDescription());
+	if(CommitMsgFile.GetFilename().Len() > 0)
 	{
 		TArray<FString> Parameters;
-		FString DescriptionFilename = DescriptionFile.GetFilename();
-		GitSourceControlUtils::QuoteFilename(DescriptionFilename);
-		Parameters.Add(FString(TEXT("--file ")) + DescriptionFilename);
+		FString ParamCommitMsgFilename = TEXT("--file=\"");
+		ParamCommitMsgFilename += FPaths::ConvertRelativePathToFull(CommitMsgFile.GetFilename());
+		ParamCommitMsgFilename += TEXT("\"");
+		Parameters.Add(ParamCommitMsgFilename);
 
-		if(DescriptionFile.IsUnicode())
+		// @todo: use "git commit --amend <files>" for batch commit
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("commit"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+		if(InCommand.bCommandSuccessful)
 		{
-			Parameters.Add(TEXT("--encoding utf-8"));
-		}
-
-		// we need commit directories that are marked for add here if we are committing any child files that are also marked for add
-		TArray<FString> FilesToCommit = InCommand.Files;
-		AddDirectoriesToCommit(InCommand, FilesToCommit);
-
-		// we need another temp file to add our file list to (as this must be an atomic operation we cant risk overflowing command-line limits)
-		FString Targets;
-		for(auto It(FilesToCommit.CreateConstIterator()); It; It++)
-		{
-			FString Target = It->TrimQuotes();
-			Targets += Target + LINE_TERMINATOR;
-		}
-
-		FScopedTempFile TargetsFile(Targets);
-		if(TargetsFile.GetFilename().Len() > 0)
-		{
-			FString TargetsFilename = TargetsFile.GetFilename();
-			GitSourceControlUtils::QuoteFilename(TargetsFilename);
-			Parameters.Add(FString(TEXT("--targets ")) + TargetsFilename);
-
-			// TODO: WorkingDirectory
-			InCommand.bCommandSuccessful = GitSourceControlUtils::RunAtomicCommand(TEXT("commit"), "", TArray<FString>(), Parameters, InCommand.InfoMessages, InCommand.ErrorMessages);
-			if(InCommand.bCommandSuccessful)
-			{
-				check(InCommand.Operation->GetName() == "CheckIn");
-				TSharedRef<FCheckIn, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FCheckIn>(InCommand.Operation);
-				Operation->SetSuccessMessage(ParseCommitResults(InCommand.InfoMessages));
-			}
+			// @todo SetSuccessMessage ParseCommitResults
+			// Operation->SetSuccessMessage(ParseCommitResults(InCommand.InfoMessages));
+			UE_LOG(LogSourceControl, Log, TEXT("FGitCheckInWorker: commit successful"));
 		}
 	}
-	*/
 
 	// now update the status of our files
 	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.Files, InCommand.ErrorMessages, States);
@@ -225,9 +200,13 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 		// Perforce "opened files" are those that have been modified (or added/deleted): that is what we get with a simple Git status from the root
 		if(Operation->ShouldGetOpenedOnly())
 		{
-			TArray<FString> Files;
-			Files.Add(FPaths::ConvertRelativePathToFull(FPaths::GameDir()));
-			InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Files, InCommand.ErrorMessages, States);
+			// @todo Cannot work before "Connect" operation!
+			if(!InCommand.PathToRepositoryRoot.IsEmpty())
+			{
+				TArray<FString> Files;
+				Files.Add(FPaths::ConvertRelativePathToFull(FPaths::GameDir()));
+				InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Files, InCommand.ErrorMessages, States);
+			}
 		}
 		else
 		{

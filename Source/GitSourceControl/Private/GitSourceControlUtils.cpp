@@ -15,6 +15,32 @@ namespace GitSourceControlConstants
 	const int32 MaxFilesPerBatch = 20;
 }
 
+FScopedTempFile::FScopedTempFile(const FText& InText)
+{
+	Filename = FPaths::CreateTempFilename(*FPaths::GameLogDir(), TEXT("Git-Temp"), TEXT(".txt"));
+	if (!FFileHelper::SaveStringToFile(InText.ToString(), *Filename, FFileHelper::EEncodingOptions::ForceUTF8))
+	{
+		UE_LOG(LogSourceControl, Error, TEXT("Failed to write to temp file: %s"), *Filename);
+	}
+}
+
+FScopedTempFile::~FScopedTempFile()
+{
+	if(FPaths::FileExists(Filename))
+	{
+		if(!FPlatformFileManager::Get().GetPlatformFile().DeleteFile(*Filename))
+		{
+			UE_LOG(LogSourceControl, Error, TEXT("Failed to delete temp file: %s"), *Filename);
+		}
+	}
+}
+
+const FString& FScopedTempFile::GetFilename() const
+{
+	return Filename;
+}
+
+
 namespace GitSourceControlUtils
 {
 
@@ -246,6 +272,7 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	{
 		FPlatformProcess::Sleep(0.01);
 
+		// @todo Append directly to the temp file whithout intermediate Array?
 		TArray<uint8> BinaryFileContent;
 		while(FPlatformProcess::IsProcRunning(ProcessHandle))
 		{
