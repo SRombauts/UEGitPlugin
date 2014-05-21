@@ -26,6 +26,7 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 	{
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("status"), TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 	}
+	// @todo Get current branche name
 	if(!InCommand.bCommandSuccessful || InCommand.ErrorMessages.Num() > 0 || InCommand.InfoMessages.Num() == 0)
 	{
 		// @todo popup to propose to initialize the git repository
@@ -41,6 +42,73 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 bool FGitConnectWorker::UpdateStates() const
 {
 	return false;
+}
+
+FName FGitCheckInWorker::GetName() const
+{
+	return "CheckIn";
+}
+
+bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
+{
+	check(InCommand.Operation->GetName() == "CheckIn");
+	TSharedRef<FCheckIn, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FCheckIn>(InCommand.Operation);
+
+	/* @todo: implement GitCheckInWorker
+	// make a temp file to place our message in
+	FScopedTempFile DescriptionFile(Operation->GetDescription());
+	if(DescriptionFile.GetFilename().Len() > 0)
+	{
+		TArray<FString> Parameters;
+		FString DescriptionFilename = DescriptionFile.GetFilename();
+		GitSourceControlUtils::QuoteFilename(DescriptionFilename);
+		Parameters.Add(FString(TEXT("--file ")) + DescriptionFilename);
+
+		if(DescriptionFile.IsUnicode())
+		{
+			Parameters.Add(TEXT("--encoding utf-8"));
+		}
+
+		// we need commit directories that are marked for add here if we are committing any child files that are also marked for add
+		TArray<FString> FilesToCommit = InCommand.Files;
+		AddDirectoriesToCommit(InCommand, FilesToCommit);
+
+		// we need another temp file to add our file list to (as this must be an atomic operation we cant risk overflowing command-line limits)
+		FString Targets;
+		for(auto It(FilesToCommit.CreateConstIterator()); It; It++)
+		{
+			FString Target = It->TrimQuotes();
+			Targets += Target + LINE_TERMINATOR;
+		}
+
+		FScopedTempFile TargetsFile(Targets);
+		if(TargetsFile.GetFilename().Len() > 0)
+		{
+			FString TargetsFilename = TargetsFile.GetFilename();
+			GitSourceControlUtils::QuoteFilename(TargetsFilename);
+			Parameters.Add(FString(TEXT("--targets ")) + TargetsFilename);
+
+			// TODO: WorkingDirectory
+			InCommand.bCommandSuccessful = GitSourceControlUtils::RunAtomicCommand(TEXT("commit"), "", TArray<FString>(), Parameters, InCommand.InfoMessages, InCommand.ErrorMessages);
+			if(InCommand.bCommandSuccessful)
+			{
+				check(InCommand.Operation->GetName() == "CheckIn");
+				TSharedRef<FCheckIn, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FCheckIn>(InCommand.Operation);
+				Operation->SetSuccessMessage(ParseCommitResults(InCommand.InfoMessages));
+			}
+		}
+	}
+	*/
+
+	// now update the status of our files
+	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.Files, InCommand.ErrorMessages, States);
+
+	return InCommand.bCommandSuccessful;
+}
+
+bool FGitCheckInWorker::UpdateStates() const
+{
+	return GitSourceControlUtils::UpdateCachedStates(States);
 }
 
 FName FGitMarkForAddWorker::GetName() const
@@ -167,6 +235,8 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 			UE_LOG(LogSourceControl, Error, TEXT("FGitUpdateStatusWorker: InCommand.Files.Num() == 0"));
 			InCommand.bCommandSuccessful = true; // nothing to do
 		}
+
+		// @todo Re-check current branche name
 	}
 
 	// don't use the ShouldUpdateModifiedState() hint here as it is specific to Perforce: the above normal Git status has already told us this information (like SVN and Mercurial)

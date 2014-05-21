@@ -35,7 +35,7 @@ public:
 };
 */
 
-/** @todo
+/** Commit (check-in) a set of file to the local depot. */
 class FGitCheckInWorker : public IGitSourceControlWorker
 {
 public:
@@ -45,10 +45,9 @@ public:
 	virtual bool UpdateStates() const OVERRIDE;
 
 public:
-	/** Temporary states for results *
+	/** Temporary states for results */
 	TArray<FGitSourceControlState> States;
 };
-*/
 
 /** Add an untraked file to source control (so only a subset of the git add command). */
 class FGitMarkForAddWorker : public IGitSourceControlWorker
