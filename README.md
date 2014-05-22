@@ -24,6 +24,9 @@ What *cannot* be done presently (TODO list):
 - Branch and Merge are not in the current Editor workflow (but on Epic Roadmap)
 - Amend a commit & Add file to Index are not in the current Editor workflow
 
+Wishlist:
+- [git-annexe and/or git-media - #1 feature request](https://github.com/SRombauts/UE4GitPlugin/issues/1)
+
 Known issues:
 - checkin/commit a lot of files (cannot handle atomically more than 20 files)
 - reverting an asset does not seem to update content in Editor! Issue in Editor?
@@ -143,5 +146,5 @@ The source code follow the UnreaEngine official [Coding Standard](https://docs.u
 
 ## See also
 
+- [ue4-hg-plugin for Mercurial (and bigfiles)](https://github.com/enlight/ue4-hg-plugin)
 - [UE4 Git Plugin website](http://srombauts.github.com/UE4GitPlugin).
-- [UE4 Mercurial Plugin](https://github.com/enlight/ue4-hg-plugin)
