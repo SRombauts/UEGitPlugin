@@ -88,14 +88,21 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 		return ECommandResult::Failed;
 	}
 
-	if(InStateCacheUsage == EStateCacheUsage::ForceUpdate)
+	// @todo bug report; filename are already nearly always absolute... nearly but not for a "Delete" operation! (causing issue #2)
+	TArray<FString> AbsoluteFiles;
+	for(const auto& File : InFiles)
 	{
-		Execute(ISourceControlOperation::Create<FUpdateStatus>(), InFiles);
+		AbsoluteFiles.Add(FPaths::ConvertRelativePathToFull(*File);
 	}
 
-	for(TArray<FString>::TConstIterator It(InFiles); It; It++)
+	if(InStateCacheUsage == EStateCacheUsage::ForceUpdate)
 	{
-		OutState.Add(GetStateInternal(*It));
+		Execute(ISourceControlOperation::Create<FUpdateStatus>(), AbsoluteFiles);
+	}
+
+	for(const auto& AbsoluteFile : AbsoluteFiles)
+	{
+		OutState.Add(GetStateInternal(*AbsoluteFile));
 	}
 
 	return ECommandResult::Succeeded;
@@ -118,6 +125,13 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 		return ECommandResult::Failed;
 	}
 
+	// @todo bug report; filename are already nearly always absolute... nearly but not for a "Delete" operation! (causing issue #2)
+	TArray<FString> AbsoluteFiles;
+	for(const auto& File : InFiles)
+	{
+		AbsoluteFiles.Add(FPaths::ConvertRelativePathToFull(*File));
+	}
+
 	// Query to see if we allow this operation
 	TSharedPtr<IGitSourceControlWorker, ESPMode::ThreadSafe> Worker = CreateWorker(InOperation->GetName());
 	if(!Worker.IsValid())
@@ -131,7 +145,7 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 	}
 
 	FGitSourceControlCommand* Command = new FGitSourceControlCommand(InOperation, Worker.ToSharedRef());
-	Command->Files = InFiles;
+	Command->Files = AbsoluteFiles;
 	Command->OperationCompleteDelegate = InOperationCompleteDelegate;
 
 	// fire off operation
