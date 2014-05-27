@@ -200,13 +200,9 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 		// Perforce "opened files" are those that have been modified (or added/deleted): that is what we get with a simple Git status from the root
 		if(Operation->ShouldGetOpenedOnly())
 		{
-			// @todo Cannot work before "Connect" operation!
-			if(!InCommand.PathToRepositoryRoot.IsEmpty())
-			{
-				TArray<FString> Files;
-				Files.Add(FPaths::ConvertRelativePathToFull(FPaths::GameDir()));
-				InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Files, InCommand.ErrorMessages, States);
-			}
+			TArray<FString> Files;
+			Files.Add(FPaths::ConvertRelativePathToFull(FPaths::GameDir()));
+			InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Files, InCommand.ErrorMessages, States);
 		}
 		else
 		{

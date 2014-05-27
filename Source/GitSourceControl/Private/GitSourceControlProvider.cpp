@@ -24,6 +24,12 @@ void FGitSourceControlProvider::Init(bool bForceConnection)
 	PathToGameDir = FPaths::ConvertRelativePathToFull(FPaths::GameDir());
 
 	CheckGitAvailability();
+
+	if(bForceConnection)
+	{
+		// First connection, to find the path to the root git directory (if any)
+		GitSourceControlUtils::FindRootDirectory(PathToGameDir, PathToRepositoryRoot);
+	}
 }
 
 void FGitSourceControlProvider::CheckGitAvailability()
