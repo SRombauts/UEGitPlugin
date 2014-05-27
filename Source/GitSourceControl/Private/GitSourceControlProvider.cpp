@@ -92,7 +92,7 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 	TArray<FString> AbsoluteFiles;
 	for(const auto& File : InFiles)
 	{
-		AbsoluteFiles.Add(FPaths::ConvertRelativePathToFull(*File);
+		AbsoluteFiles.Add(FPaths::ConvertRelativePathToFull(*File));
 	}
 
 	if(InStateCacheUsage == EStateCacheUsage::ForceUpdate)
