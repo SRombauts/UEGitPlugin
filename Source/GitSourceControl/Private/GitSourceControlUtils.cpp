@@ -218,7 +218,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 	Parameters.Add(TEXT("--porcelain"));
 	Parameters.Add(TEXT("--ignored"));
 
-	// Git status does not work for "untracked files" when there is files from different subdirectories! (issue #3)
+	// Git status does not show any "untracked files" when called with files from different subdirectories! (issue #3)
 	// 1) So here we group files by path (ie. by subdirectory)
 	TMap<FString, TArray<FString>> GroupOfFiles;
 	for(const auto& File : InFiles)
@@ -413,9 +413,8 @@ A		 Content/Blueprints/Blueprint_CeilingLight.uasset
 void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory& OutHistory)
 {
 	TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> SourceControlRevision = MakeShareable(new FGitSourceControlRevision);
-	for(int32 IdxResult = 0; IdxResult < InResults.Num(); IdxResult++)
+	for(const auto& Result : InResults)
 	{
-		const FString& Result = InResults[IdxResult];
 		if(Result.StartsWith(TEXT("commit ")))
 		{
 			// End of the previous commit
@@ -606,7 +605,7 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 		if(State->WorkingCopyState != InState.WorkingCopyState)
 		{
 			State->WorkingCopyState = InState.WorkingCopyState;
-		//	State->TimeStamp = InState.TimeStamp; // @todo Workaround a bug with the Source Control Module not updating file state after a "Save"
+		//	State->TimeStamp = InState.TimeStamp; // @todo Bug report: Workaround a bug with the Source Control Module not updating file state after a "Save"
 			NbStatesUpdated++;
 		}
 	}
