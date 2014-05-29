@@ -212,15 +212,46 @@ bool RunCommand(const FString& InPathToGitBinary, const FString& InRepositoryRoo
 
 bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates)
 {
+	bool bResults = true;
 	TArray<FString> Results;
 	TArray<FString> Parameters;
 	Parameters.Add(TEXT("--porcelain"));
 	Parameters.Add(TEXT("--ignored"));
 
-	bool bResult = GitSourceControlUtils::RunCommand(InPathToGitBinary, InRepositoryRoot, TEXT("status"), Parameters, InFiles, Results, OutErrorMessages);
-	GitSourceControlUtils::ParseStatusResults(InFiles, Results, OutStates);
+	// Git status does not work for "untracked files" when there is files from different subdirectories! (issue #3)
+	// 1) So here we group files by path (ie. by subdirectory)
+	TMap<FString, TArray<FString>> GroupOfFiles;
+	for(const auto& File : InFiles)
+	{
+		const FString Path = FPaths::GetPath(*File);
+		TArray<FString>* Group = GroupOfFiles.Find(Path);
+		if(Group != nullptr)
+		{
+			Group->Add(File);
+		}
+		else
+		{
+			TArray<FString> Group;
+			Group.Add(File);
+			GroupOfFiles.Add(Path, Group);
+		}
+	}
 
-	return bResult;
+	// 2) then we can batch git status operation by subdirectory
+	for(const auto& Files : GroupOfFiles)
+	{
+		bool bResult = GitSourceControlUtils::RunCommand(InPathToGitBinary, InRepositoryRoot, TEXT("status"), Parameters, Files.Value, Results, OutErrorMessages);
+		if(bResult)
+		{
+			GitSourceControlUtils::ParseStatusResults(Files.Value, Results, OutStates);
+		}
+		else
+		{
+			bResults = false;
+		}
+	}
+
+	return bResults;
 }
 
 /**
