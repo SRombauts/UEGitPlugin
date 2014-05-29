@@ -66,10 +66,10 @@ FText FGitSourceControlProvider::GetStatusText() const
 {
 	FFormatNamedArguments Args;
 	Args.Add( TEXT("IsEnabled"), IsEnabled() ? LOCTEXT("Yes", "Yes") : LOCTEXT("No", "No") );
-	Args.Add( TEXT("RepositoryName"), FText::FromString( PathToRepositoryRoot ) );
-	// @todo Add current branch name
+	Args.Add( TEXT("RepositoryName"), FText::FromString(PathToRepositoryRoot) );
+	Args.Add( TEXT("BranchName"), FText::FromString(BranchName) );
 
-	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Enabled: {IsEnabled}\nRepository: {RepositoryName}"), Args );
+	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Enabled: {IsEnabled}\nRepository: {RepositoryName}\nBranch: {BranchName}"), Args );
 }
 
 bool FGitSourceControlProvider::IsEnabled() const
@@ -94,7 +94,6 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 		return ECommandResult::Failed;
 	}
 
-	// @todo bug report; filename are already nearly always absolute... nearly but not for a "Delete" operation! (causing issue #2)
 	TArray<FString> AbsoluteFiles;
 	for(const auto& File : InFiles)
 	{
@@ -131,7 +130,6 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 		return ECommandResult::Failed;
 	}
 
-	// @todo bug report; filename are already nearly always absolute... nearly but not for a "Delete" operation! (causing issue #2)
 	TArray<FString> AbsoluteFiles;
 	for(const auto& File : InFiles)
 	{
@@ -230,6 +228,7 @@ void FGitSourceControlProvider::Tick()
 			if(Command.Operation->GetName() == "Connect" && Command.bCommandSuccessful)
 			{
 				PathToRepositoryRoot = Command.PathToRepositoryRoot;
+				BranchName = Command.BranchName;
 			}
 
 			// dump any messages to output log

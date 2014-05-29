@@ -22,11 +22,11 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 	check(InCommand.Operation->GetName() == "Connect");
 
 	InCommand.bCommandSuccessful = GitSourceControlUtils::FindRootDirectory(InCommand.PathToGameDir, InCommand.PathToRepositoryRoot);
+	// @todo Popup to ask for "git init + .gitignore" if(!InCommand.bCommandSuccessful)
 	if(InCommand.bCommandSuccessful)
 	{
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("status"), TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 	}
-	// @todo Get current branche name
 	if(!InCommand.bCommandSuccessful || InCommand.ErrorMessages.Num() > 0 || InCommand.InfoMessages.Num() == 0)
 	{
 		// @todo popup to propose to initialize the git repository
@@ -34,6 +34,18 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 		Operation->SetErrorText(LOCTEXT("NotAWorkingCopyError", "Project is not part of a Git working copy."));
 		InCommand.ErrorMessages.Add(LOCTEXT("NotAWorkingCopyErrorHelp", "You should check out a working copy into your project directory.").ToString());
 		InCommand.bCommandSuccessful = false;
+	}
+	else // if(InCommand.bCommandSuccessful)
+	{
+		TArray<FString> Parameters;
+		Parameters.Add("--abbrev-ref HEAD");
+
+		// Get current branche name
+		GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("rev-parse"), Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+		if(InCommand.InfoMessages.Num() == 1)
+		{
+			InCommand.BranchName = InCommand.InfoMessages[0];
+		}
 	}
 
 	return InCommand.bCommandSuccessful;
@@ -141,7 +153,7 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 	// revert any changes in working copy
 	{
 		TArray<FString> Parameters;
-		// @todo do not alarm when reverting newly added file
+		// @todo do not fail when reverting newly added file
 		//Parameters.Add(TEXT("--quiet"));
 		//Parameters.Add(TEXT("--force"));
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("checkout"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);

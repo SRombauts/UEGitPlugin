@@ -38,11 +38,14 @@ public:
 	/** Path to the Git binary */
 	FString PathToGitBinary;
 
-	/** Path to the root of the Git repository: can be the GameDir itself, or any parent directory */
+	/** Path to the root of the Git repository: can be the GameDir itself, or any parent directory (found by the "Connect" operation) */
 	FString PathToRepositoryRoot;
 
 	/** Path to the Game directory: shall be inside of the Git repository */
 	FString PathToGameDir;
+
+	/** Name of the current branch (found by the "Connect" operation) */
+	FString BranchName;
 
 	/** Operation we want to perform - contains outward-facing parameters & results */
 	TSharedRef<class ISourceControlOperation, ESPMode::ThreadSafe> Operation;

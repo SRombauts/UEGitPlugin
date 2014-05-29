@@ -80,13 +80,16 @@ private:
 	/** Output any messages this command holds */
 	void OutputCommandMessages(const class FGitSourceControlCommand& InCommand) const;
 
-	/** Path to the root of the Git repository: can be the GameDir itself, or any parent directory */
+	/** Path to the root of the Git repository: can be the GameDir itself, or any parent directory (found by the "Connect" operation) */
 	FString PathToRepositoryRoot;
 
 	/** Path to the Game directory: shall be inside of the Git repository */
 	FString PathToGameDir;
 
-    /** State cache */
+	/** Name of the current branch (found by the "Connect" operation) */
+	FString BranchName;
+
+	/** State cache */
 	TMap<FString, TSharedRef<class FGitSourceControlState, ESPMode::ThreadSafe> > StateCache;
 
 	/** The currently registered source control operations */
