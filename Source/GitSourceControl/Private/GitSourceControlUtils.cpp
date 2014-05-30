@@ -9,17 +9,37 @@
 #include "GitSourceControlModule.h"
 #include "GitSourceControlCommand.h"
 
+#include "UniquePtr.h"
+
 namespace GitSourceControlConstants
 {
 	/** The maximum number of files we submit in a single Git command */
 	const int32 MaxFilesPerBatch = 50;
 }
 
+// Write the FString to a file in UTF-8 without BOM signature.
+static bool SaveStringToFileUtf8(const FString& String, const TCHAR* Filename)
+{
+	bool bResult = false;
+	auto Ar = TUniquePtr<FArchive>(IFileManager::Get().CreateFileWriter(Filename, 0));
+	if(Ar)
+	{
+		if(!String.IsEmpty())
+		{
+			FTCHARToUTF8 UTF8String(*String);
+			Ar->Serialize((UTF8CHAR*)UTF8String.Get(), UTF8String.Length() * sizeof(UTF8CHAR));
+		}
+		bResult = true;
+	}
+
+	return bResult;
+}
+
 FScopedTempFile::FScopedTempFile(const FText& InText)
 {
 	Filename = FPaths::CreateTempFilename(*FPaths::GameLogDir(), TEXT("Git-Temp"), TEXT(".txt"));
-	// @todo Write the file using "ForceAnsi" instead of "ForceUTF8" or "AutoDetect" to avoid the BOM signature is even wronger!
-	if(!FFileHelper::SaveStringToFile(InText.ToString(), *Filename, FFileHelper::EEncodingOptions::ForceUTF8))
+	// Write the file in UTF8 but without the BOM signature
+	if(!SaveStringToFileUtf8(InText.ToString(), *Filename))
 	{
 		UE_LOG(LogSourceControl, Error, TEXT("Failed to write to temp file: %s"), *Filename);
 	}
