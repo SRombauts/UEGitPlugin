@@ -66,7 +66,7 @@ namespace GitSourceControlUtils
 {
 
 // Launch the Git command line process and extract its results & errors
-static bool RunCommandInternalRaw(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors)
+static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors)
 {
 	int32 ReturnCode = 0;
 	FString FullCommand;
@@ -115,13 +115,13 @@ static bool RunCommandInternalRaw(const FString& InPathToGitBinary, const FStrin
 }
 
 // Basic parsing or results & errors from the Git command line process
-static bool RunCommandInternal(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
+static bool RunCommandInternal(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
 {
 	bool bResult;
 	FString Results;
 	FString Errors;
 
-	bResult = RunCommandInternalRaw(InPathToGitBinary, InRepositoryRoot, InCommand, InParameters, InFiles, Results, Errors);
+	bResult = RunCommandInternalRaw(InCommand, InPathToGitBinary, InRepositoryRoot, InParameters, InFiles, Results, Errors);
 	Results.ParseIntoArray(&OutResults, TEXT("\n"), true);
 	Errors.ParseIntoArray(&OutErrorMessages, TEXT("\n"), true);
 
@@ -164,7 +164,7 @@ bool CheckGitAvailability(const FString& InPathToGitBinary)
 
 	FString InfoMessages;
 	FString ErrorMessages;
-	bGitAvailable = RunCommandInternalRaw(InPathToGitBinary, FString(), TEXT("version"), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	bGitAvailable = RunCommandInternalRaw(TEXT("version"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
 	if(bGitAvailable)
 	{
 		if(InfoMessages.Contains("git"))
@@ -211,7 +211,7 @@ bool FindRootDirectory(const FString& InPathToGameDir, FString& OutRepositoryRoo
 	return bFound;
 }
 
-bool RunCommand(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
+bool RunCommand(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
 {
 	bool bResult = true;
 
@@ -229,14 +229,14 @@ bool RunCommand(const FString& InPathToGitBinary, const FString& InRepositoryRoo
 
 			TArray<FString> BatchResults;
 			TArray<FString> BatchErrors;
-			bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, InCommand, InParameters, FilesInBatch, BatchResults, BatchErrors);
+			bResult &= RunCommandInternal(InCommand, InPathToGitBinary, InRepositoryRoot, InParameters, FilesInBatch, BatchResults, BatchErrors);
 			OutResults += BatchResults;
 			OutErrorMessages += BatchErrors;
 		}
 	}
 	else
 	{
-		bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, InCommand, InParameters, InFiles, OutResults, OutErrorMessages);
+		bResult &= RunCommandInternal(InCommand, InPathToGitBinary, InRepositoryRoot, InParameters, InFiles, OutResults, OutErrorMessages);
 	}
 
 	return bResult;
@@ -256,7 +256,7 @@ bool RunCommit(const FString& InPathToGitBinary, const FString& InRepositoryRoot
 			FilesInBatch.Add(InFiles[FileCount]);
 		}
 		// First batch is a simple "git commit" command with only the first files
-		bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, TEXT("commit"), InParameters, InFiles, OutResults, OutErrorMessages);
+		bResult &= RunCommandInternal(TEXT("commit"), InPathToGitBinary, InRepositoryRoot, InParameters, InFiles, OutResults, OutErrorMessages);
 		
 		TArray<FString> Parameters;
 		for (const auto& Parameter : InParameters)
@@ -275,14 +275,14 @@ bool RunCommit(const FString& InPathToGitBinary, const FString& InRepositoryRoot
 			// Next batches "amend" the commit with some more files
 			TArray<FString> BatchResults;
 			TArray<FString> BatchErrors;
-			bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, TEXT("commit"), Parameters, FilesInBatch, BatchResults, BatchErrors);
+			bResult &= RunCommandInternal(TEXT("commit"), InPathToGitBinary, InRepositoryRoot, Parameters, FilesInBatch, BatchResults, BatchErrors);
 			OutResults += BatchResults;
 			OutErrorMessages += BatchErrors;
 		}
 	}
 	else
 	{
-		RunCommandInternal(InPathToGitBinary, InRepositoryRoot, TEXT("commit"), InParameters, InFiles, OutResults, OutErrorMessages);
+		RunCommandInternal(TEXT("commit"), InPathToGitBinary, InRepositoryRoot, InParameters, InFiles, OutResults, OutErrorMessages);
 	}
 
 	return bResult;
@@ -300,7 +300,7 @@ public:
 	bool Matches(const FString& InResult) const
 	{
 		// Extract the relative filename from the Git status result
-		// @todo this can not work in case of a rename from -> to
+		// @todo this cannot work in case of a rename from -> to
 		FString RelativeFilename = InResult.RightChop(3);
 		return AbsoluteFilename.Contains(RelativeFilename);
 	}
@@ -445,7 +445,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 	// 2) then we can batch git status operation by subdirectory
 	for(const auto& Files : GroupOfFiles)
 	{
-		bool bResult = GitSourceControlUtils::RunCommand(InPathToGitBinary, InRepositoryRoot, TEXT("status"), Parameters, Files.Value, Results, OutErrorMessages);
+		bool bResult = GitSourceControlUtils::RunCommand(TEXT("status"), InPathToGitBinary, InRepositoryRoot, Parameters, Files.Value, Results, OutErrorMessages);
 		if(bResult)
 		{
 			ParseStatusResults(Files.Value, Results, OutStates);

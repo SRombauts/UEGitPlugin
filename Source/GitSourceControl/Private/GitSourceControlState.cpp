@@ -86,7 +86,7 @@ FText FGitSourceControlState::GetDisplayName() const
 	case EWorkingCopyState::Unknown:
 		return LOCTEXT("Unknown", "Unknown");
 	case EWorkingCopyState::Unchanged:
-        return LOCTEXT("Unchanged", "Unchanged");
+		return LOCTEXT("Unchanged", "Unchanged");
 	case EWorkingCopyState::Added:
 		return LOCTEXT("Added", "Added");
 	case EWorkingCopyState::Deleted:

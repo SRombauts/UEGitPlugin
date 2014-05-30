@@ -235,8 +235,8 @@ void FGitSourceControlProvider::Tick()
 			OutputCommandMessages(Command);
 
 			// run the completion delegate callback if we have one bound
-            ECommandResult::Type Result = Command.bCommandSuccessful ? ECommandResult::Succeeded : ECommandResult::Failed;
-            Command.OperationCompleteDelegate.ExecuteIfBound(Command.Operation, Result);
+			ECommandResult::Type Result = Command.bCommandSuccessful ? ECommandResult::Succeeded : ECommandResult::Failed;
+			Command.OperationCompleteDelegate.ExecuteIfBound(Command.Operation, Result);
 
 			// commands that are left in the array during a tick need to be deleted
 			if(Command.bAutoDelete)
@@ -280,7 +280,7 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 		// Issue the command asynchronously...
 		IssueCommand( InCommand );
 
-        // ... then wait for its completion (thus making it synchrounous)
+		// ... then wait for its completion (thus making it synchrounous)
 		while(!InCommand.bExecuteProcessed)
 		{
 			// Tick the command queue and update progress.

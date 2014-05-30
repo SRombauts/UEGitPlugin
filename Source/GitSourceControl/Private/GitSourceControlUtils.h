@@ -56,16 +56,16 @@ bool FindRootDirectory(const FString& InPathToGameDir, FString& OutRepositoryRoo
 /**
  * Run a Git command - output is a string TArray.
  *
+ * @param	InCommand			The Git command - e.g. commit
  * @param	InPathToGitBinary	The path to the Git binary
  * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
- * @param	InCommand			The Git command - e.g. commit
  * @param	InParameters		The parameters to the Git command
  * @param	InFiles				The files to be operated on
  * @param	OutResults			The results (from StdOut) as an array per-line
  * @param	OutErrorMessages	Any errors (from StdErr) as an array per-line
  * @returns true if the command succeeded and returned no errors
  */
-bool RunCommand(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages);
+bool RunCommand(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages);
 
 /**
  * Run a Git commit command by batches.
@@ -91,13 +91,13 @@ bool RunCommit(const FString& InPathToGitBinary, const FString& InRepositoryRoot
 bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates);
 
 /**
-* Run a Git show command to dump the binary content of a revision into a file.
-*
-* @param	InPathToGitBinary	The path to the Git binary
-* @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
-* @param	InParameter			The parameters to the Git show command (rev:path)
-* @param	InDumpFileName		The temporary file to dump the revision
-* @returns true if the command succeeded and returned no errors
+ * Run a Git show command to dump the binary content of a revision into a file.
+ *
+ * @param	InPathToGitBinary	The path to the Git binary
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+ * @param	InParameter			The parameters to the Git show command (rev:path)
+ * @param	InDumpFileName		The temporary file to dump the revision
+ * @returns true if the command succeeded and returned no errors
 */
 bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InParameter, const FString& InDumpFileName);
 
@@ -107,14 +107,6 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
  * @param	OutHistory			The history of the file
  */
 void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory& OutHistory);
-
-/**
- * Parse the array of strings results of a 'git status' command
- * @param	InFiles				The files that have been operated on
- * @param	InResults			The results (from StdOut) as an array per-line
- * @param	OutStates			The current state of the files
- */
-void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates);
 
 /**
  * Helper function for various commands to update cached states.

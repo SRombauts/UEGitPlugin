@@ -22,14 +22,13 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 	check(InCommand.Operation->GetName() == "Connect");
 
 	InCommand.bCommandSuccessful = GitSourceControlUtils::FindRootDirectory(InCommand.PathToGameDir, InCommand.PathToRepositoryRoot);
-	// @todo Popup to ask for "git init + .gitignore" if(!InCommand.bCommandSuccessful)
 	if(InCommand.bCommandSuccessful)
 	{
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("status"), TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("status"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 	}
 	if(!InCommand.bCommandSuccessful || InCommand.ErrorMessages.Num() > 0 || InCommand.InfoMessages.Num() == 0)
 	{
-		// @todo popup to propose to initialize the git repository
+		// @todo popup to propose to initialize the git repository "git init + .gitignore"
 		TSharedRef<FConnect, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FConnect>(InCommand.Operation);
 		Operation->SetErrorText(LOCTEXT("NotAWorkingCopyError", "Project is not part of a Git working copy."));
 		InCommand.ErrorMessages.Add(LOCTEXT("NotAWorkingCopyErrorHelp", "You should check out a working copy into your project directory.").ToString());
@@ -41,7 +40,7 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 		Parameters.Add("--abbrev-ref HEAD");
 
 		// Get current branche name
-		GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("rev-parse"), Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+		GitSourceControlUtils::RunCommand(TEXT("rev-parse"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 		if(InCommand.InfoMessages.Num() == 1)
 		{
 			InCommand.BranchName = InCommand.InfoMessages[0];
@@ -113,7 +112,7 @@ FName FGitMarkForAddWorker::GetName() const
 
 bool FGitMarkForAddWorker::Execute(FGitSourceControlCommand& InCommand)
 {
-	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("add"), TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("add"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 
 	// now update the status of our files
 	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.Files, InCommand.ErrorMessages, States);
@@ -133,7 +132,7 @@ FName FGitDeleteWorker::GetName() const
 
 bool FGitDeleteWorker::Execute(FGitSourceControlCommand& InCommand)
 {
-	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("rm"), TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("rm"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 
 	// now update the status of our files
 	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.Files, InCommand.ErrorMessages, States);
@@ -155,16 +154,12 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	// reset any changes already added in index
 	{
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("reset"), TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("reset"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 	}
 
 	// revert any changes in working copy
 	{
-		TArray<FString> Parameters;
-		// @todo do not fail when reverting newly added file
-		//Parameters.Add(TEXT("--quiet"));
-		//Parameters.Add(TEXT("--force"));
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("checkout"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("checkout"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 	}
 
 	// now update the status of our files
@@ -208,7 +203,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 				TArray<FString> Files;
 				Files.Add(*ItFile);
 
-				InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("log"), Parameters, Files, Results, InCommand.ErrorMessages);
+				InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(TEXT("log"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, Files, Results, InCommand.ErrorMessages);
 				TGitSourceControlHistory History;
 				GitSourceControlUtils::ParseLogResults(Results, History);
 				Histories.Add(*ItFile, History);
@@ -224,14 +219,6 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 			Files.Add(FPaths::ConvertRelativePathToFull(FPaths::GameDir()));
 			InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Files, InCommand.ErrorMessages, States);
 		}
-		else
-		{
-			// @todo is this normal/possible?
-			UE_LOG(LogSourceControl, Error, TEXT("FGitUpdateStatusWorker: InCommand.Files.Num() == 0"));
-			InCommand.bCommandSuccessful = true; // nothing to do
-		}
-
-		// @todo Re-check current branche name
 	}
 
 	// don't use the ShouldUpdateModifiedState() hint here as it is specific to Perforce: the above normal Git status has already told us this information (like SVN and Mercurial)
