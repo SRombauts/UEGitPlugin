@@ -12,7 +12,7 @@
 namespace GitSourceControlConstants
 {
 	/** The maximum number of files we submit in a single Git command */
-	const int32 MaxFilesPerBatch = 20;
+	const int32 MaxFilesPerBatch = 50;
 }
 
 FScopedTempFile::FScopedTempFile(const FText& InText)
@@ -186,16 +186,20 @@ bool RunCommand(const FString& InPathToGitBinary, const FString& InRepositoryRoo
 		while(FileCount < InFiles.Num())
 		{
 			TArray<FString> FilesInBatch;
-			for(int32 FileIndex = 0; FileIndex < InFiles.Num() && FileIndex < GitSourceControlConstants::MaxFilesPerBatch; FileIndex++, FileCount++)
+			for(int32 FileIndex = 0; FileCount < InFiles.Num() && FileIndex < GitSourceControlConstants::MaxFilesPerBatch; FileIndex++, FileCount++)
 			{
-				FilesInBatch.Add(InFiles[FileIndex]);
+				FilesInBatch.Add(InFiles[FileCount]);
 			}
 
 			FString Results;
 			FString Errors;
 			bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, InCommand, InParameters, FilesInBatch, Results, Errors);
-			Results.ParseIntoArray(&OutResults, TEXT("\n"), true);
-			Errors.ParseIntoArray(&OutErrorMessages, TEXT("\n"), true);
+			TArray<FString> BatchResults;
+			TArray<FString> BatchErrors;
+			Results.ParseIntoArray(&BatchResults, TEXT("\n"), true);
+			Errors.ParseIntoArray(&BatchErrors, TEXT("\n"), true);
+			OutResults += BatchResults;
+			OutErrorMessages += BatchErrors;
 		}
 	}
 	else
@@ -654,7 +658,7 @@ TArray<uint8> ReadPipeToArray(void* ReadPipe)
 		BytesRead = read([(NSFileHandle*)ReadPipe fileDescriptor], Output.GetData(), READ_SIZE);
 		if ( (BytesRead > 0) && (BytesRead < READ_SIZE))
 		{
-         Output.SetNum(BytesRead);
+			Output.SetNum(BytesRead);
 		}
 	}
 
