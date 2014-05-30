@@ -7,7 +7,7 @@ UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.x
 
 [Download the last release](https://github.com/SRombauts/UE4GitPlugin/releases)
 
-Alpha version 0.3 under developments:
+Alpha version 0.4 under developments:
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
 - diff against depot or between previous versions of a file
@@ -15,6 +15,7 @@ Alpha version 0.3 under developments:
 - add a file
 - delete a file
 - checkin/commit a file (cannot handle atomically more than 20 files)
+- show current branch name in status text
 
 What *cannot* be done presently (TODO list):
 - initialize a new Git local repository ('git init') to manager your UE4 Game Project.
@@ -31,7 +32,6 @@ Known issues:
 - reverting an asset does not seem to update content in Editor! Issue in Editor?
 - renaming an asset does not seem to be handled correctly by the Editor...
 - renamed file may not be tracked correctly (not yet tested, see above)
-- a false error is logged when reverting newly added file
 - file history does not report file size
 - Windows only (64bits)
 
