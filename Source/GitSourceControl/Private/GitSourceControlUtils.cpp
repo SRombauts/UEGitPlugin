@@ -44,7 +44,8 @@ const FString& FScopedTempFile::GetFilename() const
 namespace GitSourceControlUtils
 {
 
-static bool RunCommandInternal(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors)
+// Launch the Git command line process and extract its results & errors
+static bool RunCommandInternalRaw(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors)
 {
 	int32 ReturnCode = 0;
 	FString FullCommand;
@@ -79,17 +80,31 @@ static bool RunCommandInternal(const FString& InPathToGitBinary, const FString& 
 
 	FullCommand += LogableCommand;
 
-	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: 'git %s'"), *LogableCommand);
+	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *LogableCommand);
 // @todo: temporary debug logs
-//	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: 'git %s'"), *FullCommand);
+//	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *FullCommand);
 	FPlatformProcess::ExecProcess(*InPathToGitBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
-/*	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
+/*	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
 	if(!OutErrors.IsEmpty())
 	{
-		UE_LOG(LogSourceControl, Error, TEXT("RunCommandInternal: ExecProcess ReturnCode=%d OutErrors='%s'"), ReturnCode, *OutErrors);
+		UE_LOG(LogSourceControl, Error, TEXT("RunCommandInternalRaw: ExecProcess ReturnCode=%d OutErrors='%s'"), ReturnCode, *OutErrors);
 	}
 */
 	return ReturnCode == 0;
+}
+
+// Basic parsing or results & errors from the Git command line process
+static bool RunCommandInternal(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InCommand, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
+{
+	bool bResult;
+	FString Results;
+	FString Errors;
+
+	bResult = RunCommandInternalRaw(InPathToGitBinary, InRepositoryRoot, InCommand, InParameters, InFiles, Results, Errors);
+	Results.ParseIntoArray(&OutResults, TEXT("\n"), true);
+	Errors.ParseIntoArray(&OutErrorMessages, TEXT("\n"), true);
+
+	return bResult;
 }
 
 FString FindGitBinaryPath()
@@ -128,7 +143,7 @@ bool CheckGitAvailability(const FString& InPathToGitBinary)
 
 	FString InfoMessages;
 	FString ErrorMessages;
-	bGitAvailable = RunCommandInternal(InPathToGitBinary, FString(), TEXT("version"), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	bGitAvailable = RunCommandInternalRaw(InPathToGitBinary, FString(), TEXT("version"), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
 	if(bGitAvailable)
 	{
 		if(InfoMessages.Contains("git"))
@@ -191,24 +206,62 @@ bool RunCommand(const FString& InPathToGitBinary, const FString& InRepositoryRoo
 				FilesInBatch.Add(InFiles[FileCount]);
 			}
 
-			FString Results;
-			FString Errors;
-			bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, InCommand, InParameters, FilesInBatch, Results, Errors);
 			TArray<FString> BatchResults;
 			TArray<FString> BatchErrors;
-			Results.ParseIntoArray(&BatchResults, TEXT("\n"), true);
-			Errors.ParseIntoArray(&BatchErrors, TEXT("\n"), true);
+			bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, InCommand, InParameters, FilesInBatch, BatchResults, BatchErrors);
 			OutResults += BatchResults;
 			OutErrorMessages += BatchErrors;
 		}
 	}
 	else
 	{
-		FString Results;
-		FString Errors;
-		bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, InCommand, InParameters, InFiles, Results, Errors);
-		Results.ParseIntoArray(&OutResults, TEXT("\n"), true);
-		Errors.ParseIntoArray(&OutErrorMessages, TEXT("\n"), true);
+		bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, InCommand, InParameters, InFiles, OutResults, OutErrorMessages);
+	}
+
+	return bResult;
+}
+
+bool RunCommit(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
+{
+	bool bResult = true;
+
+	if (InFiles.Num() > GitSourceControlConstants::MaxFilesPerBatch)
+	{
+		// Batch files up so we dont exceed command-line limits
+		int32 FileCount = 0;
+		TArray<FString> FilesInBatch;
+		for (int32 FileIndex = 0; FileIndex < GitSourceControlConstants::MaxFilesPerBatch; FileIndex++, FileCount++)
+		{
+			FilesInBatch.Add(InFiles[FileCount]);
+		}
+		// First batch is a simple "git commit" command with only the first files
+		bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, TEXT("commit"), InParameters, InFiles, OutResults, OutErrorMessages);
+		
+		TArray<FString> Parameters;
+		for (const auto& Parameter : InParameters)
+		{
+			Parameters.Add(Parameter);
+		}
+		Parameters.Add(TEXT("--amend"));
+
+		while (FileCount < InFiles.Num())
+		{
+			TArray<FString> FilesInBatch;
+			for (int32 FileIndex = 0; FileCount < InFiles.Num() && FileIndex < GitSourceControlConstants::MaxFilesPerBatch; FileIndex++, FileCount++)
+			{
+				FilesInBatch.Add(InFiles[FileCount]);
+			}
+			// Next batches "amend" the commit with some more files
+			TArray<FString> BatchResults;
+			TArray<FString> BatchErrors;
+			bResult &= RunCommandInternal(InPathToGitBinary, InRepositoryRoot, TEXT("commit"), Parameters, FilesInBatch, BatchResults, BatchErrors);
+			OutResults += BatchResults;
+			OutErrorMessages += BatchErrors;
+		}
+	}
+	else
+	{
+		RunCommandInternal(InPathToGitBinary, InRepositoryRoot, TEXT("commit"), InParameters, InFiles, OutResults, OutErrorMessages);
 	}
 
 	return bResult;

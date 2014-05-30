@@ -77,8 +77,7 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 		ParamCommitMsgFilename += TEXT("\"");
 		Parameters.Add(ParamCommitMsgFilename);
 
-		// @todo: use "git commit --amend <files>" for batch commit
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TEXT("commit"), Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommit(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 		if(InCommand.bCommandSuccessful)
 		{
 			// @todo SetSuccessMessage ParseCommitResults

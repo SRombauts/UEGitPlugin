@@ -28,7 +28,6 @@ Wishlist:
 - [git-annexe and/or git-media - #1 feature request](https://github.com/SRombauts/UE4GitPlugin/issues/1)
 
 Known issues:
-- checkin/commit a lot of files (cannot handle atomically more than 20 files)
 - reverting an asset does not seem to update content in Editor! Issue in Editor?
 - renaming an asset does not seem to be handled correctly by the Editor...
 - renamed file may not be tracked correctly (not yet tested, see above)
