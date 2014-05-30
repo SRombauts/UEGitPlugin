@@ -56,6 +56,16 @@ bool FGitConnectWorker::UpdateStates() const
 	return false;
 }
 
+static FText ParseCommitResults(const TArray<FString>& InResults)
+{
+	if(InResults.Num() >= 1)
+	{
+		const FString& FirstLine = InResults[0];
+		return FText::Format(LOCTEXT("CommitMessage", "Commited {0}."), FText::FromString(FirstLine));
+	}
+	return LOCTEXT("CommitMessageUnknown", "Submitted revision.");
+}
+
 FName FGitCheckInWorker::GetName() const
 {
 	return "CheckIn";
@@ -80,8 +90,7 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommit(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 		if(InCommand.bCommandSuccessful)
 		{
-			// @todo SetSuccessMessage ParseCommitResults
-			// Operation->SetSuccessMessage(ParseCommitResults(InCommand.InfoMessages));
+			Operation->SetSuccessMessage(ParseCommitResults(InCommand.InfoMessages));
 			UE_LOG(LogSourceControl, Log, TEXT("FGitCheckInWorker: commit successful"));
 		}
 	}

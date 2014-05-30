@@ -18,7 +18,8 @@ namespace GitSourceControlConstants
 FScopedTempFile::FScopedTempFile(const FText& InText)
 {
 	Filename = FPaths::CreateTempFilename(*FPaths::GameLogDir(), TEXT("Git-Temp"), TEXT(".txt"));
-	if (!FFileHelper::SaveStringToFile(InText.ToString(), *Filename, FFileHelper::EEncodingOptions::ForceUTF8))
+	// @todo Write the file using "ForceAnsi" instead of "ForceUTF8" or "AutoDetect" to avoid the BOM signature is even wronger!
+	if(!FFileHelper::SaveStringToFile(InText.ToString(), *Filename, FFileHelper::EEncodingOptions::ForceUTF8))
 	{
 		UE_LOG(LogSourceControl, Error, TEXT("Failed to write to temp file: %s"), *Filename);
 	}
@@ -267,6 +268,133 @@ bool RunCommit(const FString& InPathToGitBinary, const FString& InRepositoryRoot
 	return bResult;
 }
 
+/** Match the relative filename of a Git status result with a provided absolute filename */
+class FGitStatusFileMatcher
+{
+public:
+	FGitStatusFileMatcher(const FString& InAbsoluteFilename)
+		: AbsoluteFilename(InAbsoluteFilename)
+	{
+	}
+
+	bool Matches(const FString& InResult) const
+	{
+		// Extract the relative filename from the Git status result
+		// @todo this can not work in case of a rename from -> to
+		FString RelativeFilename = InResult.RightChop(3);
+		return AbsoluteFilename.Contains(RelativeFilename);
+	}
+
+private:
+	const FString& AbsoluteFilename;
+};
+
+/**
+* Extract and interpret the file state from the given Git status result.
+* @see file:///C:/Program%20Files%20(x86)/Git/doc/git/html/git-status.html
+* ' ' = unmodified
+* 'M' = modified
+* 'A' = added
+* 'D' = deleted
+* 'R' = renamed
+* 'C' = copied
+* 'U' = updated but unmerged
+* '?' = unknown/untracked
+* '!' = ignored
+*/
+class FGitStatusParser
+{
+public:
+	FGitStatusParser(const FString& InResult)
+	{
+		// @todo Get the second part of a rename "from -> to"
+		//FString Filename = InResult.RightChop(3);
+
+		TCHAR IndexState = InResult[0];
+		TCHAR WCopyState = InResult[1];
+		if((IndexState == 'U' || WCopyState == 'U')
+		   || (IndexState == 'A' && WCopyState == 'A')
+		   || (IndexState == 'D' && WCopyState == 'D'))
+		{
+			// "Unmerged" conflict cases are generally marked with a "U",
+			// but there are also the special cases of both "A"dded, or both "D"eleted
+			State = EWorkingCopyState::Conflicted;
+		}
+		else if(IndexState == 'A')
+		{
+			State = EWorkingCopyState::Added;
+		}
+		else if(IndexState == 'D')
+		{
+			State = EWorkingCopyState::Deleted;
+		}
+		else if(WCopyState == 'D')
+		{
+			State = EWorkingCopyState::Missing;
+		}
+		else if(IndexState == 'M' || WCopyState == 'M')
+		{
+			State = EWorkingCopyState::Modified;
+		}
+		else if(IndexState == 'R')
+		{
+			State = EWorkingCopyState::Renamed;
+		}
+		else if(IndexState == 'C')
+		{
+			State = EWorkingCopyState::Copied;
+		}
+		else if(IndexState == '?' || WCopyState == '?')
+		{
+			State = EWorkingCopyState::NotControlled;
+		}
+		else if(IndexState == '!' || WCopyState == '!')
+		{
+			State = EWorkingCopyState::Ignored;
+		}
+		else
+		{
+			// Unmodified never yield a status
+			State = EWorkingCopyState::Unknown;
+		}
+	}
+
+	EWorkingCopyState::Type State;
+};
+
+// Parse the array of strings results of a 'git status' command
+static void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
+{
+	for(const auto& File : InFiles)
+	{
+		FGitSourceControlState FileState(File);
+		FGitStatusFileMatcher FileMatcher(File);
+		int32 IdxResult = InResults.FindMatch(FileMatcher);
+		if(IdxResult != INDEX_NONE)
+		{
+			// File found in status results; only the case for "changed" files
+			FGitStatusParser StatusParser(InResults[IdxResult]);
+			FileState.WorkingCopyState = StatusParser.State;
+		}
+		else
+		{
+			// File not found in status
+			if(FPaths::FileExists(File))
+			{
+				// usually means the file is unchanged,
+				FileState.WorkingCopyState = EWorkingCopyState::Unchanged;
+			}
+			else
+			{
+				// but also the case for newly created content: there is no file on disk until the content is saved for the first time
+				FileState.WorkingCopyState = EWorkingCopyState::NotControlled;
+			}
+		}
+		FileState.TimeStamp.Now();
+		OutStates.Add(FileState);
+	}
+}
+
 bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates)
 {
 	bool bResults = true;
@@ -300,7 +428,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		bool bResult = GitSourceControlUtils::RunCommand(InPathToGitBinary, InRepositoryRoot, TEXT("status"), Parameters, Files.Value, Results, OutErrorMessages);
 		if(bResult)
 		{
-			GitSourceControlUtils::ParseStatusResults(Files.Value, Results, OutStates);
+			ParseStatusResults(Files.Value, Results, OutStates);
 		}
 		else
 		{
@@ -521,132 +649,6 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
 		SourceControlRevision->Description += TEXT("\nCommit Id: ");
 		SourceControlRevision->Description += SourceControlRevision->CommitId;
 		OutHistory.Add(SourceControlRevision);
-	}
-}
-
-/** Match the relative filename of a Git status result with a provided absolute filename */
-class FGitStatusFileMatcher
-{
-public:
-	FGitStatusFileMatcher(const FString& InAbsoluteFilename)
-		: AbsoluteFilename(InAbsoluteFilename)
-	{
-	}
-
-	bool Matches(const FString& InResult) const
-	{
-		// Extract the relative filename from the Git status result
-		// @todo this can not work in case of a rename from -> to
-		FString RelativeFilename = InResult.RightChop(3);
-		return AbsoluteFilename.Contains(RelativeFilename);
-	}
-
-private:
-	const FString& AbsoluteFilename;
-};
-
-/** 
- * Extract and interpret the file state from the given Git status result.
- * @see file:///C:/Program%20Files%20(x86)/Git/doc/git/html/git-status.html
- * ' ' = unmodified
- * 'M' = modified
- * 'A' = added
- * 'D' = deleted
- * 'R' = renamed
- * 'C' = copied
- * 'U' = updated but unmerged
- * '?' = unknown/untracked
- * '!' = ignored
- */
-class FGitStatusParser
-{
-public:
-	FGitStatusParser(const FString& InResult)
-	{
-		// @todo Get the second part of a rename "from -> to"
-		//FString Filename = InResult.RightChop(3);
-
-		TCHAR IndexState = InResult[0];
-		TCHAR WCopyState = InResult[1];
-		if(	  (IndexState == 'U' || WCopyState == 'U')
-		   || (IndexState == 'A' && WCopyState == 'A')
-		   || (IndexState == 'D' && WCopyState == 'D'))
-		{
-			// "Unmerged" conflict cases are generally marked with a "U",
-			// but there are also the special cases of both "A"dded, or both "D"eleted
-			State = EWorkingCopyState::Conflicted;
-		}
-		else if(IndexState == 'A')
-		{
-			State = EWorkingCopyState::Added;
-		}
-		else if(IndexState == 'D')
-		{
-			State = EWorkingCopyState::Deleted;
-		}
-		else if(WCopyState == 'D')
-		{
-			State = EWorkingCopyState::Missing;
-		}
-		else if(IndexState == 'M' || WCopyState == 'M')
-		{
-			State = EWorkingCopyState::Modified;
-		}
-		else if(IndexState == 'R')
-		{
-			State = EWorkingCopyState::Renamed;
-		}
-		else if(IndexState == 'C')
-		{
-			State = EWorkingCopyState::Copied;
-		}
-		else if(IndexState == '?' || WCopyState == '?')
-		{
-			State = EWorkingCopyState::NotControlled;
-		}
-		else if(IndexState == '!' || WCopyState == '!')
-		{
-			State = EWorkingCopyState::Ignored;
-		}
-		else
-		{
-			// Unmodified never yield a status
-			State = EWorkingCopyState::Unknown;
-		}
-	}
-
-	EWorkingCopyState::Type State;
-};
-
-void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
-{
-	for(const auto& File : InFiles)
-	{
-		FGitSourceControlState FileState(File);
-		FGitStatusFileMatcher FileMatcher(File);
-		int32 IdxResult = InResults.FindMatch(FileMatcher);
-		if(IdxResult != INDEX_NONE)
-		{
-			// File found in status results; only the case for "changed" files
-			FGitStatusParser StatusParser(InResults[IdxResult]);
-			FileState.WorkingCopyState = StatusParser.State;
-		}
-		else
-		{
-			// File not found in status
-			if(FPaths::FileExists(File))
-			{
-				// usually means the file is unchanged,
-				FileState.WorkingCopyState = EWorkingCopyState::Unchanged;
-			}
-			else
-			{
-				// but also the case for newly created content: there is no file on disk until the content is saved for the first time
-				FileState.WorkingCopyState = EWorkingCopyState::NotControlled;
-			}
-		}
-		FileState.TimeStamp.Now();
-		OutStates.Add(FileState);
 	}
 }
 
