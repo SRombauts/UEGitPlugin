@@ -16,7 +16,7 @@
 	[
 		{
 			"Name" : "GitSourceControl",
-			"Type" : "Developer"
+			"Type" : "Editor"
 		}
 	]
 }
