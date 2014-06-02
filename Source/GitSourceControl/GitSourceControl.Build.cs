@@ -11,10 +11,11 @@ public class GitSourceControl : ModuleRules
 	{
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
-			"Core",
-			"Slate",
-			"EditorStyle",
-			"SourceControl",
+				"Core",
+				"Slate",
+				"SlateCore",
+				"EditorStyle",
+				"SourceControl",
 			}
 		);
 	}
