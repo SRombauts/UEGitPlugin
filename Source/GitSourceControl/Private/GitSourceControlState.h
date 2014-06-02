@@ -58,7 +58,7 @@ public:
 	virtual bool CanEdit() const OVERRIDE;
 	virtual bool IsUnknown() const OVERRIDE;
 	virtual bool IsModified() const OVERRIDE;
-	virtual bool CanAdd() const /* @todo for UE4.2: OVERRIDE */;
+	virtual bool CanAdd() const OVERRIDE;
 
 public:
 	/** History of the item, if any */

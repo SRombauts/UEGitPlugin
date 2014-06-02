@@ -230,10 +230,8 @@ bool FGitSourceControlState::IsModified() const
 }
 
 
-/* @todo for UE4.2: OVERRIDE */
 bool FGitSourceControlState::CanAdd() const
 {
-	// @todo Not accurate for Git
 	return WorkingCopyState == EWorkingCopyState::NotControlled;
 }
 #undef LOCTEXT_NAMESPACE
