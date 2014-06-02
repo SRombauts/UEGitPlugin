@@ -731,9 +731,16 @@ TArray<uint8> ReadPipeToArray(void* ReadPipe)
 	   Output.Init(READ_SIZE);
 	   int32 BytesRead = 0;
 		BytesRead = read([(NSFileHandle*)ReadPipe fileDescriptor], Output.GetData(), READ_SIZE);
-		if ( (BytesRead > 0) && (BytesRead < READ_SIZE))
+		if (BytesRead > 0)
 		{
-			Output.SetNum(BytesRead);
+			if (BytesRead < READ_SIZE)
+			{
+				Output.SetNum(BytesRead);
+			}
+		}
+		else
+		{
+			Output.Empty();
 		}
 	}
 
@@ -762,10 +769,10 @@ TArray<uint8> ReadPipeToArray(void* ReadPipe)
 					{
 						Output.SetNum(BytesRead);
 					}
-					else
-					{
-						Output.Empty();
-					}
+				}
+				else
+				{
+					Output.Empty();
 				}
 			}
 		}
