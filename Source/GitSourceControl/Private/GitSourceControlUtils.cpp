@@ -512,13 +512,13 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 		TArray<uint8> BinaryFileContent;
 		while(FPlatformProcess::IsProcRunning(ProcessHandle))
 		{
-			TArray<uint8> BinaryData = GitSourceControlUtils::ReadPipeToArray(PipeRead);
+			TArray<uint8> BinaryData = FPlatformProcess::ReadPipeToArray(PipeRead);
 			if(BinaryData.Num() > 0)
 			{
 				BinaryFileContent.Append(BinaryData);
 			}
 		}
-		TArray<uint8> BinaryData = GitSourceControlUtils::ReadPipeToArray(PipeRead);
+		TArray<uint8> BinaryData = FPlatformProcess::ReadPipeToArray(PipeRead);
 		if(BinaryData.Num() > 0)
 		{
 			BinaryFileContent.Append(BinaryData);
@@ -691,95 +691,5 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 
 	return (NbStatesUpdated > 0);
 }
-
-// @todo PullRequest to integrate this in FGenericPlatformProcess, FWindowsPlatformProcess, FMacPlatformProcess and FLinuxPlatformProcess
-#if PLATFORM_WINDOWS
-TArray<uint8> ReadPipeToArray(void* ReadPipe)
-{
-	TArray<uint8> Output;
-
-	uint32 BytesAvailable = 0;
-	if(::PeekNamedPipe(ReadPipe, NULL, 0, NULL, (::DWORD*)&BytesAvailable, NULL) && (BytesAvailable > 0))
-	{
-		Output.Init(BytesAvailable);
-		uint32 BytesRead = 0;
-		if(::ReadFile(ReadPipe, Output.GetData(), BytesAvailable, (::DWORD*)&BytesRead, NULL))
-		{
-			if(BytesRead < BytesAvailable)
-			{
-				Output.SetNum(BytesRead);
-			}
-		}
-		else
-		{
-			Output.Empty();
-		}
-	}
-
-	return Output;
-}
-#elif PLATFORM_MAC
-TArray<uint8> ReadPipeToArray(void* ReadPipe)
-{
-	SCOPED_AUTORELEASE_POOL;
-
-	TArray<uint8> Output;
-   const int32 READ_SIZE = 32768;
-
-	if(ReadPipe)
-	{
-	   Output.Init(READ_SIZE);
-	   int32 BytesRead = 0;
-		BytesRead = read([(NSFileHandle*)ReadPipe fileDescriptor], Output.GetData(), READ_SIZE);
-		if (BytesRead > 0)
-		{
-			if (BytesRead < READ_SIZE)
-			{
-				Output.SetNum(BytesRead);
-			}
-		}
-		else
-		{
-			Output.Empty();
-		}
-	}
-
-	return Output;
-}
-#elif PLATFORM_LINUX
-TArray<uint8> ReadPipeToArray(void* ReadPipe)
-{
-	TArray<uint8> Output;
-
-	if (ReadPipe)
-	{
-		FPipeHandle * PipeHandle = reinterpret_cast< FPipeHandle* >(ReadPipe);
-		int PipeDesc = PipeHandle->GetHandle();
-
-		int BytesAvailable = 0;
-		if (ioctl(PipeDesc, FIONREAD, &BytesAvailable) == 0)
-		{
-			if (BytesAvailable > 0)
-			{
-				Output.Init(BytesAvailable);
-				int BytesRead = read(PipeDesc, Buffer, kBufferSize - 1);
-				if (BytesRead > 0)
-				{
-					if(BytesRead < BytesAvailable)
-					{
-						Output.SetNum(BytesRead);
-					}
-				}
-				else
-				{
-					Output.Empty();
-				}
-			}
-		}
-	}
-
-	return Output;
-}
-#endif
 
 }
