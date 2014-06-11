@@ -445,7 +445,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 	// 2) then we can batch git status operation by subdirectory
 	for(const auto& Files : GroupOfFiles)
 	{
-		bool bResult = GitSourceControlUtils::RunCommand(TEXT("status"), InPathToGitBinary, InRepositoryRoot, Parameters, Files.Value, Results, OutErrorMessages);
+		bool bResult = RunCommand(TEXT("status"), InPathToGitBinary, InRepositoryRoot, Parameters, Files.Value, Results, OutErrorMessages);
 		if(bResult)
 		{
 			ParseStatusResults(Files.Value, Results, OutStates);
@@ -523,11 +523,10 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 		{
 			BinaryFileContent.Append(BinaryData);
 		}
-		//UE_LOG(LogSourceControl, Log, TEXT("RunDumpToFile: size='%s'o"), BinaryFileContent.Num());
 		// Save buffer into temp file
 		if(FFileHelper::SaveArrayToFile(BinaryFileContent, *InDumpFileName))
 		{
-			UE_LOG(LogSourceControl, Log, TEXT("Writed '%s'"), *InDumpFileName);
+			UE_LOG(LogSourceControl, Log, TEXT("Writed '%s' (%do)"), *InDumpFileName, BinaryFileContent.Num());
 			bResult = true;
 		}
 		else
