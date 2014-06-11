@@ -1,13 +1,13 @@
 Unreal Engine 4 Git Source Control Plugin
 -----------------------------------------
 
-UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.x
+UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.2
 
 ### Status
 
 [Download the last release](https://github.com/SRombauts/UE4GitPlugin/releases)
 
-Alpha version 0.4 under developments:
+Beta version 0.5:
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
 - diff against depot or between previous versions of a file
@@ -17,7 +17,7 @@ Alpha version 0.4 under developments:
 - checkin/commit a file (cannot handle atomically more than 20 files)
 - show current branch name in status text
 
-What *cannot* be done presently (TODO list):
+What *cannot* be done presently:
 - initialize a new Git local repository ('git init') to manager your UE4 Game Project.
 - configure user name & email ('git config user.name' & git config user.email')
 - commit description message cannot take more than one line (Editor limitation)
@@ -61,13 +61,14 @@ See also the [Plugins official Documentation](https://docs.unrealengine.com/late
 
 ##### Within a standard installed Unreal Engine binary release:
 
-Clone the plugin repository under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:
+You can simply [download a ZIP of source code from the latest release](https://github.com/SRombauts/UE4GitPlugin/releases),
+and unzip it under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:
 
 ```
 <UnrealEngineInstallation>/4.1/Engine/Plugins/Developer
 ```
 
-The name of the destination directory is unimportant, so you can just:
+Or you can clone the plugin repository, and as the name of the destination directory is unimportant, its just:
 
 ```bash
 git clone https://github.com/SRombauts/UE4GitPlugin.git
@@ -75,7 +76,7 @@ git clone https://github.com/SRombauts/UE4GitPlugin.git
 
 ##### Within an Unreal Engine source release from GitHub:
 
-Clone the plugin repository under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:
+Donwload and unzip or clone the plugin repository under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:
 
 ```
 <UnrealEngineClone>/Engine/Plugins/Developer
