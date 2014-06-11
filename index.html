@@ -4,7 +4,7 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="UE4GitPlugin : GitSourceControl UE4 Plugin (alpha 0.4)" />
+    <meta name="description" content="UE4GitPlugin : GitSourceControl UE4 Plugin (beta 0.5)" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -19,7 +19,7 @@
           <a id="forkme_banner" href="https://github.com/SRombauts/UE4GitPlugin">View on GitHub</a>
 
           <h1 id="project_title">UE4GitPlugin</h1>
-          <h2 id="project_tagline">GitSourceControl UE4 Plugin (alpha 0.4)</h2>
+          <h2 id="project_tagline">GitSourceControl UE4 Plugin (beta 0.5)</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/SRombauts/UE4GitPlugin/zipball/master">Download this project as a .zip file</a>
@@ -34,14 +34,14 @@
         <h2>
 <a name="unreal-engine-4-git-source-control-plugin" class="anchor" href="#unreal-engine-4-git-source-control-plugin"><span class="octicon octicon-link"></span></a>Unreal Engine 4 Git Source Control Plugin</h2>
 
-<p>UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.x</p>
+<p>UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.2</p>
 
 <h3>
 <a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h3>
 
 <p><a href="https://github.com/SRombauts/UE4GitPlugin/releases">Download the last release</a></p>
 
-<p>Alpha version 0.4 under developments:</p>
+<p>Beta version 0.5:</p>
 
 <ul>
 <li>display status icons to show modified/added/deleted/untracked files</li>
@@ -52,7 +52,7 @@
 <li>delete a file</li>
 <li>checkin/commit a file (cannot handle atomically more than 20 files)</li>
 <li>show current branch name in status text</li>
-</ul><p>What <em>cannot</em> be done presently (TODO list):</p>
+</ul><p>What <em>cannot</em> be done presently:</p>
 
 <ul>
 <li>initialize a new Git local repository ('git init') to manager your UE4 Game Project.</li>
@@ -104,12 +104,13 @@ For instance:</p>
 <h5>
 <a name="within-a-standard-installed-unreal-engine-binary-release" class="anchor" href="#within-a-standard-installed-unreal-engine-binary-release"><span class="octicon octicon-link"></span></a>Within a standard installed Unreal Engine binary release:</h5>
 
-<p>Clone the plugin repository under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:</p>
+<p>You can simply <a href="https://github.com/SRombauts/UE4GitPlugin/releases">download a ZIP of source code from the latest release</a>,
+and unzip it under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:</p>
 
 <pre><code>&lt;UnrealEngineInstallation&gt;/4.1/Engine/Plugins/Developer
 </code></pre>
 
-<p>The name of the destination directory is unimportant, so you can just:</p>
+<p>Or you can clone the plugin repository, and as the name of the destination directory is unimportant, its just:</p>
 
 <div class="highlight highlight-bash"><pre>git clone https://github.com/SRombauts/UE4GitPlugin.git
 </pre></div>
@@ -117,7 +118,7 @@ For instance:</p>
 <h5>
 <a name="within-an-unreal-engine-source-release-from-github" class="anchor" href="#within-an-unreal-engine-source-release-from-github"><span class="octicon octicon-link"></span></a>Within an Unreal Engine source release from GitHub:</h5>
 
-<p>Clone the plugin repository under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:</p>
+<p>Donwload and unzip or clone the plugin repository under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:</p>
 
 <pre><code>&lt;UnrealEngineClone&gt;/Engine/Plugins/Developer
 </code></pre>
