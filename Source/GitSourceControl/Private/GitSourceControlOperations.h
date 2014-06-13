@@ -30,7 +30,7 @@ public:
 	virtual bool UpdateStates() const OVERRIDE;
 
 public:
-	/** Temporary states for results *
+	/// Temporary states for results
 	TArray<FGitSourceControlState> States;
 };
 */
@@ -101,7 +101,7 @@ public:
 	virtual bool UpdateStates() const OVERRIDE;
 
 public:
-	/** Map of filenames to Git state *
+	/// Map of filenames to Git state
 	TArray<FGitSourceControlState> States;
 };
 */

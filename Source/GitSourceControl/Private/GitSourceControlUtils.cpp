@@ -75,6 +75,7 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 	if (!InRepositoryRoot.IsEmpty())
 	{
 		// Specify the working copy (the root) of the git repository (before the command itself)
+		// @todo Does not work in UE4.1 on Mac if there is a space in the path ("/Users/xxx/Unreal Project/MyProject")
 		FullCommand  = TEXT("--work-tree=\"");
 		FullCommand += InRepositoryRoot;
 		// and the ".git" subdirectory in it (before the command itself)
@@ -142,6 +143,8 @@ FString FindGitBinaryPath()
 	// NOTE: Win32 platform subdirectory as there is no Git 64bit build available
 	FString GitBinaryPath(FPaths::EngineDir() / TEXT("Binaries/ThirdParty/git/Win32/bin") / TEXT("git.exe"));
 	bFound = CheckGitAvailability(GitBinaryPath);
+#else
+	FString GitBinaryPath;
 #endif
 
 	// 2) If Git is not found in ThirdParty directory, look into standard install directory
