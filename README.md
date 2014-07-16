@@ -147,4 +147,11 @@ The source code follow the UnreaEngine official [Coding Standard](https://docs.u
 ## See also
 
 - [ue4-hg-plugin for Mercurial (and bigfiles)](https://github.com/enlight/ue4-hg-plugin)
-- [UE4 Git Plugin website](http://srombauts.github.com/UE4GitPlugin).
+- [VaOcean, the ocean surface simulation plugin for Unreal Engine 4](https://github.com/ufna/VaOcean)
+- [VaQuoleUI is the Web UI framework plugin for Unreal Engine 4](https://github.com/ufna/VaQuoleUI)
+- [VaRest is the plugin for Unreal Engine 4 that makes REST server communications easier to use](https://github.com/ufna/VaRest)
+
+- [A first person template for unreal engine 4 focused on VR and use with the Oculus Rift](https://github.com/mitchemmc/UE4FirstPersonVRTemplate)
+- [Template focused on a space shooter cockpit style game specifically designed for VR](https://github.com/mitchemmc/UE4SpaceShooterVRTemplate)
+
+- [UE4 Git Plugin website](http://srombauts.github.com/UE4GitPlugin)
