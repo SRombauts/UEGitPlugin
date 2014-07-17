@@ -38,15 +38,16 @@ public:
 
 	/** ISourceControlState interface */
 	virtual int32 GetHistorySize() const final;
-	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetHistoryItem( int32 HistoryIndex ) const final;
-	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FindHistoryRevision( int32 RevisionNumber ) const final;
+	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetHistoryItem(int32 HistoryIndex) const final;
+	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FindHistoryRevision(int32 RevisionNumber) const final;
+	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetBaseRevForMerge() const final;
 	virtual FName GetIconName() const final;
 	virtual FName GetSmallIconName() const final;
 	virtual FText GetDisplayName() const final;
 	virtual FText GetDisplayTooltip() const final;
 	virtual const FString& GetFilename() const final;
 	virtual const FDateTime& GetTimeStamp() const final;
-	virtual bool CanCheckIn() const /* @todo for UE4.3: final */;
+	virtual bool CanCheckIn() const final;
 	virtual bool CanCheckout() const final;
 	virtual bool IsCheckedOut() const final;
 	virtual bool IsCheckedOutOther(FString* Who = nullptr) const final;
@@ -59,6 +60,7 @@ public:
 	virtual bool IsUnknown() const final;
 	virtual bool IsModified() const final;
 	virtual bool CanAdd() const final;
+	virtual bool IsConflicted() const final;
 
 public:
 	/** History of the item, if any */

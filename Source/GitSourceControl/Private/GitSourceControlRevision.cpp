@@ -81,6 +81,13 @@ const FString& FGitSourceControlRevision::GetAction() const
 	return Action;
 }
 
+TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlRevision::GetBranchSource() const
+{
+	// @todo if this revision was copied from some other revision, then that source revision should
+	//       be returned here (this should be determined when history is being fetched)
+	return nullptr;
+}
+
 const FDateTime& FGitSourceControlRevision::GetDate() const
 {
 	return Date;

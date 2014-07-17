@@ -26,6 +26,7 @@ public:
 	virtual const FString& GetUserName() const final;
 	virtual const FString& GetClientSpec() const final;
 	virtual const FString& GetAction() const final;
+	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetBranchSource() const final;
 	virtual const FDateTime& GetDate() const final;
 	virtual int32 GetCheckInIdentifier() const final;
 	virtual int32 GetFileSize() const final;

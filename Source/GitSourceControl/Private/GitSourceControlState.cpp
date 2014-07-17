@@ -32,6 +32,12 @@ TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlS
 	return NULL;
 }
 
+TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::GetBaseRevForMerge() const
+{
+	// @todo revision of the merge-base (https://www.kernel.org/pub/software/scm/git/docs/git-merge-base.html)
+	return nullptr;
+}
+
 FName FGitSourceControlState::GetIconName() const
 {
 	switch(WorkingCopyState)
@@ -147,7 +153,6 @@ const FDateTime& FGitSourceControlState::GetTimeStamp() const
 	return TimeStamp;
 }
 
-/* @todo for UE4.3: final */
 bool FGitSourceControlState::CanCheckIn() const
 {
 	return WorkingCopyState == EWorkingCopyState::Added
@@ -234,4 +239,10 @@ bool FGitSourceControlState::CanAdd() const
 {
 	return WorkingCopyState == EWorkingCopyState::NotControlled;
 }
+
+bool FGitSourceControlState::IsConflicted() const
+{
+	return WorkingCopyState == EWorkingCopyState::Conflicted;
+}
+
 #undef LOCTEXT_NAMESPACE
