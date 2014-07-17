@@ -26,13 +26,13 @@ public:
 	 * abandoned before completion. NOTE: This requires the object to delete
 	 * itself using whatever heap it was allocated in.
 	 */
-	virtual void Abandon() final;
+	virtual void Abandon() override final;
 
 	/**
 	 * This method is also used to tell the object to cleanup but not before
 	 * the object has finished it's work.
 	 */ 
-	virtual void DoThreadedWork() final;
+	virtual void DoThreadedWork() override final;
 
 public:
 	/** Path to the Git binary */
