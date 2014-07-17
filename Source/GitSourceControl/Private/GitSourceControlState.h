@@ -37,28 +37,28 @@ public:
 	}
 
 	/** ISourceControlState interface */
-	virtual int32 GetHistorySize() const OVERRIDE;
-	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetHistoryItem( int32 HistoryIndex ) const OVERRIDE;
-	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FindHistoryRevision( int32 RevisionNumber ) const OVERRIDE;
-	virtual FName GetIconName() const OVERRIDE;
-	virtual FName GetSmallIconName() const OVERRIDE;
-	virtual FText GetDisplayName() const OVERRIDE;
-	virtual FText GetDisplayTooltip() const OVERRIDE;
-	virtual const FString& GetFilename() const OVERRIDE;
-	virtual const FDateTime& GetTimeStamp() const OVERRIDE;
-	virtual bool CanCheckIn() const /* @todo for UE4.3: OVERRIDE */;
-	virtual bool CanCheckout() const OVERRIDE;
-	virtual bool IsCheckedOut() const OVERRIDE;
-	virtual bool IsCheckedOutOther(FString* Who = nullptr) const OVERRIDE;
-	virtual bool IsCurrent() const OVERRIDE;
-	virtual bool IsSourceControlled() const OVERRIDE;
-	virtual bool IsAdded() const OVERRIDE;
-	virtual bool IsDeleted() const OVERRIDE;
-	virtual bool IsIgnored() const OVERRIDE;
-	virtual bool CanEdit() const OVERRIDE;
-	virtual bool IsUnknown() const OVERRIDE;
-	virtual bool IsModified() const OVERRIDE;
-	virtual bool CanAdd() const OVERRIDE;
+	virtual int32 GetHistorySize() const final;
+	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetHistoryItem( int32 HistoryIndex ) const final;
+	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FindHistoryRevision( int32 RevisionNumber ) const final;
+	virtual FName GetIconName() const final;
+	virtual FName GetSmallIconName() const final;
+	virtual FText GetDisplayName() const final;
+	virtual FText GetDisplayTooltip() const final;
+	virtual const FString& GetFilename() const final;
+	virtual const FDateTime& GetTimeStamp() const final;
+	virtual bool CanCheckIn() const /* @todo for UE4.3: final */;
+	virtual bool CanCheckout() const final;
+	virtual bool IsCheckedOut() const final;
+	virtual bool IsCheckedOutOther(FString* Who = nullptr) const final;
+	virtual bool IsCurrent() const final;
+	virtual bool IsSourceControlled() const final;
+	virtual bool IsAdded() const final;
+	virtual bool IsDeleted() const final;
+	virtual bool IsIgnored() const final;
+	virtual bool CanEdit() const final;
+	virtual bool IsUnknown() const final;
+	virtual bool IsModified() const final;
+	virtual bool CanAdd() const final;
 
 public:
 	/** History of the item, if any */

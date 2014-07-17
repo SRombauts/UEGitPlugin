@@ -147,7 +147,7 @@ const FDateTime& FGitSourceControlState::GetTimeStamp() const
 	return TimeStamp;
 }
 
-/* @todo for UE4.3: OVERRIDE */
+/* @todo for UE4.3: final */
 bool FGitSourceControlState::CanCheckIn() const
 {
 	return WorkingCopyState == EWorkingCopyState::Added

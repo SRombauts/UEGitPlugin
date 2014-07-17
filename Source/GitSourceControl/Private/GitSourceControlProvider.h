@@ -21,22 +21,22 @@ public:
 	}
 
 	/* ISourceControlProvider implementation */
-	virtual void Init(bool bForceConnection = true) OVERRIDE;
-	virtual void Close() OVERRIDE;
-	virtual FText GetStatusText() const OVERRIDE;
-	virtual bool IsEnabled() const OVERRIDE;
-	virtual bool IsAvailable() const OVERRIDE;
-	virtual const FName& GetName(void) const OVERRIDE;
-	virtual ECommandResult::Type GetState( const TArray<FString>& InFiles, TArray< TSharedRef<ISourceControlState, ESPMode::ThreadSafe> >& OutState, EStateCacheUsage::Type InStateCacheUsage ) OVERRIDE;
-	virtual void RegisterSourceControlStateChanged( const FSourceControlStateChanged::FDelegate& SourceControlStateChanged ) OVERRIDE;
-	virtual void UnregisterSourceControlStateChanged( const FSourceControlStateChanged::FDelegate& SourceControlStateChanged ) OVERRIDE;
-	virtual ECommandResult::Type Execute( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation, const TArray<FString>& InFiles, EConcurrency::Type InConcurrency = EConcurrency::Synchronous, const FSourceControlOperationComplete& InOperationCompleteDelegate = FSourceControlOperationComplete() ) OVERRIDE;
-	virtual bool CanCancelOperation( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation ) const OVERRIDE;
-	virtual void CancelOperation( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation ) OVERRIDE;
-	virtual bool UsesLocalReadOnlyState() const OVERRIDE;
-	virtual void Tick() OVERRIDE;
-	virtual TArray< TSharedRef<class ISourceControlLabel> > GetLabels( const FString& InMatchingSpec ) const OVERRIDE;
-	virtual TSharedRef<class SWidget> MakeSettingsWidget() const OVERRIDE;
+	virtual void Init(bool bForceConnection = true) final;
+	virtual void Close() final;
+	virtual FText GetStatusText() const final;
+	virtual bool IsEnabled() const final;
+	virtual bool IsAvailable() const final;
+	virtual const FName& GetName(void) const final;
+	virtual ECommandResult::Type GetState( const TArray<FString>& InFiles, TArray< TSharedRef<ISourceControlState, ESPMode::ThreadSafe> >& OutState, EStateCacheUsage::Type InStateCacheUsage ) final;
+	virtual void RegisterSourceControlStateChanged( const FSourceControlStateChanged::FDelegate& SourceControlStateChanged ) final;
+	virtual void UnregisterSourceControlStateChanged( const FSourceControlStateChanged::FDelegate& SourceControlStateChanged ) final;
+	virtual ECommandResult::Type Execute( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation, const TArray<FString>& InFiles, EConcurrency::Type InConcurrency = EConcurrency::Synchronous, const FSourceControlOperationComplete& InOperationCompleteDelegate = FSourceControlOperationComplete() ) final;
+	virtual bool CanCancelOperation( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation ) const final;
+	virtual void CancelOperation( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation ) final;
+	virtual bool UsesLocalReadOnlyState() const final;
+	virtual void Tick() final;
+	virtual TArray< TSharedRef<class ISourceControlLabel> > GetLabels( const FString& InMatchingSpec ) const final;
+	virtual TSharedRef<class SWidget> MakeSettingsWidget() const final;
 
 	/**
 	 * Run a Git "version" command to check the availability of the binary.

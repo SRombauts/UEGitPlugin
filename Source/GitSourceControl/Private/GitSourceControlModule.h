@@ -13,8 +13,8 @@ class FGitSourceControlModule : public IModuleInterface
 {
 public:
 	/** IModuleInterface implementation */
-	virtual void StartupModule() OVERRIDE;
-	virtual void ShutdownModule() OVERRIDE;
+	virtual void StartupModule() final;
+	virtual void ShutdownModule() final;
 
 	/** Access the Git source control settings */
 	FGitSourceControlSettings& AccessSettings();

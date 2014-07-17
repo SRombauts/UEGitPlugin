@@ -17,18 +17,18 @@ public:
 	}
 
 	/** ISourceControlRevision interface */
-	virtual bool Get( FString& InOutFilename ) const OVERRIDE;
-	virtual bool GetAnnotated( TArray<FAnnotationLine>& OutLines ) const OVERRIDE;
-	virtual bool GetAnnotated( FString& InOutFilename ) const OVERRIDE;
-	virtual const FString& GetFilename() const OVERRIDE;
-	virtual int32 GetRevisionNumber() const OVERRIDE;
-	virtual const FString& GetDescription() const OVERRIDE;
-	virtual const FString& GetUserName() const OVERRIDE;
-	virtual const FString& GetClientSpec() const OVERRIDE;
-	virtual const FString& GetAction() const OVERRIDE;
-	virtual const FDateTime& GetDate() const OVERRIDE;
-	virtual int32 GetCheckInIdentifier() const OVERRIDE;
-	virtual int32 GetFileSize() const OVERRIDE;
+	virtual bool Get( FString& InOutFilename ) const final;
+	virtual bool GetAnnotated( TArray<FAnnotationLine>& OutLines ) const final;
+	virtual bool GetAnnotated( FString& InOutFilename ) const final;
+	virtual const FString& GetFilename() const final;
+	virtual int32 GetRevisionNumber() const final;
+	virtual const FString& GetDescription() const final;
+	virtual const FString& GetUserName() const final;
+	virtual const FString& GetClientSpec() const final;
+	virtual const FString& GetAction() const final;
+	virtual const FDateTime& GetDate() const final;
+	virtual int32 GetCheckInIdentifier() const final;
+	virtual int32 GetFileSize() const final;
 
 public:
 
