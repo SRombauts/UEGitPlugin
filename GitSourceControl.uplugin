@@ -2,9 +2,9 @@
 	"FileVersion" : 3,
 	
 	"FriendlyName" : "Git",
-	"Version" : 5,
-	"VersionName" : "0.5",
-	"EngineVersion" : "4.2.0",
+	"Version" : 6,
+	"VersionName" : "0.5.1",
+	"EngineVersion" : "4.3.0",
 	"Description" : "Git source control management",
 	"Category" : "Editor.Source Control",
 	"CreatedBy" : "SRombauts",

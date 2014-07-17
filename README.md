@@ -1,13 +1,13 @@
 Unreal Engine 4 Git Source Control Plugin
 -----------------------------------------
 
-UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.2
+UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.3
 
 ### Status
 
 [Download the last release](https://github.com/SRombauts/UE4GitPlugin/releases)
 
-Beta version 0.5:
+Beta version 0.5.1:
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
 - diff against depot or between previous versions of a file
