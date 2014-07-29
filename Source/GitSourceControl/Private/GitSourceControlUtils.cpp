@@ -11,6 +11,11 @@
 
 #include "UniquePtr.h"
 
+#if PLATFORM_LINUX
+#include <sys/ioctl.h>
+#endif
+
+
 namespace GitSourceControlConstants
 {
 	/** The maximum number of files we submit in a single Git command */
@@ -543,7 +548,7 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	}
 
 #if PLATFORM_LINUX
-	close(*(int*)ReadPipe);
+	close(*(int*)PipeRead);
 	close(*(int*)PipeWrite);
 #else
 	FPlatformProcess::ClosePipe(PipeRead, PipeWrite);
@@ -752,7 +757,8 @@ TArray<uint8> ReadPipeToArray(void* ReadPipe)
 TArray<uint8> ReadPipeToArray(void* ReadPipe)
 {
 	TArray<uint8> Output;
-
+   const int32 READ_SIZE = 32768;
+   
 	if (ReadPipe)
 	{
 		FPipeHandle * PipeHandle = reinterpret_cast< FPipeHandle* >(ReadPipe);
@@ -764,7 +770,7 @@ TArray<uint8> ReadPipeToArray(void* ReadPipe)
 			if (BytesAvailable > 0)
 			{
 				Output.Init(BytesAvailable);
-				int BytesRead = read(PipeDesc, Buffer, kBufferSize - 1);
+				int BytesRead = read(PipeDesc, Output.GetData(), READ_SIZE);
 				if (BytesRead > 0)
 				{
 					if(BytesRead < BytesAvailable)
