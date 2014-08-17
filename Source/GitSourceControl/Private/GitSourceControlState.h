@@ -37,30 +37,30 @@ public:
 	}
 
 	/** ISourceControlState interface */
-	virtual int32 GetHistorySize() const override final;
-	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetHistoryItem(int32 HistoryIndex) const override final;
-	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FindHistoryRevision(int32 RevisionNumber) const override final;
-	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetBaseRevForMerge() const override final;
-	virtual FName GetIconName() const override final;
-	virtual FName GetSmallIconName() const override final;
-	virtual FText GetDisplayName() const override final;
-	virtual FText GetDisplayTooltip() const override final;
-	virtual const FString& GetFilename() const override final;
-	virtual const FDateTime& GetTimeStamp() const override final;
-	virtual bool CanCheckIn() const override final;
-	virtual bool CanCheckout() const override final;
-	virtual bool IsCheckedOut() const override final;
-	virtual bool IsCheckedOutOther(FString* Who = nullptr) const override final;
-	virtual bool IsCurrent() const override final;
-	virtual bool IsSourceControlled() const override final;
-	virtual bool IsAdded() const override final;
-	virtual bool IsDeleted() const override final;
-	virtual bool IsIgnored() const override final;
-	virtual bool CanEdit() const override final;
-	virtual bool IsUnknown() const override final;
-	virtual bool IsModified() const override final;
-	virtual bool CanAdd() const override final;
-	virtual bool IsConflicted() const override final;
+	virtual int32 GetHistorySize() const override;
+	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetHistoryItem(int32 HistoryIndex) const override;
+	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FindHistoryRevision(int32 RevisionNumber) const override;
+	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetBaseRevForMerge() const override;
+	virtual FName GetIconName() const override;
+	virtual FName GetSmallIconName() const override;
+	virtual FText GetDisplayName() const override;
+	virtual FText GetDisplayTooltip() const override;
+	virtual const FString& GetFilename() const override;
+	virtual const FDateTime& GetTimeStamp() const override;
+	virtual bool CanCheckIn() const override;
+	virtual bool CanCheckout() const override;
+	virtual bool IsCheckedOut() const override;
+	virtual bool IsCheckedOutOther(FString* Who = nullptr) const override;
+	virtual bool IsCurrent() const override;
+	virtual bool IsSourceControlled() const override;
+	virtual bool IsAdded() const override;
+	virtual bool IsDeleted() const override;
+	virtual bool IsIgnored() const override;
+	virtual bool CanEdit() const override;
+	virtual bool IsUnknown() const override;
+	virtual bool IsModified() const override;
+	virtual bool CanAdd() const override;
+	virtual bool IsConflicted() const override;
 
 public:
 	/** History of the item, if any */

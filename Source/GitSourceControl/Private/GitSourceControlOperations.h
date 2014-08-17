@@ -15,9 +15,9 @@ class FGitConnectWorker : public IGitSourceControlWorker
 {
 public:
 	// IGitSourceControlWorker interface
-	virtual FName GetName() const override final;
-	virtual bool Execute(class FGitSourceControlCommand& InCommand) override final;
-	virtual bool UpdateStates() const override final;
+	virtual FName GetName() const override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
+	virtual bool UpdateStates() const override;
 };
 
 /** @todo
@@ -25,9 +25,9 @@ class FGitCheckOutWorker : public IGitSourceControlWorker
 {
 public:
 	// IGitSourceControlWorker interface
-	virtual FName GetName() const override final;
-	virtual bool Execute(class FGitSourceControlCommand& InCommand) override final;
-	virtual bool UpdateStates() const override final;
+	virtual FName GetName() const override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
+	virtual bool UpdateStates() const override;
 
 public:
 	/// Temporary states for results
@@ -40,9 +40,9 @@ class FGitCheckInWorker : public IGitSourceControlWorker
 {
 public:
 	// IGitSourceControlWorker interface
-	virtual FName GetName() const override final;
-	virtual bool Execute(class FGitSourceControlCommand& InCommand) override final;
-	virtual bool UpdateStates() const override final;
+	virtual FName GetName() const override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
+	virtual bool UpdateStates() const override;
 
 public:
 	/** Temporary states for results */
@@ -54,9 +54,9 @@ class FGitMarkForAddWorker : public IGitSourceControlWorker
 {
 public:
 	// IGitSourceControlWorker interface
-	virtual FName GetName() const override final;
-	virtual bool Execute(class FGitSourceControlCommand& InCommand) override final;
-	virtual bool UpdateStates() const override final;
+	virtual FName GetName() const override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
+	virtual bool UpdateStates() const override;
 
 public:
 	/** Temporary states for results */
@@ -68,9 +68,9 @@ class FGitDeleteWorker : public IGitSourceControlWorker
 {
 public:
 	// IGitSourceControlWorker interface
-	virtual FName GetName() const override final;
-	virtual bool Execute(class FGitSourceControlCommand& InCommand) override final;
-	virtual bool UpdateStates() const override final;
+	virtual FName GetName() const override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
+	virtual bool UpdateStates() const override;
 
 public:
 	/** Map of filenames to Git state */
@@ -82,9 +82,9 @@ class FGitRevertWorker : public IGitSourceControlWorker
 {
 public:
 	// IGitSourceControlWorker interface
-	virtual FName GetName() const override final;
-	virtual bool Execute(class FGitSourceControlCommand& InCommand) override final;
-	virtual bool UpdateStates() const override final;
+	virtual FName GetName() const override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
+	virtual bool UpdateStates() const override;
 
 public:
 	/** Map of filenames to Git state */
@@ -96,9 +96,9 @@ class FGitSyncWorker : public IGitSourceControlWorker
 {
 public:
 	// IGitSourceControlWorker interface
-	virtual FName GetName() const override final;
-	virtual bool Execute(class FGitSourceControlCommand& InCommand) override final;
-	virtual bool UpdateStates() const override final;
+	virtual FName GetName() const override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
+	virtual bool UpdateStates() const override;
 
 public:
 	/// Map of filenames to Git state
@@ -111,9 +111,9 @@ class FGitUpdateStatusWorker : public IGitSourceControlWorker
 {
 public:
 	// IGitSourceControlWorker interface
-	virtual FName GetName() const override final;
-	virtual bool Execute(class FGitSourceControlCommand& InCommand) override final;
-	virtual bool UpdateStates() const override final;
+	virtual FName GetName() const override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
+	virtual bool UpdateStates() const override;
 
 public:
 	/** Temporary states for results */
