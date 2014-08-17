@@ -94,11 +94,7 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 		return ECommandResult::Failed;
 	}
 
-	TArray<FString> AbsoluteFiles;
-	for(const auto& File : InFiles)
-	{
-		AbsoluteFiles.Add(FPaths::ConvertRelativePathToFull(*File));
-	}
+	TArray<FString> AbsoluteFiles = SourceControlHelpers::AbsoluteFilenames(InFiles);
 
 	if(InStateCacheUsage == EStateCacheUsage::ForceUpdate)
 	{
@@ -130,11 +126,7 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 		return ECommandResult::Failed;
 	}
 
-	TArray<FString> AbsoluteFiles;
-	for(const auto& File : InFiles)
-	{
-		AbsoluteFiles.Add(FPaths::ConvertRelativePathToFull(*File));
-	}
+	TArray<FString> AbsoluteFiles = SourceControlHelpers::AbsoluteFilenames(InFiles);
 
 	// Query to see if we allow this operation
 	TSharedPtr<IGitSourceControlWorker, ESPMode::ThreadSafe> Worker = CreateWorker(InOperation->GetName());
