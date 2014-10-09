@@ -114,13 +114,4 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
  */
 bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates);
 
-/**
- * Reads all pending data from an anonymous pipe, such as STDOUT or STDERROR of a process.
- *
- * @param InReadPipe The handle to the pipe to read from.
- *
- * @return A dynamic array containing all data.
-*/
-TArray<uint8> ReadPipeToArray(void* InReadPipe);
-
 }
