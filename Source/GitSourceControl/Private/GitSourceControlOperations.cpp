@@ -245,4 +245,60 @@ bool FGitUpdateStatusWorker::UpdateStates() const
 	return bUpdated;
 }
 
+FName FGitCopyWorker::GetName() const
+{
+	return "Copy";
+}
+
+bool FGitCopyWorker::Execute(FGitSourceControlCommand& InCommand)
+{
+	check(InCommand.Operation->GetName() == GetName());
+    
+    // Implement a no-op as Git does not need an explicit copy
+    InCommand.bCommandSuccessful = true;
+
+	return InCommand.bCommandSuccessful;
+}
+
+bool FGitCopyWorker::UpdateStates() const
+{
+	return GitSourceControlUtils::UpdateCachedStates(OutStates);
+}
+
+/* @todo
+FName FGitResolveWorker::GetName() const
+{
+	return "Resolve";
+}
+
+bool FGitResolveWorker::Execute( class FGitSourceControlCommand& InCommand )
+{
+	// mark the conflicting files as resolved:
+	{
+		TArray<FString> Results;
+		TArray<FString> ResolveParameters;
+		ResolveParameters.Add(TEXT("--accept mine-full"));
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("resolve"), InCommand.Files, ResolveParameters, Results, InCommand.ErrorMessages, InCommand.UserName);
+	}
+
+	// now update the status of our files
+	{
+		TArray<FXmlFile> ResultsXml;
+		TArray<FString> StatusParameters;
+		StatusParameters.Add(TEXT("--verbose"));
+		StatusParameters.Add(TEXT("--show-updates"));
+
+		InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(TEXT("status"), InCommand.Files, StatusParameters, ResultsXml, InCommand.ErrorMessages, InCommand.UserName);
+		GitSourceControlUtils::ParseStatusResults(ResultsXml, InCommand.ErrorMessages, InCommand.UserName, InCommand.WorkingCopyRoot, OutStates);
+	}
+
+	return InCommand.bCommandSuccessful;
+}
+
+bool FGitResolveWorker::UpdateStates() const
+{
+	return GitSourceControlUtils::UpdateCachedStates(OutStates);
+}
+*/
+
 #undef LOCTEXT_NAMESPACE

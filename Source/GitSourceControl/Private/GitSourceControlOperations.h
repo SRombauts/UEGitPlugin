@@ -122,3 +122,32 @@ public:
 	/** Map of filenames to history */
 	TMap<FString, TGitSourceControlHistory> Histories;
 };
+
+class FGitCopyWorker : public IGitSourceControlWorker
+{
+public:
+	virtual ~FGitCopyWorker() {}
+	// IGitSourceControlWorker interface
+	virtual FName GetName() const override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
+	virtual bool UpdateStates() const override;
+
+public:
+	/** Temporary states for results */
+	TArray<FGitSourceControlState> OutStates;
+};
+
+/** @todo
+class FGitResolveWorker : public IGitSourceControlWorker
+{
+public:
+	virtual ~FGitResolveWorker() {}
+	virtual FName GetName() const override;
+	virtual bool Execute( class FGitSourceControlCommand& InCommand ) override;
+	virtual bool UpdateStates() const override;
+	
+private:
+	/** Temporary states for results *
+	TArray<FGitSourceControlState> OutStates;
+};
+*/
