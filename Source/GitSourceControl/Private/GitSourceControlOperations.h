@@ -14,6 +14,7 @@
 class FGitConnectWorker : public IGitSourceControlWorker
 {
 public:
+	virtual ~FGitConnectWorker() {}
 	// IGitSourceControlWorker interface
 	virtual FName GetName() const override;
 	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
@@ -24,6 +25,7 @@ public:
 class FGitCheckOutWorker : public IGitSourceControlWorker
 {
 public:
+	virtual ~FGitCheckOutWorker() {}
 	// IGitSourceControlWorker interface
 	virtual FName GetName() const override;
 	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
@@ -39,6 +41,7 @@ public:
 class FGitCheckInWorker : public IGitSourceControlWorker
 {
 public:
+	virtual ~FGitCheckInWorker() {}
 	// IGitSourceControlWorker interface
 	virtual FName GetName() const override;
 	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
@@ -53,6 +56,7 @@ public:
 class FGitMarkForAddWorker : public IGitSourceControlWorker
 {
 public:
+	virtual ~FGitMarkForAddWorker() {}
 	// IGitSourceControlWorker interface
 	virtual FName GetName() const override;
 	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
@@ -67,6 +71,7 @@ public:
 class FGitDeleteWorker : public IGitSourceControlWorker
 {
 public:
+	virtual ~FGitDeleteWorker() {}
 	// IGitSourceControlWorker interface
 	virtual FName GetName() const override;
 	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
@@ -81,6 +86,7 @@ public:
 class FGitRevertWorker : public IGitSourceControlWorker
 {
 public:
+	virtual ~FGitRevertWorker() {}
 	// IGitSourceControlWorker interface
 	virtual FName GetName() const override;
 	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
@@ -95,6 +101,7 @@ public:
 class FGitSyncWorker : public IGitSourceControlWorker
 {
 public:
+	virtual ~FGitSyncWorker() {}
 	// IGitSourceControlWorker interface
 	virtual FName GetName() const override;
 	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
@@ -110,6 +117,7 @@ public:
 class FGitUpdateStatusWorker : public IGitSourceControlWorker
 {
 public:
+	virtual ~FGitUpdateStatusWorker() {}
 	// IGitSourceControlWorker interface
 	virtual FName GetName() const override;
 	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
