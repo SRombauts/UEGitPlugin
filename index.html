@@ -2,9 +2,9 @@
 <html>
 
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="UE4GitPlugin : GitSourceControl UE4 Plugin (beta 0.5.1)" />
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="UE4GitPlugin : GitSourceControl UE4 Plugin (beta 0.5.1)">
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -34,14 +34,14 @@
         <h2>
 <a name="unreal-engine-4-git-source-control-plugin" class="anchor" href="#unreal-engine-4-git-source-control-plugin"><span class="octicon octicon-link"></span></a>Unreal Engine 4 Git Source Control Plugin</h2>
 
-<p>UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.3</p>
+<p>UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.5</p>
 
 <h3>
 <a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h3>
 
 <p><a href="https://github.com/SRombauts/UE4GitPlugin/releases">Download the last release</a></p>
 
-<p>Beta version 0.5.1:</p>
+<p>Beta version 0.5.3:</p>
 
 <ul>
 <li>display status icons to show modified/added/deleted/untracked files</li>
@@ -52,7 +52,9 @@
 <li>delete a file</li>
 <li>checkin/commit a file (cannot handle atomically more than 20 files)</li>
 <li>show current branch name in status text</li>
-</ul><p>What <em>cannot</em> be done presently:</p>
+</ul>
+
+<p>What <em>cannot</em> be done presently:</p>
 
 <ul>
 <li>initialize a new Git local repository ('git init') to manager your UE4 Game Project.</li>
@@ -61,19 +63,27 @@
 <li>Pull/Fetch/Push are not in the current Editor workflow</li>
 <li>Branch and Merge are not in the current Editor workflow (but on Epic Roadmap)</li>
 <li>Amend a commit &amp; Add file to Index are not in the current Editor workflow</li>
-</ul><p>Wishlist:</p>
+</ul>
+
+<p>Wishlist:</p>
 
 <ul>
 <li><a href="https://github.com/SRombauts/UE4GitPlugin/issues/1">git-annexe and/or git-media - #1 feature request</a></li>
-</ul><p>Known issues:</p>
+</ul>
+
+<p>Known issues:</p>
 
 <ul>
+<li>issue #10: Add the "Copy" operation replacing "Delete" + "Add"</li>
+<li>issue #11: Add the "Resolve" operation introduced in Editor 4.3</li>
 <li>reverting an asset does not seem to update content in Editor! Issue in Editor?</li>
 <li>renaming an asset does not seem to be handled correctly by the Editor...</li>
 <li>renamed file may not be tracked correctly (not yet tested, see above)</li>
 <li>file history does not report file size</li>
-<li>Windows only (64bits)</li>
-</ul><h3>
+<li>Windows only (64 bits)</li>
+</ul>
+
+<h3>
 <a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting started</h3>
 
 <h4>
@@ -85,7 +95,9 @@
 <li>install a standalone Git, usually in "C:\Program Files (x86)\Git\bin\git.exe".</li>
 <li>or copy a <a href="https://code.google.com/p/msysgit/downloads/list?can=1&amp;q=PortableGit">portable Git</a>
 inside "/Engine/Binaries/ThirdParty/git/Win32".</li>
-</ul><h4>
+</ul>
+
+<h4>
 <a name="initialize-your-game-project-directory-with-git" class="anchor" href="#initialize-your-game-project-directory-with-git"><span class="octicon octicon-link"></span></a>Initialize your Game Project directory with Git</h4>
 
 <p>Use your favorite Git program to initialize and manage your whole game project directory.
@@ -179,7 +191,9 @@ use the tools provided by GitHub:</p>
 <li>please fill bug reports and feature requests here: <a href="https://github.com/SRombauts/UE4GitPlugin/issues">https://github.com/SRombauts/UE4GitPlugin/issues</a>
 </li>
 <li>fork the repository, make some small changes and submit them with independant pull-request</li>
-</ul><h3>
+</ul>
+
+<h3>
 <a name="contact" class="anchor" href="#contact"><span class="octicon octicon-link"></span></a>Contact</h3>
 
 <p>You can also email me directly, I will answer any questions and requests.</p>
@@ -196,7 +210,9 @@ use the tools provided by GitHub:</p>
 <li>Use portable common features of C++11 like nullptr, auto, range based for, OVERRIDE macro</li>
 <li>Braces on their own line</li>
 <li>Tabs to indent code, with a width of 4 characters</li>
-</ul><h2>
+</ul>
+
+<h2>
 <a name="see-also" class="anchor" href="#see-also"><span class="octicon octicon-link"></span></a>See also</h2>
 
 <ul>
