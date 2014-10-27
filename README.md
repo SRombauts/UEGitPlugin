@@ -1,13 +1,13 @@
 Unreal Engine 4 Git Source Control Plugin
 -----------------------------------------
 
-UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.4
+UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.5
 
 ### Status
 
 [Download the last release](https://github.com/SRombauts/UE4GitPlugin/releases)
 
-Beta version 0.5.2:
+Beta version 0.5.3:
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
 - diff against depot or between previous versions of a file
@@ -29,14 +29,13 @@ Wishlist:
 - [git-annexe and/or git-media - #1 feature request](https://github.com/SRombauts/UE4GitPlugin/issues/1)
 
 Known issues:
-- issue #9 The UE4.4 Editor crashes when closing the Source Control Module: Bug of Editor 4.4, already fixed by Epic in master for 4.5 but not in 4.4
 - issue #10: Add the "Copy" operation replacing "Delete" + "Add"
 - issue #11: Add the "Resolve" operation introduced in Editor 4.3
 - reverting an asset does not seem to update content in Editor! Issue in Editor?
 - renaming an asset does not seem to be handled correctly by the Editor...
 - renamed file may not be tracked correctly (not yet tested, see above)
 - file history does not report file size
-- Windows only (64bits)
+- Windows only (64 bits)
 
 ### Getting started
 
