@@ -36,7 +36,9 @@ public:
 	virtual bool UsesLocalReadOnlyState() const override;
 	virtual void Tick() override;
 	virtual TArray< TSharedRef<class ISourceControlLabel> > GetLabels( const FString& InMatchingSpec ) const override;
+#if SOURCE_CONTROL_WITH_SLATE
 	virtual TSharedRef<class SWidget> MakeSettingsWidget() const override;
+#endif
 
 	/**
 	 * Run a Git "version" command to check the availability of the binary.

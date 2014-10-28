@@ -155,7 +155,7 @@ public:
 	virtual bool UpdateStates() const override;
 	
 private:
-	/** Temporary states for results *
+	/// Temporary states for results
 	TArray<FGitSourceControlState> OutStates;
 };
 */

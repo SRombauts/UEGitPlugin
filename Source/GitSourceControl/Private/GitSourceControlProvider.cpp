@@ -256,10 +256,12 @@ TArray< TSharedRef<ISourceControlLabel> > FGitSourceControlProvider::GetLabels( 
 	return Tags;
 }
 
+#if SOURCE_CONTROL_WITH_SLATE
 TSharedRef<class SWidget> FGitSourceControlProvider::MakeSettingsWidget() const
 {
 	return SNew(SGitSourceControlSettings);
 }
+#endif
 
 ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSourceControlCommand& InCommand, const FText& Task)
 {
