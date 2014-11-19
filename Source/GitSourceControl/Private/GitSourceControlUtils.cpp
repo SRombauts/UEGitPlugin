@@ -305,7 +305,7 @@ public:
 	{
 	}
 
-	bool Matches(const FString& InResult) const
+	bool operator()(const FString& InResult) const
 	{
 		// Extract the relative filename from the Git status result
 		// @todo this cannot work in case of a rename from -> to
@@ -396,9 +396,7 @@ static void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FStr
 	for(const auto& File : InFiles)
 	{
 		FGitSourceControlState FileState(File);
-		FGitStatusFileMatcher FileMatcher(File);
-		//@todo this is deprecated in 4.6, new version is TArray<>::IndexOfByPredicate()
-		int32 IdxResult = InResults.FindMatch(FileMatcher);
+		int32 IdxResult = InResults.IndexOfByPredicate(FGitStatusFileMatcher(File));
 		if(IdxResult != INDEX_NONE)
 		{
 			// File found in status results; only the case for "changed" files
