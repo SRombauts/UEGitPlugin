@@ -397,6 +397,7 @@ static void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FStr
 	{
 		FGitSourceControlState FileState(File);
 		FGitStatusFileMatcher FileMatcher(File);
+		//@todo this is deprecated in 4.6, new version is TArray<>::IndexOfByPredicate()
 		int32 IdxResult = InResults.FindMatch(FileMatcher);
 		if(IdxResult != INDEX_NONE)
 		{
