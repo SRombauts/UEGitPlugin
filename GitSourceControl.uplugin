@@ -4,7 +4,7 @@
 	"FriendlyName" : "Git",
 	"Version" : 8,
 	"VersionName" : "0.5.3",
-	"EngineVersion" : "4.5.0",
+	"EngineVersion" : "4.6.1",
 	"Description" : "Git source control management",
 	"Category" : "Editor.Source Control",
 	"CreatedBy" : "SRombauts",
