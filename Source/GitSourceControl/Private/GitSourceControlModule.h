@@ -8,6 +8,7 @@
 #include "ISourceControlModule.h"
 #include "GitSourceControlSettings.h"
 #include "GitSourceControlProvider.h"
+#include "SGitInitDialog.h"
 
 class FGitSourceControlModule : public IModuleInterface
 {
@@ -28,7 +29,15 @@ public:
 		return GitSourceControlProvider;
 	}
 
+	void ShowInitDialog(ELoginWindowMode::Type InLoginWindowMode, EOnLoginWindowStartup::Type InOnLoginWindowStartup);
+
 private:
+	/** The login window we may be using */
+	TSharedPtr<SWindow> SourceControlInitWindowPtr;
+
+	/** The login window control we may be using */
+	TSharedPtr<class SGitInitDialog> SourceControlInitPtr;
+
 	/** The Git source control provider */
 	FGitSourceControlProvider GitSourceControlProvider;
 
