@@ -8,6 +8,7 @@ UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.5
 [Download the last release](https://github.com/SRombauts/UE4GitPlugin/releases)
 
 Beta version 0.5.3:
+- initialize a new Git local repository ('git init') to manager your UE4 Game Project.
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
 - diff against depot or between previous versions of a file
@@ -18,12 +19,11 @@ Beta version 0.5.3:
 - show current branch name in status text
 
 What *cannot* be done presently:
-- initialize a new Git local repository ('git init') to manager your UE4 Game Project.
 - configure user name & email ('git config user.name' & git config user.email')
-- commit description message cannot take more than one line (Editor limitation)
-- Pull/Fetch/Push are not in the current Editor workflow
+- migrate an asset should add it to the destination project
 - Branch and Merge are not in the current Editor workflow (but on Epic Roadmap)
-- Amend a commit & Add file to Index are not in the current Editor workflow
+- Pull/Fetch/Push are not in the current Editor workflow
+- Amend a commit is not in the current Editor workflow
 
 Wishlist:
 - [git-annexe and/or git-media - #1 feature request](https://github.com/SRombauts/UE4GitPlugin/issues/1)
