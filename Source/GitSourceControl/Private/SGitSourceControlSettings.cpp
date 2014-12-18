@@ -19,38 +19,61 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 		.BorderImage( FEditorStyle::GetBrush("DetailsView.CategoryBottom") )
 		.Padding( FMargin( 0.0f, 3.0f, 0.0f, 0.0f ) )
 		[
-			SNew(SHorizontalBox)
-			+SHorizontalBox::Slot()
-			.FillWidth(1.0f)
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot()
+			.FillHeight(1.0f)
+			.Padding(2.0f)
+			.VAlign(VAlign_Center)
 			[
-				SNew(SVerticalBox)
-				+SVerticalBox::Slot()
+				SNew(SHorizontalBox)
+				+SHorizontalBox::Slot()
+				.FillWidth(1.0f)
+				[
+					SNew(SVerticalBox)
+					+SVerticalBox::Slot()
+					.FillHeight(1.0f)
+					.Padding(2.0f)
+					.VAlign(VAlign_Center)
+					[
+						SNew(STextBlock)
+						.Text(LOCTEXT("BinaryPathLabel", "Git Path"))
+						.ToolTipText(LOCTEXT("BinaryPathLabel_Tooltip", "Path to Git binary"))
+						.Font(Font)
+					]
+				]
+				+SHorizontalBox::Slot()
+				.FillWidth(2.0f)
+				[
+					SNew(SVerticalBox)
+					+SVerticalBox::Slot()
+					.FillHeight(1.0f)
+					.Padding(2.0f)
+					[
+						SNew(SEditableTextBox)
+						.Text(this, &SGitSourceControlSettings::GetBinaryPathText)
+						.ToolTipText(LOCTEXT("BinaryPathLabel_Tooltip", "Path to Git binary"))
+						.OnTextCommitted(this, &SGitSourceControlSettings::OnBinaryPathTextCommited)
+						.OnTextChanged(this, &SGitSourceControlSettings::OnBinaryPathTextCommited, ETextCommit::Default)
+						.Font(Font)
+					]
+				]
+			]
+			+ SVerticalBox::Slot()
 				.FillHeight(1.0f)
 				.Padding(2.0f)
 				.VAlign(VAlign_Center)
 				[
-					SNew(STextBlock)
-					.Text(LOCTEXT("BinaryPathLabel", "Git Path"))
-					.ToolTipText(LOCTEXT("BinaryPathLabel_Tooltip", "Path to Git binary"))
-					.Font(Font)
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.FillWidth(1.0f)
+					.HAlign(HAlign_Right)
+					[
+						SNew(SButton)
+						.HAlign(HAlign_Center)
+						.Text(LOCTEXT("GitInit", "Intialize Git"))
+						.OnClicked(this, &SGitSourceControlSettings::OnClickedInit)
+					]
 				]
-			]
-			+SHorizontalBox::Slot()
-			.FillWidth(2.0f)
-			[
-				SNew(SVerticalBox)
-				+SVerticalBox::Slot()
-				.FillHeight(1.0f)
-				.Padding(2.0f)
-				[
-					SNew(SEditableTextBox)
-					.Text(this, &SGitSourceControlSettings::GetBinaryPathText)
-					.ToolTipText(LOCTEXT("BinaryPathLabel_Tooltip", "Path to Git binary"))
-					.OnTextCommitted(this, &SGitSourceControlSettings::OnBinaryPathTextCommited)
-					.OnTextChanged(this, &SGitSourceControlSettings::OnBinaryPathTextCommited, ETextCommit::Default)
-					.Font(Font)
-				]
-			]
 		]
 	];
 }
@@ -66,6 +89,14 @@ void SGitSourceControlSettings::OnBinaryPathTextCommited(const FText& InText, ET
 	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	GitSourceControl.AccessSettings().SetBinaryPath(InText.ToString());
 	GitSourceControl.SaveSettings();
+}
+
+FReply SGitSourceControlSettings::OnClickedInit()
+{
+	FGitSourceControlModule GitModule = FGitSourceControlModule::Get();
+	GitModule.ShowGitInitDialog(EGitInitWindowMode::Modal);
+
+	return FReply::Handled();
 }
 
 #undef LOCTEXT_NAMESPACE
