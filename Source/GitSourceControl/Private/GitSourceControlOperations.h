@@ -145,6 +145,33 @@ public:
 	TArray<FGitSourceControlState> OutStates;
 };
 
+/**
+ *  Called when first activated on a project, and then at project load time.
+ *  Look for the root directory of the git repository (where the ".git/" subdirectory is located).
+ */
+class FGitInitWorker : public IGitSourceControlWorker
+{
+public:
+	virtual ~FGitInitWorker() {}
+	// IGitSourceControlWorker interface
+	virtual FName GetName() const override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
+	virtual bool UpdateStates() const override;
+};
+
+/**
+* Operation used to connect (or test a connection) to source control
+*/
+class FGitInit : public ISourceControlOperation
+{
+public:
+	// ISourceControlOperation interface
+	virtual FName GetName() const override
+	{
+		return "Init";
+	}
+};
+
 /** @todo
 class FGitResolveWorker : public IGitSourceControlWorker
 {

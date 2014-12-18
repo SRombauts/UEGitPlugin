@@ -9,6 +9,20 @@
 #include "GitSourceControlSettings.h"
 #include "GitSourceControlProvider.h"
 #include "SGitInitDialog.h"
+#include "ModuleManager.h"
+
+/**
+* The modality of the init window.
+*/
+namespace EGitInitWindowMode
+{
+	enum Type
+	{
+		Modal,
+		Modeless
+	};
+};
+
 
 class FGitSourceControlModule : public IModuleInterface
 {
@@ -29,14 +43,19 @@ public:
 		return GitSourceControlProvider;
 	}
 
-	void ShowInitDialog(ELoginWindowMode::Type InLoginWindowMode, EOnLoginWindowStartup::Type InOnLoginWindowStartup);
+	void ShowGitInitDialog(EGitInitWindowMode::Type InGitInitWindowMode);
+
+	static FGitSourceControlModule& Get()
+	{
+		return FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	}
 
 private:
 	/** The login window we may be using */
-	TSharedPtr<SWindow> SourceControlInitWindowPtr;
+	TSharedPtr<SWindow> GitSourceControlInitWindowPtr;
 
 	/** The login window control we may be using */
-	TSharedPtr<class SGitInitDialog> SourceControlInitPtr;
+	TSharedPtr<class SGitInitDialog> GitSourceControlInitPtr;
 
 	/** The Git source control provider */
 	FGitSourceControlProvider GitSourceControlProvider;

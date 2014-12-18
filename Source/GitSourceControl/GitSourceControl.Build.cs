@@ -16,6 +16,7 @@ public class GitSourceControl : ModuleRules
 				"SlateCore",
 				"EditorStyle",
 				"SourceControl",
+                "InputCore",
 			}
 		);
 	}

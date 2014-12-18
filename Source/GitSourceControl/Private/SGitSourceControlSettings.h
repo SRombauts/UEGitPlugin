@@ -24,4 +24,7 @@ private:
 
 	/** Delegate to commit repository text to settings */
 	void OnBinaryPathTextCommited(const FText& InText, ETextCommit::Type InCommitType) const;
+
+	/** Delegate to open the Init window */
+	FReply OnClickedInit();
 };

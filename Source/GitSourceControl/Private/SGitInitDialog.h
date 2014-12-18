@@ -5,6 +5,11 @@
 
 #pragma once
 
+#include "GitSourceControlModule.h"
+
+
+#if SOURCE_CONTROL_WITH_SLATE
+
 class SGitInitDialog : public SCompoundWidget
 {
 public:
@@ -22,9 +27,34 @@ public:
 
 private:
 
-	/** Delegate to get binary path from settings */
-	//FText GetBinaryPathText() const;
+	/** Delegate called when the user clicks the 'Accept Settings' button */
+	FReply OnClickedInit();
 
-	/** Delegate to commit repository text to settings */
-	//void OnBinaryPathTextCommited(const FText& InText, ETextCommit::Type InCommitType) const;
+	/** Delegate called when the user clicks the 'Disable Source Control' button */
+	FReply OnClickedCancel();
+
+	/** Called when a connection attempt fails */
+	void DisplayInitError() const;
+
+	/** Called when a connection attempt succeeds */
+	void DisplayInitSuccess() const;
+
+	/** Delegate called form the source control system when a login attempt has completed */
+	void SourceControlOperationComplete(const FSourceControlOperationRef& InOperation, ECommandResult::Type InResult);
+
+private:
+
+	/** The parent window of this widget */
+	TWeakPtr<SWindow> ParentWindowPtr;
+
+	/** Holds the details view. */
+	TSharedPtr<class IDetailsView> DetailsView;
+
+	/** Delegate called when the window is closed */
+	FSourceControlLoginClosed SourceControlLoginClosed;
+
+	/** The currently displayed settings widget container */
+	TSharedPtr<class SBorder> SettingsBorder;
 };
+
+#endif // SOURCE_CONTROL_WITH_SLATE

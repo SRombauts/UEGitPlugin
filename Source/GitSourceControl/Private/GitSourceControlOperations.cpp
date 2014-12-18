@@ -300,4 +300,27 @@ bool FGitResolveWorker::UpdateStates() const
 }
 */
 
+FName FGitInitWorker::GetName() const
+{
+	return "Init";
+}
+
+bool FGitInitWorker::Execute(FGitSourceControlCommand& InCommand)
+{
+	check(InCommand.Operation->GetName() == "Init");
+	
+	InCommand.bCommandSuccessful = false;
+
+	if (GitSourceControlUtils::RunCommand(TEXT("init"), InCommand.PathToGitBinary, InCommand.PathToGameDir, TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages)){
+		InCommand.bCommandSuccessful = true;
+	}
+
+	return InCommand.bCommandSuccessful;
+}
+
+bool FGitInitWorker::UpdateStates() const
+{
+	return false;
+}
+
 #undef LOCTEXT_NAMESPACE
