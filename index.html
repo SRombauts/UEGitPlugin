@@ -4,7 +4,7 @@
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="UE4GitPlugin : GitSourceControl UE4 Plugin (beta 0.5.3 for UE4.5)">
+    <meta name="description" content="UE4GitPlugin : GitSourceControl UE4 Plugin (beta 0.6.0 for UE4.6)">
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -19,7 +19,7 @@
           <a id="forkme_banner" href="https://github.com/SRombauts/UE4GitPlugin">View on GitHub</a>
 
           <h1 id="project_title">UE4GitPlugin</h1>
-          <h2 id="project_tagline">GitSourceControl UE4 Plugin (beta 0.5.3 for UE4.5)</h2>
+          <h2 id="project_tagline">GitSourceControl UE4 Plugin (beta 0.6.0 for UE4.6)</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/SRombauts/UE4GitPlugin/zipball/master">Download this project as a .zip file</a>
@@ -34,16 +34,17 @@
         <h2>
 <a name="unreal-engine-4-git-source-control-plugin" class="anchor" href="#unreal-engine-4-git-source-control-plugin"><span class="octicon octicon-link"></span></a>Unreal Engine 4 Git Source Control Plugin</h2>
 
-<p>UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.5</p>
+<p>UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.6</p>
 
 <h3>
 <a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h3>
 
 <p><a href="https://github.com/SRombauts/UE4GitPlugin/releases">Download the last release</a></p>
 
-<p>Beta version 0.5.3:</p>
+<p>Beta version 0.6.0:</p>
 
 <ul>
+<li>initialize a new Git local repository ('git init') to manage your UE4 Game Project.</li>
 <li>display status icons to show modified/added/deleted/untracked files</li>
 <li>show history of a file</li>
 <li>diff against depot or between previous versions of a file</li>
@@ -57,9 +58,8 @@
 <p>What <em>cannot</em> be done presently:</p>
 
 <ul>
-<li>initialize a new Git local repository ('git init') to manager your UE4 Game Project.</li>
 <li>configure user name &amp; email ('git config user.name' &amp; git config user.email')</li>
-<li>commit description message cannot take more than one line (Editor limitation)</li>
+<li>migrate an asset should add it to the destination project</li>
 <li>Pull/Fetch/Push are not in the current Editor workflow</li>
 <li>Branch and Merge are not in the current Editor workflow (but on Epic Roadmap)</li>
 <li>Amend a commit &amp; Add file to Index are not in the current Editor workflow</li>
@@ -207,7 +207,7 @@ use the tools provided by GitHub:</p>
 <li>CamelCase naming convention, with a prefix letter to differentiate classes ('F'), interfaces ('I'), templates ('T')</li>
 <li>files (.cpp/.h) are named like the class they contains</li>
 <li>Doxygen comments, documentation is located with declaration, on headers</li>
-<li>Use portable common features of C++11 like nullptr, auto, range based for, OVERRIDE macro</li>
+<li>Use portable common features of C++11 like nullptr, auto, range based for, override macro</li>
 <li>Braces on their own line</li>
 <li>Tabs to indent code, with a width of 4 characters</li>
 </ul>
