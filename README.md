@@ -8,7 +8,7 @@ UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.6
 [Download the last release](https://github.com/SRombauts/UE4GitPlugin/releases)
 
 Beta version 0.6.0:
-- initialize a new Git local repository ('git init') to manager your UE4 Game Project.
+- initialize a new Git local repository ('git init') to manage your UE4 Game Project.
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
 - diff against depot or between previous versions of a file
@@ -84,7 +84,7 @@ Donwload and unzip or clone the plugin repository under the "Plugins" directory 
 <UnrealEngineClone>/Engine/Plugins/Developer
 ```
 
-Take care of using the name **GitSourceControl** as destination directory (same name as the "GitSourceControl.uplugin" file):
+Take care to use **GitSourceControl** as the name of the destination directory (same name as the "GitSourceControl.uplugin" file):
 
 ```bash
 git clone https://github.com/SRombauts/UE4GitPlugin.git GitSourceControl
@@ -132,7 +132,7 @@ or copy at http://opensource.org/licenses/MIT)
 The most efficient way to help and contribute to this wrapper project is to
 use the tools provided by GitHub:
 - please fill bug reports and feature requests here: https://github.com/SRombauts/UE4GitPlugin/issues
-- fork the repository, make some small changes and submit them with independant pull-request
+- fork the repository, make some small changes and submit them with independent pull-requests
 
 ### Contact
 You can also email me directly, I will answer any questions and requests.
@@ -142,7 +142,7 @@ The source code follow the UnreaEngine official [Coding Standard](https://docs.u
 - CamelCase naming convention, with a prefix letter to differentiate classes ('F'), interfaces ('I'), templates ('T')
 - files (.cpp/.h) are named like the class they contains
 - Doxygen comments, documentation is located with declaration, on headers
-- Use portable common features of C++11 like nullptr, auto, range based for, OVERRIDE macro
+- Use portable common features of C++11 like nullptr, auto, range based for, override macro
 - Braces on their own line
 - Tabs to indent code, with a width of 4 characters
 
