@@ -70,7 +70,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 					[
 						SNew(SButton)
 						.HAlign(HAlign_Center)
-						.Text(LOCTEXT("GitInit", "Intialize Git"))
+						.Text(LOCTEXT("GitInit", "Initialize Git"))
 						.OnClicked(this, &SGitSourceControlSettings::OnClickedInit)
 					]
 				]
