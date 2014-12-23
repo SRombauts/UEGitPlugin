@@ -146,8 +146,8 @@ public:
 };
 
 /**
- *  Called when first activated on a project, and then at project load time.
- *  Look for the root directory of the git repository (where the ".git/" subdirectory is located).
+ *  Called when clicking Initialize Git.
+ *  Runs 'git init'.
  */
 class FGitInitWorker : public IGitSourceControlWorker
 {
@@ -160,7 +160,7 @@ public:
 };
 
 /**
-* Operation used to connect (or test a connection) to source control
+* Operation used to initialize a git repo.
 */
 class FGitInit : public ISourceControlOperation
 {

@@ -126,7 +126,7 @@ void SGitInitDialog::Construct(const FArguments& InArgs)
 								[
 									SNew(SButton)
 									.HAlign(HAlign_Center)
-									.Text(LOCTEXT("GitInit", "Intialize Git"))
+									.Text(LOCTEXT("GitInit", "Initialize Git"))
 									.OnClicked(this, &SGitInitDialog::OnClickedInit)
 								]
 								+ SUniformGridPanel::Slot(1, 0)
