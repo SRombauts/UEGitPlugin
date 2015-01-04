@@ -522,14 +522,14 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 			FPlatformProcess::ReadPipeToArray(PipeRead, BinaryData);
 			if(BinaryData.Num() > 0)
 			{
-				BinaryFileContent.Append(BinaryData);
+                BinaryFileContent.Append(MoveTemp(BinaryData));
 			}
 		}
 		TArray<uint8> BinaryData;
 		FPlatformProcess::ReadPipeToArray(PipeRead, BinaryData);
 		if(BinaryData.Num() > 0)
 		{
-			BinaryFileContent.Append(BinaryData);
+            BinaryFileContent.Append(MoveTemp(BinaryData));
 		}
 		// Save buffer into temp file
 		if(FFileHelper::SaveArrayToFile(BinaryFileContent, *InDumpFileName))
