@@ -34,10 +34,11 @@ TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlS
 
 TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::GetBaseRevForMerge() const
 {
-	// @todo revision of the merge-base (https://www.kernel.org/pub/software/scm/git/docs/git-merge-base.html)
+	// @todo get revision of the merge-base (https://www.kernel.org/pub/software/scm/git/docs/git-merge-base.html)
 	return nullptr;
 }
 
+// @todo add Slate icons for git specific states (Added vs Modified, Copied vs Conflicted...)
 FName FGitSourceControlState::GetIconName() const
 {
 	switch(WorkingCopyState)

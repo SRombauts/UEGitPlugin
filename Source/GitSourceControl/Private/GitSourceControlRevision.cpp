@@ -101,7 +101,7 @@ int32 FGitSourceControlRevision::GetCheckInIdentifier() const
 
 int32 FGitSourceControlRevision::GetFileSize() const
 {
-	// @todo git log does not give us the file size, but we could run a specifi command
+	// @todo git log does not give us the file size, but we could run a specific command
 	return 0;
 }
 

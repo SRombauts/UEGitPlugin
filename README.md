@@ -18,10 +18,10 @@ Beta version 0.6.0:
 - checkin/commit a file (cannot handle atomically more than 20 files)
 - show current branch name in status text
 
-What *cannot* be done presently (TODO list for v1.0, ordered by priority):
+#### What *cannot* be done presently (TODO list for v1.0, ordered by priority):
 - solve a merge conflict
 - merge blueprints
-- add Slate icons for git specific states (??????)
+- add Slate icons for git specific states (Added vs Modified, Copied vs Conflicted...)
 - migrate an asset should add it to the destination project if also under Git (needs management of 'out of tree' files)
 - displaying states of 'Engine' assets (also needs management of 'out of tree' files)
 - Branch is not in the current Editor workflow (but on Epic Roadmap)
@@ -29,18 +29,71 @@ What *cannot* be done presently (TODO list for v1.0, ordered by priority):
 - Amend a commit is not in the current Editor workflow
 - configure user name & email ('git config user.name' & git config user.email')
 
-Wishlist (after v1.0):
-- [git-annexe and/or git-media - #1 feature request](https://github.com/SRombauts/UE4GitPlugin/issues/1)
-
-Known issues:
+#### Known issues:
 - issue #10: Add the "Copy" operation replacing "Delete" + "Add"
 - issue #11: Add the "Resolve" operation introduced in Editor 4.3
-- issue #17: Git 'Accept Settings' gives log error
+- issue #17: Git 'Accept Settings' gives log error (if no commit in repository)
 - reverting an asset does not seem to update content in Editor! Issue in Editor?
 - renaming an asset does not seem to be handled correctly by the Editor...
 - renamed file may not be tracked correctly (not yet tested, see above)
 - file history does not report file size
-- Windows only (64 bits)
+- Windows only (64 bits) -> Mac testing/debugging needed
+
+#### Wishlist (after v1.0):
+- [git-annexe and/or git-media - #1 feature request](https://github.com/SRombauts/UE4GitPlugin/issues/1)
+
+#### In-code TODO list (internal roadmap):
+- FGitConnectWorker::Execute (While project not in Git source control)
+  Improve error message "You should check out a working copy..."
+  => double error message (and in reverse order) with "Project is not part of a Git working copy"
+
+- FGitResolveWorker (GitSourceControlOperations.h)
+  git add to mark a conflict as resolved
+  
+- FGitSourceControlRevision::GetBranchSource() const
+  if this revision was copied from some other revision, then that source revision should
+	be returned here (this should be determined when history is being fetched)
+- FGitSourceControlState::GetBaseRevForMerge()
+  get revision of the merge-base (https://www.kernel.org/pub/software/scm/git/docs/git-merge-base.html)
+	
+- FGitConnectWorker::Execute()
+  popup to propose to initialize the git repository "git init + .gitignore"
+
+- FGitSyncWorker (GitSourceControlOperations.h)
+  git fetch remote(s) to be able to show files not up-to-date with the serveur
+- FGitSourceControlState::IsCurrent() const
+  check the state of the HEAD versus the state of tracked branch on remote
+
+- FGitSourceControlRevision::GetFileSize() const
+	git log does not give us the file size, but we could run a specific command
+
+- EWorkingCopyState::Deleted
+  Test: don't show deleted as they should not appear?
+  
+- GitSourceControlUtils::CheckGitAvailability
+  also check Git config user.name & user.email
+
+- GitSourceControlUtils::FGitStatusFileMatcher
+  Extracting the relative filename from the Git status result
+	does not work in case of a rename from -> to
+- GitSourceControlUtils::FGitStatusParser
+  Get the second part of a rename "from -> to"
+  
+Windows:
+- GitSourceControlUtils::FindGitBinaryPath
+  use the Windows registry to find Git
+
+Mac:
+- GitSourceControlUtils::RunCommandInternalRaw
+  Specifying the working copy (the root) of the git repository (before the command itself)
+	does not work in UE4.1 on Mac if there is a space in the path ("/Users/xxx/Unreal Project/MyProject")
+
+Bug reports?
+- FGitSourceControlRevision::Get
+  Bug report: a counter is needed to avoid overlapping files; temp files are not (never?) released by Editor!
+
+- GitSourceControlUtils::UpdateCachedStates
+  // State->TimeStamp = InState.TimeStamp; // Bug report: Workaround a bug with the Source Control Module not updating file state after a "Save"
 
 ### Getting started
 

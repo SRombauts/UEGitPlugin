@@ -21,22 +21,6 @@ public:
 	virtual bool UpdateStates() const override;
 };
 
-/** @todo
-class FGitCheckOutWorker : public IGitSourceControlWorker
-{
-public:
-	virtual ~FGitCheckOutWorker() {}
-	// IGitSourceControlWorker interface
-	virtual FName GetName() const override;
-	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
-	virtual bool UpdateStates() const override;
-
-public:
-	/// Temporary states for results
-	TArray<FGitSourceControlState> States;
-};
-*/
-
 /** Commit (check-in) a set of file to the local depot. */
 class FGitCheckInWorker : public IGitSourceControlWorker
 {
@@ -97,7 +81,7 @@ public:
 	TArray<FGitSourceControlState> States;
 };
 
-/** @todo
+/** @todo: git fetch remote(s) to be able to show files not up-to-date with the serveur
 class FGitSyncWorker : public IGitSourceControlWorker
 {
 public:
@@ -172,7 +156,7 @@ public:
 	}
 };
 
-/** @todo
+/** @todo: git add to mark a conflict as resolved
 class FGitResolveWorker : public IGitSourceControlWorker
 {
 public:

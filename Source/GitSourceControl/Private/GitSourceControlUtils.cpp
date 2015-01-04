@@ -515,7 +515,6 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	{
 		FPlatformProcess::Sleep(0.01);
 
-		// @todo Append directly to the temp file whithout intermediate Array?
 		TArray<uint8> BinaryFileContent;
 		while(FPlatformProcess::IsProcRunning(ProcessHandle))
 		{
