@@ -180,7 +180,7 @@ See also the [Source Control official Documentation](https://docs.unrealengine.c
 
 ### License
 
-Copyright (c) 2014 Sébastien Rombauts (sebastien.rombauts@gmail.com)
+Copyright (c) 2014-2015 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 
 Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 or copy at http://opensource.org/licenses/MIT)
@@ -200,7 +200,7 @@ The source code follow the UnreaEngine official [Coding Standard](https://docs.u
 - CamelCase naming convention, with a prefix letter to differentiate classes ('F'), interfaces ('I'), templates ('T')
 - files (.cpp/.h) are named like the class they contains
 - Doxygen comments, documentation is located with declaration, on headers
-- Use portable common features of C++11 like nullptr, auto, range based for, override macro
+- Use portable common features of C++11 like nullptr, auto, range based for, override keyword
 - Braces on their own line
 - Tabs to indent code, with a width of 4 characters
 

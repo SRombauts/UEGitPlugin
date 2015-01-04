@@ -1,4 +1,4 @@
-// Copyright (c) 2014 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+// Copyright (c) 2014-2015 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 //
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
@@ -604,7 +604,7 @@ FString LogStatusToString(TCHAR InStatus)
 /** Example git log results:
 commit 97a4e7626681895e073aaefd68b8ac087db81b0b
 Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
-Date:   2014-05-15 21:32:27 +0200
+Date:   2014-2015-05-15 21:32:27 +0200
 
     Another commit used to test History
 
@@ -616,7 +616,7 @@ M	Content/Blueprints/Blueprint_CeilingLight.uasset
 
 commit 355f0df26ebd3888adbb558fd42bb8bd3e565000
 Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
-Date:   2014-05-12 11:28:14 +0200
+Date:   2014-2015-05-12 11:28:14 +0200
 
     Testing git status, edit, and revert
 
