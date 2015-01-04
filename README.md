@@ -18,19 +18,24 @@ Beta version 0.6.0:
 - checkin/commit a file (cannot handle atomically more than 20 files)
 - show current branch name in status text
 
-What *cannot* be done presently:
-- configure user name & email ('git config user.name' & git config user.email')
-- migrate an asset should add it to the destination project
-- Branch and Merge are not in the current Editor workflow (but on Epic Roadmap)
+What *cannot* be done presently (TODO list for v1.0, ordered by priority):
+- solve a merge conflict
+- merge blueprints
+- add Slate icons for git specific states (??????)
+- migrate an asset should add it to the destination project if also under Git (needs management of 'out of tree' files)
+- displaying states of 'Engine' assets (also needs management of 'out of tree' files)
+- Branch is not in the current Editor workflow (but on Epic Roadmap)
 - Pull/Fetch/Push are not in the current Editor workflow
 - Amend a commit is not in the current Editor workflow
+- configure user name & email ('git config user.name' & git config user.email')
 
-Wishlist:
+Wishlist (after v1.0):
 - [git-annexe and/or git-media - #1 feature request](https://github.com/SRombauts/UE4GitPlugin/issues/1)
 
 Known issues:
 - issue #10: Add the "Copy" operation replacing "Delete" + "Add"
 - issue #11: Add the "Resolve" operation introduced in Editor 4.3
+- issue #17: Git 'Accept Settings' gives log error
 - reverting an asset does not seem to update content in Editor! Issue in Editor?
 - renaming an asset does not seem to be handled correctly by the Editor...
 - renamed file may not be tracked correctly (not yet tested, see above)
