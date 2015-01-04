@@ -19,7 +19,7 @@ FName FGitConnectWorker::GetName() const
 
 bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 {
-	check(InCommand.Operation->GetName() == "Connect");
+	check(InCommand.Operation->GetName() == GetName());
 
 	InCommand.bCommandSuccessful = GitSourceControlUtils::FindRootDirectory(InCommand.PathToGameDir, InCommand.PathToRepositoryRoot);
 	if(InCommand.bCommandSuccessful)
@@ -71,7 +71,7 @@ FName FGitCheckInWorker::GetName() const
 
 bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 {
-	check(InCommand.Operation->GetName() == "CheckIn");
+	check(InCommand.Operation->GetName() == GetName());
 
 	TSharedRef<FCheckIn, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FCheckIn>(InCommand.Operation);
 
@@ -111,6 +111,8 @@ FName FGitMarkForAddWorker::GetName() const
 
 bool FGitMarkForAddWorker::Execute(FGitSourceControlCommand& InCommand)
 {
+	check(InCommand.Operation->GetName() == GetName());
+
 	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("add"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 
 	// now update the status of our files
@@ -131,6 +133,8 @@ FName FGitDeleteWorker::GetName() const
 
 bool FGitDeleteWorker::Execute(FGitSourceControlCommand& InCommand)
 {
+	check(InCommand.Operation->GetName() == GetName());
+
 	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("rm"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 
 	// now update the status of our files
@@ -179,7 +183,7 @@ FName FGitUpdateStatusWorker::GetName() const
 
 bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 {
-	check(InCommand.Operation->GetName() == "UpdateStatus");
+	check(InCommand.Operation->GetName() == GetName());
 
 	TSharedRef<FUpdateStatus, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FUpdateStatus>(InCommand.Operation);
 
@@ -252,9 +256,9 @@ FName FGitCopyWorker::GetName() const
 bool FGitCopyWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	check(InCommand.Operation->GetName() == GetName());
-    
-    // Implement a no-op as Git does not need an explicit copy
-    InCommand.bCommandSuccessful = true;
+
+	// Implement a no-op as Git does not need an explicit copy
+	InCommand.bCommandSuccessful = true;
 
 	return InCommand.bCommandSuccessful;
 }
@@ -272,6 +276,8 @@ FName FGitResolveWorker::GetName() const
 
 bool FGitResolveWorker::Execute( class FGitSourceControlCommand& InCommand )
 {
+	check(InCommand.Operation->GetName() == GetName());
+
 	// mark the conflicting files as resolved:
 	{
 		TArray<FString> Results;
@@ -307,7 +313,7 @@ FName FGitInitWorker::GetName() const
 
 bool FGitInitWorker::Execute(FGitSourceControlCommand& InCommand)
 {
-	check(InCommand.Operation->GetName() == "Init");
+	check(InCommand.Operation->GetName() == GetName());
 	
 	InCommand.bCommandSuccessful = false;
 

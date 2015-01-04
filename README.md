@@ -24,6 +24,7 @@ Beta version 0.6.0:
 - add Slate icons for git specific states (Added vs Modified, Copied vs Conflicted...)
 - migrate an asset should add it to the destination project if also under Git (needs management of 'out of tree' files)
 - displaying states of 'Engine' assets (also needs management of 'out of tree' files)
+- tags: implement ISourceControlLabel to manage git tags
 - Branch is not in the current Editor workflow (but on Epic Roadmap)
 - Pull/Fetch/Push are not in the current Editor workflow
 - Amend a commit is not in the current Editor workflow
