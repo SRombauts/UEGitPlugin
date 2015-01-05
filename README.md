@@ -5,9 +5,9 @@ UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.6
 
 ### Status
 
-[Download the last release](https://github.com/SRombauts/UE4GitPlugin/releases)
+[Download the latest release](https://github.com/SRombauts/UE4GitPlugin/releases)
 
-Beta version 0.6.0:
+Beta version 0.6.1:
 - initialize a new Git local repository ('git init') to manage your UE4 Game Project.
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
@@ -22,6 +22,7 @@ Beta version 0.6.0:
 - solve a merge conflict
 - merge blueprints
 - add Slate icons for git specific states (Added vs Modified, Copied vs Conflicted...)
+- add localisation for git specific messages
 - migrate an asset should add it to the destination project if also under Git (needs management of 'out of tree' files)
 - displaying states of 'Engine' assets (also needs management of 'out of tree' files)
 - tags: implement ISourceControlLabel to manage git tags
@@ -31,9 +32,8 @@ Beta version 0.6.0:
 - configure user name & email ('git config user.name' & git config user.email')
 
 #### Known issues:
-- issue #10: Add the "Copy" operation replacing "Delete" + "Add"
+- improve the 'Init' window text, hide it if connection is already done, auto connect
 - issue #11: Add the "Resolve" operation introduced in Editor 4.3
-- issue #17: Git 'Accept Settings' gives log error (if no commit in repository)
 - reverting an asset does not seem to update content in Editor! Issue in Editor?
 - renaming an asset does not seem to be handled correctly by the Editor...
 - renamed file may not be tracked correctly (not yet tested, see above)
@@ -207,12 +207,7 @@ The source code follow the UnreaEngine official [Coding Standard](https://docs.u
 
 ## See also
 
-- [ue4-hg-plugin for Mercurial (and bigfiles)](https://github.com/enlight/ue4-hg-plugin)
-- [VaOcean, the ocean surface simulation plugin for Unreal Engine 4](https://github.com/ufna/VaOcean)
-- [VaQuoleUI is the Web UI framework plugin for Unreal Engine 4](https://github.com/ufna/VaQuoleUI)
-- [VaRest is the plugin for Unreal Engine 4 that makes REST server communications easier to use](https://github.com/ufna/VaRest)
-
-- [A first person template for unreal engine 4 focused on VR and use with the Oculus Rift](https://github.com/mitchemmc/UE4FirstPersonVRTemplate)
-- [Template focused on a space shooter cockpit style game specifically designed for VR](https://github.com/mitchemmc/UE4SpaceShooterVRTemplate)
-
+- [Git Source Control Tutorial on the Wikis](https://wiki.unrealengine.com/Git_source_control_(Tutorial))
 - [UE4 Git Plugin website](http://srombauts.github.com/UE4GitPlugin)
+
+- [ue4-hg-plugin for Mercurial (and bigfiles)](https://github.com/enlight/ue4-hg-plugin)

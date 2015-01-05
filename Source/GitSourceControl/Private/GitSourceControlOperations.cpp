@@ -36,10 +36,10 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 	else // if(InCommand.bCommandSuccessful)
 	{
 		TArray<FString> Parameters;
-		Parameters.Add("--abbrev-ref HEAD");
+		Parameters.Add("--short HEAD");
 
 		// Get current branche name
-		GitSourceControlUtils::RunCommand(TEXT("rev-parse"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+		GitSourceControlUtils::RunCommand(TEXT("symbolic-ref"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 		if(InCommand.InfoMessages.Num() == 1)
 		{
 			InCommand.BranchName = InCommand.InfoMessages[0];
@@ -224,7 +224,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 		}
 	}
 
-	// don't use the ShouldUpdateModifiedState() hint here as it is specific to Perforce: the above normal Git status has already told us this information (like SVN and Mercurial)
+	// don't use the ShouldUpdateModifiedState() hint here as it is specific to Perforce: the above normal Git status has already told us this information (like Git and Mercurial)
 
 	return InCommand.bCommandSuccessful;
 }
