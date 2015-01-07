@@ -21,7 +21,7 @@ Beta version 0.6.1:
 #### What *cannot* be done presently (TODO list for v1.0, ordered by priority):
 - solve a merge conflict
 - merge blueprints
-- add Slate icons for git specific states (Added vs Modified, Copied vs Conflicted...)
+- Slate icon for missing files
 - add localisation for git specific messages
 - migrate an asset should add it to the destination project if also under Git (needs management of 'out of tree' files)
 - displaying states of 'Engine' assets (also needs management of 'out of tree' files)
@@ -46,6 +46,7 @@ Beta version 0.6.1:
 - [git-annexe and/or git-media - #1 feature request](https://github.com/SRombauts/UE4GitPlugin/issues/1)
 
 #### In-code TODO list (internal roadmap):
+
 - FGitConnectWorker::Execute (While project not in Git source control)
   Improve error message "You should check out a working copy..."
   => double error message (and in reverse order) with "Project is not part of a Git working copy"

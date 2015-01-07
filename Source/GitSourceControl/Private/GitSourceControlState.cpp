@@ -43,17 +43,18 @@ FName FGitSourceControlState::GetIconName() const
 {
 	switch(WorkingCopyState)
 	{
-	case EWorkingCopyState::Unchanged:
+	case EWorkingCopyState::Modified:
 		return FName("Subversion.CheckedOut");
 	case EWorkingCopyState::Added:
-	case EWorkingCopyState::Modified:
 	case EWorkingCopyState::Renamed:
-		return FName("Subversion.OpenForAdd");
 	case EWorkingCopyState::Copied:
+		return FName("Subversion.OpenForAdd");
 	case EWorkingCopyState::Conflicted:
 		return FName("Subversion.NotAtHeadRevision");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot");
+//	case EWorkingCopyState::Unchanged:
+		// Unchanged is the same as "Pristine" (not checked out) for Perforce, ie no icon
 //	case EWorkingCopyState::Deleted:
 //	case EWorkingCopyState::Missing:
 		// Deleted and Missing assets cannot appear in the Content Browser
@@ -69,18 +70,20 @@ FName FGitSourceControlState::GetSmallIconName() const
 	case EWorkingCopyState::Unchanged:
 		return FName("Subversion.CheckedOut_Small");
 	case EWorkingCopyState::Added:
-	case EWorkingCopyState::Modified:
 	case EWorkingCopyState::Renamed:
+	case EWorkingCopyState::Copied:
 		return FName("Subversion.OpenForAdd_Small");
 	case EWorkingCopyState::Missing:
-	case EWorkingCopyState::Copied:
 	case EWorkingCopyState::Conflicted:
 		return FName("Subversion.NotAtHeadRevision_Small");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot_Small");
 	case EWorkingCopyState::Deleted:
-		// @todo Test: don't show deleted as they should not appear?
+// 
+// @todo Test: don't show deleted as they should not appear? 
 		return FName("Subversion.FIXME_DELETED");
+//	case EWorkingCopyState::Unchanged:
+		// Unchanged is the same as "Pristine" (not checked out) for Perforce, ie no icon
 	}
 
 	return NAME_None;
@@ -108,6 +111,8 @@ FText FGitSourceControlState::GetDisplayName() const
 		return LOCTEXT("ContentsConflict", "Contents Conflict");
 	case EWorkingCopyState::Ignored:
 		return LOCTEXT("Ignored", "Ignored");
+	case EWorkingCopyState::Merged:
+		return LOCTEXT("Merged", "Merged");
 	case EWorkingCopyState::NotControlled:
 		return LOCTEXT("NotControlled", "Not Under Source Control");
 	case EWorkingCopyState::Missing:
@@ -135,6 +140,8 @@ FText FGitSourceControlState::GetDisplayTooltip() const
 		return LOCTEXT("ContentsConflict_Tooltip", "The contents (as opposed to the properties) of the item conflict with updates received from the repository.");
 	case EWorkingCopyState::Ignored:
 		return LOCTEXT("Ignored_Tooltip", "Item is being ignored.");
+	case EWorkingCopyState::Merged:
+		return LOCTEXT("Merged_Tooltip", "Item has been merged.");
 	case EWorkingCopyState::NotControlled:
 		return LOCTEXT("NotControlled_Tooltip", "Item is not under version control.");
 	case EWorkingCopyState::Missing:
