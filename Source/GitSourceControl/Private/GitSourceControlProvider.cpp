@@ -148,12 +148,14 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 	if(InConcurrency == EConcurrency::Synchronous)
 	{
 		Command->bAutoDelete = false;
+		// @todo: temporary debug logs
 		UE_LOG(LogSourceControl, Log, TEXT("ExecuteSynchronousCommand: '%s'"), *InOperation->GetName().ToString());
 		return ExecuteSynchronousCommand(*Command, InOperation->GetInProgressString());
 	}
 	else
 	{
 		Command->bAutoDelete = true;
+		// @todo: temporary debug logs
 		UE_LOG(LogSourceControl, Log, TEXT("IssueCommand(Asynchronous): '%s'"), *InOperation->GetName().ToString());
 		return IssueCommand(*Command);
 	}

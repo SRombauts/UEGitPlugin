@@ -19,7 +19,6 @@ Beta version 0.6.1:
 - show current branch name in status text
 
 #### What *cannot* be done presently (TODO list for v1.0, ordered by priority):
-- correct "move" of a file
 - solve a merge conflict
 - merge blueprints
 - add Slate icons for git specific states (Added vs Modified, Copied vs Conflicted...)
@@ -34,14 +33,13 @@ Beta version 0.6.1:
 - configure user name & email ('git config user.name' & git config user.email')
 
 #### Known issues:
-- issue #10: Add the "Copy" operation replacing "Delete" + "Add"
+- issue #22: A Move/Rename leaves a redirector file behind
 - issue #11: Add the "Resolve" operation introduced in Editor 4.3
 - improve the 'Init' window text, hide it if connection is already done, auto connect
 - reverting an asset does not seem to update content in Editor! Issue in Editor?
-- renaming an asset does not seem to be handled correctly by the Editor...
-- renamed file may not be tracked correctly (not yet tested, see above)
-- file history does not report file size
 - file history show Revision as signed integer instead of hexadecimal SHA1
+- file history does not report file size
+- standard Editor commit dialog ask if user wants to "Keep Files Checked Out" => no use for Git or Mercurial CanCheckOut()==false
 - Windows only (64 bits) -> Mac compiles but needs testing/debugging (Linux source control is not supported by Editor)
 
 #### Wishlist (after v1.0):

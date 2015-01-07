@@ -115,6 +115,7 @@ public:
 	TMap<FString, TGitSourceControlHistory> Histories;
 };
 
+/** Copy or Move operation on a single file */
 class FGitCopyWorker : public IGitSourceControlWorker
 {
 public:

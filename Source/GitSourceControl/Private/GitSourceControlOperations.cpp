@@ -258,8 +258,11 @@ bool FGitCopyWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	check(InCommand.Operation->GetName() == GetName());
 
-	// Implement a no-op as Git does not need an explicit copy
-	InCommand.bCommandSuccessful = true;
+	// Copy or Move operation on a single file : Git does not need an explicit copy nor move,
+	// but after a Move the Editor create a redirector file with the old asset name that points to the new asset.
+	// The redirector needs to be commited with the new asset to perform a real rename.
+	// => the following is to "MarkForAdd" the redirector, but it still need to be committed by selecting the whole directory and "check-in"
+	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("add"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 
 	return InCommand.bCommandSuccessful;
 }

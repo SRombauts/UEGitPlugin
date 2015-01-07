@@ -300,7 +300,7 @@ private:
 
 /**
 * Extract and interpret the file state from the given Git status result.
-* @see file:///C:/Program%20Files%20(x86)/Git/doc/git/html/git-status.html
+* @see http://git-scm.com/docs/git-status
 * ' ' = unmodified
 * 'M' = modified
 * 'A' = added
@@ -321,7 +321,7 @@ public:
 
 		TCHAR IndexState = InResult[0];
 		TCHAR WCopyState = InResult[1];
-		if((IndexState == 'U' || WCopyState == 'U')
+		if(   (IndexState == 'U' || WCopyState == 'U')
 		   || (IndexState == 'A' && WCopyState == 'A')
 		   || (IndexState == 'D' && WCopyState == 'D'))
 		{
@@ -593,7 +593,8 @@ Date:   2014-2015-05-15 21:32:27 +0200
      - some <xml>
      - and strange characteres $*+
 
-M	Content/Blueprints/Blueprint_CeilingLight.uasset
+M   Content/Blueprints/Blueprint_CeilingLight.uasset
+R100    Content/Textures/T_Concrete_Poured_D.uasset Content/Textures/T_Concrete_Poured_D2.uasset
 
 commit 355f0df26ebd3888adbb558fd42bb8bd3e565000
 Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
@@ -601,14 +602,15 @@ Date:   2014-2015-05-12 11:28:14 +0200
 
     Testing git status, edit, and revert
 
-A		 Content/Blueprints/Blueprint_CeilingLight.uasset
+A    Content/Blueprints/Blueprint_CeilingLight.uasset
+C099    Content/Textures/T_Concrete_Poured_N.uasset Content/Textures/T_Concrete_Poured_N2.uasset
 */
 void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory& OutHistory)
 {
 	TSharedRef<FGitSourceControlRevision, ESPMode::ThreadSafe> SourceControlRevision = MakeShareable(new FGitSourceControlRevision);
 	for(const auto& Result : InResults)
 	{
-		if(Result.StartsWith(TEXT("commit ")))
+		if(Result.StartsWith(TEXT("commit "))) // Start of a new commit
 		{
 			// End of the previous commit
 			if(SourceControlRevision->RevisionNumber != 0)
@@ -623,7 +625,7 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
 			FString ShortCommitId = SourceControlRevision->CommitId.Right(8); // Short revision ; first 8 hex characters (max that can hold a 32 bit integer)
 			SourceControlRevision->RevisionNumber = FParse::HexNumber(*ShortCommitId);
 		}
-		else if(Result.StartsWith(TEXT("Author: ")))
+		else if(Result.StartsWith(TEXT("Author: "))) // Author name & email
 		{
 			// Remove the 'email' part of the UserName
 			FString UserNameEmail = Result.RightChop(8);
@@ -633,18 +635,18 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
 				SourceControlRevision->UserName = UserNameEmail.Left(EmailIndex - 1);
 			}
 		}
-		else if(Result.StartsWith(TEXT("Date:   ")))
+		else if(Result.StartsWith(TEXT("Date:   "))) // Commit date
 		{
 			FString Date = Result.RightChop(8);
 			SourceControlRevision->Date = FDateTime::FromUnixTimestamp(FCString::Atoi(*Date));
 		}
 	//	else if(Result.IsEmpty()) // empty line before/after commit message has already been taken care by FString::ParseIntoArray()
-		else if(Result.StartsWith(TEXT("    ")))
+		else if(Result.StartsWith(TEXT("    ")))  // Multi-lines commit message
 		{
 			SourceControlRevision->Description += Result.RightChop(4);
 			SourceControlRevision->Description += TEXT("\n");
 		}
-		else
+		else // List of modified files, starting with a uppercase status letter ("A"/"M"...)
 		{
 			TCHAR Status = Result[0];
 			SourceControlRevision->Action = LogStatusToString(Status); // Readable action string ("Added", Modified"...) instead of "A"/"M"...
