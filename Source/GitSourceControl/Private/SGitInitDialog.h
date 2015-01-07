@@ -27,19 +27,19 @@ public:
 
 private:
 
-	/** Delegate called when the user clicks the 'Accept Settings' button */
+	/** Delegate called when the user clicks the 'Init' button */
 	FReply OnClickedInit();
 
-	/** Delegate called when the user clicks the 'Disable Source Control' button */
+	/** Delegate called when the user clicks the 'Cancl' button */
 	FReply OnClickedCancel();
 
-	/** Called when a connection attempt fails */
+	/** Called when the git init command fails */
 	void DisplayInitError() const;
 
-	/** Called when a connection attempt succeeds */
+	/** Called when the git init command succeeds */
 	void DisplayInitSuccess() const;
 
-	/** Delegate called form the source control system when a login attempt has completed */
+	/** Delegate called form the source control system when the git init command has completed */
 	void SourceControlOperationComplete(const FSourceControlOperationRef& InOperation, ECommandResult::Type InResult);
 
 private:

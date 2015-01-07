@@ -27,26 +27,26 @@ public:
 
 	SLATE_END_ARGS()
 
-		void Construct(const FArguments& InArgs)
+	void Construct(const FArguments& InArgs)
 	{
-			ParentWindowPtr = InArgs._ParentWindow;
+		ParentWindowPtr = InArgs._ParentWindow;
 
-			SBorder::Construct(SBorder::FArguments()
-				.BorderImage(FEditorStyle::GetBrush("Window.Title.Active"))
+		SBorder::Construct(SBorder::FArguments()
+			.BorderImage(FEditorStyle::GetBrush("Window.Title.Active"))
+			[
+				SNew(SHorizontalBox)
+				.Visibility(EVisibility::HitTestInvisible)
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Center)
 				[
-					SNew(SHorizontalBox)
+					SNew(STextBlock)
+					.Text(LOCTEXT("GitSourceControlInitTitle", "Git Source Control Init"))
+					.TextStyle(FEditorStyle::Get(), "Window.TitleText")
 					.Visibility(EVisibility::HitTestInvisible)
-					+ SHorizontalBox::Slot()
-					.HAlign(HAlign_Center)
-					[
-						SNew(STextBlock)
-						.Text(LOCTEXT("GitSourceControlInitTitle", "Git Source Control Init"))
-						.TextStyle(FEditorStyle::Get(), "Window.TitleText")
-						.Visibility(EVisibility::HitTestInvisible)
-					]
 				]
-			);
-		}
+			]
+		);
+	}
 
 	virtual EWindowZone::Type GetWindowZoneOverride() const override
 	{

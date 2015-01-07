@@ -30,6 +30,7 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 	{
 		// @todo popup to propose to initialize the git repository "git init + .gitignore"
 		StaticCastSharedRef<FConnect>(InCommand.Operation)->SetErrorText(LOCTEXT("NotAWorkingCopyError", "Project is not part of a Git working copy."));
+		// @todo Double error messages (and displayed in reverse order): Perforce distinguish the two errors
 		InCommand.ErrorMessages.Add(LOCTEXT("NotAWorkingCopyErrorHelp", "You should check out a working copy into your project directory.").ToString());
 		InCommand.bCommandSuccessful = false;
 	}
