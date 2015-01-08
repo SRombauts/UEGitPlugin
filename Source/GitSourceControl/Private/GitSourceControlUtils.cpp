@@ -289,8 +289,14 @@ public:
 	bool operator()(const FString& InResult) const
 	{
 		// Extract the relative filename from the Git status result
-		// @todo this cannot work in case of a rename from -> to
 		FString RelativeFilename = InResult.RightChop(3);
+		// Note: this is not enough in case of a rename from -> to
+		int32 RenameIndex;
+		if (RelativeFilename.FindLastChar('>', RenameIndex))
+		{
+			// Extract only the second part of a rename "from -> to"
+			RelativeFilename = RelativeFilename.RightChop(RenameIndex + 2);
+		}
 		return AbsoluteFilename.Contains(RelativeFilename);
 	}
 
@@ -316,9 +322,6 @@ class FGitStatusParser
 public:
 	FGitStatusParser(const FString& InResult)
 	{
-		// @todo Get the second part of a rename "from -> to"
-		//FString Filename = InResult.RightChop(3);
-
 		TCHAR IndexState = InResult[0];
 		TCHAR WCopyState = InResult[1];
 		if(   (IndexState == 'U' || WCopyState == 'U')
@@ -371,12 +374,21 @@ public:
 	EWorkingCopyState::Type State;
 };
 
-// Parse the array of strings results of a 'git status' command
+/** Parse the array of strings results of a 'git status' command
+*
+* Example git status results:
+M  Content/Textures/T_Perlin_Noise_M.uasset
+R  Content/Textures/T_Perlin_Noise_M.uasset -> Content/Textures/T_Perlin_Noise_M2.uasset
+?? Content/Materials/M_Basic_Wall.uasset
+!! BasicCode.sln
+*/
 static void ParseStatusResults(const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
 {
+	// Iterate on all files explicitely listed in the command
 	for(const auto& File : InFiles)
 	{
 		FGitSourceControlState FileState(File);
+		// Search the file in the list of status
 		int32 IdxResult = InResults.IndexOfByPredicate(FGitStatusFileMatcher(File));
 		if(IdxResult != INDEX_NONE)
 		{
@@ -582,7 +594,9 @@ FString LogStatusToString(TCHAR InStatus)
 	return FString();
 }
 
-/** Example git log results:
+/** Parse the array of strings results of a 'git log' command
+*
+* Example git log results:
 commit 97a4e7626681895e073aaefd68b8ac087db81b0b
 Author: Sébastien Rombauts <sebastien.rombauts@gmail.com>
 Date:   2014-2015-05-15 21:32:27 +0200

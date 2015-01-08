@@ -77,12 +77,6 @@ Beta version 0.6.1:
 - GitSourceControlUtils::CheckGitAvailability
   also check Git config user.name & user.email
 
-- GitSourceControlUtils::FGitStatusFileMatcher
-  Extracting the relative filename from the Git status result
-	does not work in case of a rename from -> to
-- GitSourceControlUtils::FGitStatusParser
-  Get the second part of a rename "from -> to"
-  
 Windows:
 - GitSourceControlUtils::FindGitBinaryPath
   use the Windows registry to find Git
