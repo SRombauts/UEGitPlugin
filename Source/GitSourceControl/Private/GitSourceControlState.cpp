@@ -48,16 +48,18 @@ FName FGitSourceControlState::GetIconName() const
 	case EWorkingCopyState::Added:
 	case EWorkingCopyState::Renamed:
 	case EWorkingCopyState::Copied:
+	case EWorkingCopyState::Deleted: // @todo New dedicated icon for removed/deleted (MarkedForDelete) files : Deleted files does not always show in Editor (but need to be checked-in) : only when deleted externaly !
 		return FName("Subversion.OpenForAdd");
 	case EWorkingCopyState::Conflicted:
 		return FName("Subversion.NotAtHeadRevision");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot");
+		UE_LOG(LogSourceControl, Log, TEXT("EWorkingCopyState::Deleted"));
+
+	case EWorkingCopyState::Missing: // @todo Missing files does not currently show in Editor (but should probably)
+		UE_LOG(LogSourceControl, Log, TEXT("EWorkingCopyState::Missing"));
 //	case EWorkingCopyState::Unchanged:
 		// Unchanged is the same as "Pristine" (not checked out) for Perforce, ie no icon
-//	case EWorkingCopyState::Deleted:
-//	case EWorkingCopyState::Missing:
-		// Deleted and Missing assets cannot appear in the Content Browser
 	}
 
 	return NAME_None;
@@ -72,16 +74,15 @@ FName FGitSourceControlState::GetSmallIconName() const
 	case EWorkingCopyState::Added:
 	case EWorkingCopyState::Renamed:
 	case EWorkingCopyState::Copied:
+	case EWorkingCopyState::Deleted: // @todo New dedicated icon for removed/deleted (MarkedForDelete) files : Deleted files does not always show in Editor (but need to be checked-in) : only when deleted externaly !
 		return FName("Subversion.OpenForAdd_Small");
-	case EWorkingCopyState::Missing:
 	case EWorkingCopyState::Conflicted:
 		return FName("Subversion.NotAtHeadRevision_Small");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot_Small");
-	case EWorkingCopyState::Deleted:
-// 
-// @todo Test: don't show deleted as they should not appear? 
-		return FName("Subversion.FIXME_DELETED");
+
+	case EWorkingCopyState::Missing: // @todo Missing files does not currently show in Editor (but should probably)
+		UE_LOG(LogSourceControl, Log, TEXT("EWorkingCopyState::Missing"));
 //	case EWorkingCopyState::Unchanged:
 		// Unchanged is the same as "Pristine" (not checked out) for Perforce, ie no icon
 	}
@@ -161,6 +162,11 @@ const FDateTime& FGitSourceControlState::GetTimeStamp() const
 	return TimeStamp;
 }
 
+// TODO : missing ?
+// @todo Test: don't show deleted as they should not appear? 
+//	case EWorkingCopyState::Deleted:
+//	case EWorkingCopyState::Missing:
+// Deleted and Missing assets cannot appear in the Content Browser
 bool FGitSourceControlState::CanCheckIn() const
 {
 	return WorkingCopyState == EWorkingCopyState::Added

@@ -21,7 +21,6 @@ Beta version 0.6.1:
 #### What *cannot* be done presently (TODO list for v1.0, ordered by priority):
 - solve a merge conflict
 - merge blueprints
-- Slate icon for missing files
 - add localisation for git specific messages
 - migrate an asset should add it to the destination project if also under Git (needs management of 'out of tree' files)
 - displaying states of 'Engine' assets (also needs management of 'out of tree' files)
@@ -33,6 +32,8 @@ Beta version 0.6.1:
 - configure user name & email ('git config user.name' & git config user.email')
 
 #### Known issues:
+- the Editor does not show deleted files (only when deleted externaly?)
+- the Editor does not show missing files
 - issue #22: A Move/Rename leaves a redirector file behind
 - issue #11: Add the "Resolve" operation introduced in Editor 4.3
 - improve the 'Init' window text, hide it if connection is already done, auto connect
@@ -71,9 +72,6 @@ Beta version 0.6.1:
 - FGitSourceControlRevision::GetFileSize() const
 	git log does not give us the file size, but we could run a specific command
 
-- EWorkingCopyState::Deleted
-  Test: don't show deleted as they should not appear?
-  
 - GitSourceControlUtils::CheckGitAvailability
   also check Git config user.name & user.email
 
