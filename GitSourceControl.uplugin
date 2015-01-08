@@ -2,8 +2,8 @@
 	"FileVersion" : 3,
 	
 	"FriendlyName" : "Git",
-	"Version" : 10,
-	"VersionName" : "0.6.1",
+	"Version" : 11,
+	"VersionName" : "0.6.2",
 	"EngineVersion" : "4.6.0",
 	"Description" : "Git source control management",
 	"Category" : "Editor.Source Control",
