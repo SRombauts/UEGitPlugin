@@ -9,8 +9,6 @@
 #include "GitSourceControlModule.h"
 #include "GitSourceControlCommand.h"
 
-#include "UniquePtr.h"
-
 #if PLATFORM_LINUX
 #include <sys/ioctl.h>
 #endif
