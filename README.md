@@ -17,9 +17,9 @@ Beta version 0.6.3:
 - delete a file
 - checkin/commit a file (cannot handle atomically more than 20 files)
 - show current branch name in status text
+- solve a merge conflict
 
 #### What *cannot* be done presently (TODO list for v1.0, ordered by priority):
-- solve a merge conflict
 - merge blueprints
 - add localisation for git specific messages
 - migrate an asset should add it to the destination project if also under Git (needs management of 'out of tree' files)

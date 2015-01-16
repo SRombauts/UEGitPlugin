@@ -157,17 +157,16 @@ public:
 	}
 };
 
-/** @todo: git add to mark a conflict as resolved
+/** git add to mark a conflict as resolved */
 class FGitResolveWorker : public IGitSourceControlWorker
 {
 public:
 	virtual ~FGitResolveWorker() {}
 	virtual FName GetName() const override;
-	virtual bool Execute( class FGitSourceControlCommand& InCommand ) override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
 	virtual bool UpdateStates() const override;
 	
 private:
-	/// Temporary states for results
-	TArray<FGitSourceControlState> OutStates;
+	/** Temporary states for results */
+	TArray<FGitSourceControlState> States;
 };
-*/
