@@ -1,11 +1,11 @@
 Unreal Engine 4 Git Source Control Plugin
 -----------------------------------------
 
-UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.7
+UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine - It has been integrated in UE4.7 in "Beta".
 
 ### Status
 
-[Download the latest release](https://github.com/SRombauts/UE4GitPlugin/releases)
+This Git Source Control Plugin is now part of the default Unreal Engine 4.7
 
 Beta version 0.6.3:
 - initialize a new Git local repository ('git init') to manage your UE4 Game Project.
@@ -38,7 +38,6 @@ Beta version 0.6.3:
 - issue #11: Add the "Resolve" operation introduced in Editor 4.3
 - improve the 'Init' window text, hide it if connection is already done, auto connect
 - reverting an asset does not seem to update content in Editor! Issue in Editor?
-- file history show Revision as signed integer instead of hexadecimal SHA1
 - file history does not report file size
 - standard Editor commit dialog ask if user wants to "Keep Files Checked Out" => no use for Git or Mercurial CanCheckOut()==false
 - Windows only (64 bits) -> Mac compiles but needs testing/debugging (Linux source control is not supported by Editor)
