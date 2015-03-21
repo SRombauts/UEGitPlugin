@@ -1,7 +1,11 @@
 Unreal Engine 4 Git Source Control Plugin
 -----------------------------------------
 
-UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine - It has been integrated in UE4.7 in "Beta".
+UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine
+
+**It has been integrated by default in UE4.7 in "Beta".**
+
+Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.com/Git_source_control_%28Tutorial%29).
 
 ### Status
 
