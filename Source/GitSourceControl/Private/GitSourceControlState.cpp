@@ -32,6 +32,19 @@ TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlS
 	return NULL;
 }
 
+TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::FindHistoryRevision(const FString& InRevision) const
+{
+	for(const auto& Revision : History)
+	{
+		if(Revision->GetRevision() == InRevision)
+		{
+			return Revision;
+		}
+	}
+
+	return NULL;
+}
+
 TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::GetBaseRevForMerge() const
 {
 	// @todo get revision of the merge-base (https://www.kernel.org/pub/software/scm/git/docs/git-merge-base.html)
@@ -48,14 +61,13 @@ FName FGitSourceControlState::GetIconName() const
 	case EWorkingCopyState::Added:
 	case EWorkingCopyState::Renamed:
 	case EWorkingCopyState::Copied:
-	case EWorkingCopyState::Deleted: // @todo New dedicated icon for removed/deleted (MarkedForDelete) files : Deleted files does not always show in Editor (but need to be checked-in) : only when deleted externaly !
 		return FName("Subversion.OpenForAdd");
+	case EWorkingCopyState::Deleted:
+		return FName("Subversion.MarkedForDelete");
 	case EWorkingCopyState::Conflicted:
 		return FName("Subversion.NotAtHeadRevision");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot");
-		UE_LOG(LogSourceControl, Log, TEXT("EWorkingCopyState::Deleted"));
-
 	case EWorkingCopyState::Missing: // @todo Missing files does not currently show in Editor (but should probably)
 		UE_LOG(LogSourceControl, Log, TEXT("EWorkingCopyState::Missing"));
 //	case EWorkingCopyState::Unchanged:
@@ -74,13 +86,13 @@ FName FGitSourceControlState::GetSmallIconName() const
 	case EWorkingCopyState::Added:
 	case EWorkingCopyState::Renamed:
 	case EWorkingCopyState::Copied:
-	case EWorkingCopyState::Deleted: // @todo New dedicated icon for removed/deleted (MarkedForDelete) files : Deleted files does not always show in Editor (but need to be checked-in) : only when deleted externaly !
 		return FName("Subversion.OpenForAdd_Small");
+	case EWorkingCopyState::Deleted:
+		return FName("Subversion.MarkedForDelete_Small");
 	case EWorkingCopyState::Conflicted:
 		return FName("Subversion.NotAtHeadRevision_Small");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot_Small");
-
 	case EWorkingCopyState::Missing: // @todo Missing files does not currently show in Editor (but should probably)
 		UE_LOG(LogSourceControl, Log, TEXT("EWorkingCopyState::Missing"));
 //	case EWorkingCopyState::Unchanged:

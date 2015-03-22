@@ -107,8 +107,8 @@ static bool RunCommandInternal(const FString& InCommand, const FString& InPathTo
 	FString Errors;
 
 	bResult = RunCommandInternalRaw(InCommand, InPathToGitBinary, InRepositoryRoot, InParameters, InFiles, Results, Errors);
-	Results.ParseIntoArray(&OutResults, TEXT("\n"), true);
-	Errors.ParseIntoArray(&OutErrorMessages, TEXT("\n"), true);
+	Results.ParseIntoArray(OutResults, TEXT("\n"), true);
+	Errors.ParseIntoArray(OutErrorMessages, TEXT("\n"), true);
 
 	return bResult;
 }
@@ -434,16 +434,18 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		}
 		else
 		{
-			TArray<FString> Group;
-			Group.Add(File);
-			GroupOfFiles.Add(Path, Group);
+			TArray<FString> NewGroup;
+			NewGroup.Add(File);
+			GroupOfFiles.Add(Path, NewGroup);
 		}
 	}
 
 	// 2) then we can batch git status operation by subdirectory
 	for(const auto& Files : GroupOfFiles)
 	{
-		bool bResult = RunCommand(TEXT("status"), InPathToGitBinary, InRepositoryRoot, Parameters, Files.Value, Results, OutErrorMessages);
+		TArray<FString> ErrorMessages;
+		bool bResult = RunCommand(TEXT("status"), InPathToGitBinary, InRepositoryRoot, Parameters, Files.Value, Results, ErrorMessages);
+		OutErrorMessages.Append(ErrorMessages);
 		if(bResult)
 		{
 			ParseStatusResults(Files.Value, Results, OutStates);
@@ -485,16 +487,8 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	const bool bLaunchHidden = true;
 	const bool bLaunchReallyHidden = bLaunchHidden;
 
-	// Setup output redirection pipes, so that we can harvest compiler output and display it ourselves
-#if PLATFORM_LINUX
-	int pipefd[2];
-	pipe(pipefd);
-	void* PipeRead = &pipefd[0];
-	void* PipeWrite = &pipefd[1];
-#else
 	void* PipeRead = NULL;
 	void* PipeWrite = NULL;
-#endif
 
 	verify(FPlatformProcess::CreatePipe(PipeRead, PipeWrite));
 
@@ -538,12 +532,7 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 		UE_LOG(LogSourceControl, Error, TEXT("Failed to launch 'git show'"));
 	}
 
-#if PLATFORM_LINUX
-	close(*(int*)PipeRead);
-	close(*(int*)PipeWrite);
-#else
 	FPlatformProcess::ClosePipe(PipeRead, PipeWrite);
-#endif
 
 	return bResult;
 }
@@ -692,6 +681,51 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 	}
 
 	return (NbStatesUpdated > 0);
+}
+
+/**
+ * Helper struct for RemoveRedundantErrors()
+ */
+struct FRemoveRedundantErrors
+{
+	FRemoveRedundantErrors(const FString& InFilter)
+		: Filter(InFilter)
+	{
+	}
+
+	bool operator()(const FString& String) const
+	{
+		if(String.Contains(Filter))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/** The filter string we try to identify in the reported error */
+	FString Filter;
+};
+
+void RemoveRedundantErrors(FGitSourceControlCommand& InCommand, const FString& InFilter)
+{
+	bool bFoundRedundantError = false;
+	for(auto Iter(InCommand.ErrorMessages.CreateConstIterator()); Iter; Iter++)
+	{
+		if(Iter->Contains(InFilter))
+		{
+			InCommand.InfoMessages.Add(*Iter);
+			bFoundRedundantError = true;
+		}
+	}
+
+	InCommand.ErrorMessages.RemoveAll( FRemoveRedundantErrors(InFilter) );
+
+	// if we have no error messages now, assume success!
+	if(bFoundRedundantError && InCommand.ErrorMessages.Num() == 0 && !InCommand.bCommandSuccessful)
+	{
+		InCommand.bCommandSuccessful = true;
+	}
 }
 
 }

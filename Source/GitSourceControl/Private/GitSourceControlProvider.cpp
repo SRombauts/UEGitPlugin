@@ -109,7 +109,21 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 	return ECommandResult::Succeeded;
 }
 
-void FGitSourceControlProvider::RegisterSourceControlStateChanged( const FSourceControlStateChanged::FDelegate& SourceControlStateChanged )
+TArray<FSourceControlStateRef> FGitSourceControlProvider::GetCachedStateByPredicate(const TFunctionRef<bool(const FSourceControlStateRef&)>& Predicate) const
+{
+	TArray<FSourceControlStateRef> Result;
+	for (const auto& CacheItem : StateCache)
+	{
+		FSourceControlStateRef State = CacheItem.Value;
+		if (Predicate(State))
+		{
+			Result.Add(State);
+		}
+	}
+	return Result;
+}
+
+void FGitSourceControlProvider::RegisterSourceControlStateChanged(const FSourceControlStateChanged::FDelegate& SourceControlStateChanged)
 {
 	OnSourceControlStateChanged.Add( SourceControlStateChanged );
 }
@@ -181,6 +195,11 @@ void FGitSourceControlProvider::CancelOperation( const TSharedRef<ISourceControl
 }
 
 bool FGitSourceControlProvider::UsesLocalReadOnlyState() const
+{
+	return false;
+}
+
+bool FGitSourceControlProvider::UsesChangelists() const
 {
 	return false;
 }
