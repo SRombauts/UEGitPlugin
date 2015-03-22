@@ -434,16 +434,18 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		}
 		else
 		{
-			TArray<FString> Group;
-			Group.Add(File);
-			GroupOfFiles.Add(Path, Group);
+			TArray<FString> NewGroup;
+			NewGroup.Add(File);
+			GroupOfFiles.Add(Path, NewGroup);
 		}
 	}
 
 	// 2) then we can batch git status operation by subdirectory
 	for(const auto& Files : GroupOfFiles)
 	{
-		bool bResult = RunCommand(TEXT("status"), InPathToGitBinary, InRepositoryRoot, Parameters, Files.Value, Results, OutErrorMessages);
+		TArray<FString> ErrorMessages;
+		bool bResult = RunCommand(TEXT("status"), InPathToGitBinary, InRepositoryRoot, Parameters, Files.Value, Results, ErrorMessages);
+		OutErrorMessages.Append(ErrorMessages);
 		if(bResult)
 		{
 			ParseStatusResults(Files.Value, Results, OutStates);
@@ -692,6 +694,51 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 	}
 
 	return (NbStatesUpdated > 0);
+}
+
+/**
+ * Helper struct for RemoveRedundantErrors()
+ */
+struct FRemoveRedundantErrors
+{
+	FRemoveRedundantErrors(const FString& InFilter)
+		: Filter(InFilter)
+	{
+	}
+
+	bool operator()(const FString& String) const
+	{
+		if(String.Contains(Filter))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/** The filter string we try to identify in the reported error */
+	FString Filter;
+};
+
+void RemoveRedundantErrors(FGitSourceControlCommand& InCommand, const FString& InFilter)
+{
+	bool bFoundRedundantError = false;
+	for(auto Iter(InCommand.ErrorMessages.CreateConstIterator()); Iter; Iter++)
+	{
+		if(Iter->Contains(InFilter))
+		{
+			InCommand.InfoMessages.Add(*Iter);
+			bFoundRedundantError = true;
+		}
+	}
+
+	InCommand.ErrorMessages.RemoveAll( FRemoveRedundantErrors(InFilter) );
+
+	// if we have no error messages now, assume success!
+	if(bFoundRedundantError && InCommand.ErrorMessages.Num() == 0 && !InCommand.bCommandSuccessful)
+	{
+		InCommand.bCommandSuccessful = true;
+	}
 }
 
 }

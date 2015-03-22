@@ -22,6 +22,7 @@ public:
 	virtual bool GetAnnotated( FString& InOutFilename ) const override;
 	virtual const FString& GetFilename() const override;
 	virtual int32 GetRevisionNumber() const override;
+	virtual const FString& GetRevision() const override;
 	virtual const FString& GetDescription() const override;
 	virtual const FString& GetUserName() const override;
 	virtual const FString& GetClientSpec() const override;

@@ -8,6 +8,8 @@
 #include "GitSourceControlState.h"
 #include "GitSourceControlRevision.h"
 
+class FGitSourceControlCommand;
+
 /**
  * Helper struct for maintaining temporary files for passing to commands
  */
@@ -113,5 +115,11 @@ void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlHistory&
  * @returns true if any states were updated
  */
 bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates);
+
+/** 
+ * Remove redundant errors (that contain a particular string) and also
+ * update the commands success status if all errors were removed.
+ */
+void RemoveRedundantErrors(FGitSourceControlCommand& InCommand, const FString& InFilter);
 
 }

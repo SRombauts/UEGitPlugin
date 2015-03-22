@@ -60,6 +60,11 @@ int32 FGitSourceControlRevision::GetRevisionNumber() const
 	return RevisionNumber;
 }
 
+const FString& FGitSourceControlRevision::GetRevision() const
+{
+	return CommitId;
+}
+
 const FString& FGitSourceControlRevision::GetDescription() const
 {
 	return Description;
