@@ -13,7 +13,7 @@ Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.c
 
 This Git Source Control Plugin is now part of the default Unreal Engine 4.7
 
-Beta version 0.6.3:
+Beta version 1.0:
 - initialize a new Git local repository ('git init') to manage your UE4 Game Project.
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
@@ -23,6 +23,7 @@ Beta version 0.6.3:
 - delete a file
 - checkin/commit a file (cannot handle atomically more than 20 files)
 - show current branch name in status text
+- Github LFS, git-annexe and/or git-media are working under Windows
 
 #### What *cannot* be done presently (TODO list for v1.0, ordered by priority):
 - solve a merge conflict
@@ -47,9 +48,6 @@ Beta version 0.6.3:
 - file history does not report file size
 - standard Editor commit dialog ask if user wants to "Keep Files Checked Out" => no use for Git or Mercurial CanCheckOut()==false
 - Windows only (64 bits) -> Mac compiles but needs testing/debugging (Linux source control is not supported by Editor)
-
-#### Wishlist (after v1.0):
-- [git-annexe and/or git-media - #1 feature request](https://github.com/SRombauts/UE4GitPlugin/issues/1)
 
 #### In-code TODO list (internal roadmap):
 
