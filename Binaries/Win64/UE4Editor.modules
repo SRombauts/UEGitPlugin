@@ -1,0 +1,8 @@
+{
+	"Changelist" : 2875303,
+	"BuildId" : "e00fd4d3-b1da-4fb5-a2bd-5a546d8daaba",
+	"Modules" : 
+	{
+		"GitSourceControlDev" : "UE4Editor-GitSourceControlDev.dll"
+	}
+}

@@ -1,0 +1,25 @@
+{
+	"FileVersion" : 3,
+	"Version" : 20,
+	"VersionName" : "2.0",
+	"FriendlyName" : "Git (devel)",
+	"Description" : "Git source control management",
+	"Category" : "Source Control",
+	"CreatedBy" : "SRombauts and Epic Games, Inc.",
+	"CreatedByURL" : "http://srombauts.github.com",
+	"DocsURL" : "",
+	"MarketplaceURL" : "",
+	"SupportURL" : "",
+	"EnabledByDefault" : true,
+	"CanContainContent" : false,
+	"IsBetaVersion" : true,
+	"Installed" : false,
+	"Modules" :
+	[
+		{
+			"Name" : "GitSourceControlDev",
+			"Type" : "Editor",
+			"LoadingPhase" : "Default"
+		}
+	]
+}
