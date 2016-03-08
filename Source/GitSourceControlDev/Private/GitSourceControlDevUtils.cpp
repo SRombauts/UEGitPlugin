@@ -58,12 +58,21 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 
 	if(!InRepositoryRoot.IsEmpty())
 	{
+		FString RepositoryRoot = InRepositoryRoot;
+
+		// Detect a "migrate asset" scenario (a "git add" command is applied to files outside the current project)
+		if ( (InFiles.Num() > 0) && (!InFiles[0].StartsWith(InRepositoryRoot)) )
+		{
+			// in this case, find the git repository (if any) of the destination Project
+			const bool bFound = FindRootDirectory(FPaths::GetPath(InFiles[0]), RepositoryRoot);
+		}
+
 		// Specify the working copy (the root) of the git repository (before the command itself)
 		FullCommand  = TEXT("--work-tree=\"");
-		FullCommand += InRepositoryRoot;
+		FullCommand += RepositoryRoot;
 		// and the ".git" subdirectory in it (before the command itself)
 		FullCommand += TEXT("\" --git-dir=\"");
-		FullCommand += InRepositoryRoot;
+		FullCommand += RepositoryRoot;
 		FullCommand += TEXT(".git\" ");
 	}
 	// then the git command itself ("status", "log", "commit"...)
@@ -87,7 +96,7 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *LogableCommand);
 	// @todo: temporary debug logs
-	//	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *FullCommand);
+	// UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *FullCommand);
 	FPlatformProcess::ExecProcess(*InPathToGitBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
 	if (!OutErrors.IsEmpty())
@@ -207,12 +216,12 @@ bool CheckGitAvailability(const FString& InPathToGitBinary)
 	return bGitAvailable;
 }
 
-// Find the root of the Git repository, looking from the GameDir and upward in its parent directories.
-bool FindRootDirectory(const FString& InPathToGameDir, FString& OutRepositoryRoot)
+// Find the root of the Git repository, looking from the provided path and upward in its parent directories.
+bool FindRootDirectory(const FString& InPath, FString& OutRepositoryRoot)
 {
 	bool bFound = false;
 	FString PathToGitSubdirectory;
-	OutRepositoryRoot = InPathToGameDir;
+	OutRepositoryRoot = InPath;
 
 	while(!bFound && !OutRepositoryRoot.IsEmpty())
 	{
@@ -235,7 +244,7 @@ bool FindRootDirectory(const FString& InPathToGameDir, FString& OutRepositoryRoo
 	}
 	if (!bFound)
 	{
-		OutRepositoryRoot = InPathToGameDir; // If not found, return the GameDir as best possible root.
+		OutRepositoryRoot = InPath; // If not found, return the provided dir as best possible root.
 	}
 	return bFound;
 }
