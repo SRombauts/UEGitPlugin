@@ -21,20 +21,18 @@ Beta version 1.0:
 - can also make the initial commit
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
-- diff against depot or between previous versions of a file
+- visual diff of a blueprint against depot or between previous versions of a file
 - revert modifications of a file
-- add a file
-- delete a file
+- add, delete, rename a file
 - checkin/commit a file (cannot handle atomically more than 20 files)
-- migrate an asset between projects under Git
-- solve a merge conflict on blueprints
+- migrate an asset between to projects if both are using Git
+- solve a merge conflict on a blueprint
 - show current branch name in status text
-- Github LFS, git-annexe and/or git-media are working under Windows
+- Sync to Pull the current branch if there is no local modified files
+- git LFS (Github & Gitlab), git-annexe and/or git-media are working under Windows
 - Windows, Mac and Linux
 
 #### What *cannot* be done presently (TODO list for v1.0, ordered by priority):
-- add localisation for git specific messages
-- displaying states of 'Engine' assets (also needs management of 'out of tree' files)
 - tags: implement ISourceControlLabel to manage git tags
 - Branch is not in the current Editor workflow (but on Epic Roadmap)
 - Pull/Fetch/Push are not in the current Editor workflow
@@ -45,9 +43,13 @@ Beta version 1.0:
 - the Editor does not show deleted files (only when deleted externaly?)
 - the Editor does not show missing files
 - the Editor does not show .uproject file
+- missing localisation for git specific messages
+- displaying states of 'Engine' assets (also needs management of 'out of tree' files)
 - issue #22: A Move/Rename leaves a redirector file behind
 - improve the 'Init' window text, hide it if connection is already done, auto connect
 - reverting an asset does not seem to update content in Editor! Issue in Editor?
+- renaming a Blueprint in Editor leaves a tracker file, AND modify too much the asset to enable git to track its history through renaming
+- file history show Changelist as signed integer instead of hexadecimal SHA1
 - standard Editor commit dialog ask if user wants to "Keep Files Checked Out" => no use for Git or Mercurial CanCheckOut()==false
 
 #### In-code TODO list (internal roadmap):
