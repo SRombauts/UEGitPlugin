@@ -89,7 +89,7 @@ FName FGitSourceControlDevState::GetSmallIconName() const
 {
 	switch(WorkingCopyState) //-V719
 	{
-	case EWorkingCopyState::Unchanged:
+	case EWorkingCopyState::Modified:
 		return FName("Subversion.CheckedOut_Small");
 	case EWorkingCopyState::Added:
 	case EWorkingCopyState::Renamed:
