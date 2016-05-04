@@ -33,6 +33,13 @@ private:
 	/** Delegate to initialize a new Git repository */
 	EVisibility CanInitializeGitRepository() const;
 	FReply OnClickedInitializeGitRepository();
+
 	void OnCheckedCreateGitIgnore(ECheckBoxState NewCheckedState);
 	bool bAutoCreateGitIgnore;
+
+	void OnCheckedInitialCommit(ECheckBoxState NewCheckedState);
+	bool bAutoInitialCommit;
+	void OnInitialCommitMessageCommited(const FText& InText, ETextCommit::Type InCommitType);
+	FText GetInitialCommitMessage() const;
+	FText InitialCommitMessage;
 };
