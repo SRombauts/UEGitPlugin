@@ -52,9 +52,10 @@ void SGitSourceControlDevSettings::Construct(const FArguments& InArgs)
 					.FillHeight(1.0f)
 					.Padding(2.0f)
 					[
-						SNew(SEditableTextBox)
+						SNew(SMultiLineEditableTextBox)
 						.Text(this, &SGitSourceControlDevSettings::GetBinaryPathText)
 						.ToolTipText(LOCTEXT("BinaryPathLabel_Tooltip", "Path to Git binary"))
+						.HintText(LOCTEXT("BinaryPathLabel_Tooltip", "Path to Git binary"))
 						.OnTextCommitted(this, &SGitSourceControlDevSettings::OnBinaryPathTextCommited)
 						.Font(Font)
 					]
@@ -350,8 +351,8 @@ FReply SGitSourceControlDevSettings::OnClickedInitializeGitRepository()
 		if(bAutoCreateGitIgnore)
 		{
 			// Create a standard ".gitignore" file with common patterns for a typical Blueprint & C++ project
-			const FString Filename = FString::Printf(TEXT("%s.gitignore"), *PathToGameDir);
-			const FString GitIgnoreContent = TEXT("Binaries\nDerivedDataCache\nIntermediate\nSaved\n*.opensdf\n*.sdf\n*.sln\n*.suo\n*.xcodeproj\n*.xcworkspace");
+			const FString Filename = FPaths::Combine(*PathToGameDir, TEXT(".gitignore"));
+			const FString GitIgnoreContent = TEXT("Binaries\nDerivedDataCache\nIntermediate\nSaved\n*.VC.db\n*.opensdf\n*.opendb\n*.sdf\n*.sln\n*.suo\n*.xcodeproj\n*.xcworkspace");
 			if(FFileHelper::SaveStringToFile(GitIgnoreContent, *Filename, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
 			{
 				ProjectFiles.Add(TEXT(".gitignore"));
