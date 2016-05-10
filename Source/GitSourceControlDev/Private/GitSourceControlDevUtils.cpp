@@ -64,7 +64,7 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 		if ( (InFiles.Num() > 0) && (!InFiles[0].StartsWith(InRepositoryRoot)) )
 		{
 			// in this case, find the git repository (if any) of the destination Project
-			const bool bFound = FindRootDirectory(FPaths::GetPath(InFiles[0]), RepositoryRoot);
+			FindRootDirectory(FPaths::GetPath(InFiles[0]), RepositoryRoot);
 		}
 
 		// Specify the working copy (the root) of the git repository (before the command itself)
@@ -72,8 +72,7 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 		FullCommand += RepositoryRoot;
 		// and the ".git" subdirectory in it (before the command itself)
 		FullCommand += TEXT("\" --git-dir=\"");
-		FullCommand += RepositoryRoot;
-		FullCommand += TEXT(".git\" ");
+		FullCommand += FPaths::Combine(*RepositoryRoot, TEXT(".git\" "));
 	}
 	// then the git command itself ("status", "log", "commit"...)
 	LogableCommand += InCommand;
@@ -95,8 +94,8 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 	FullCommand += LogableCommand;
 
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *LogableCommand);
-	// @todo: temporary debug logs
-	// UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *FullCommand);
+// @todo: temporary debug logs
+// UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *FullCommand);
 	FPlatformProcess::ExecProcess(*InPathToGitBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
 	if (!OutErrors.IsEmpty())
@@ -223,18 +222,30 @@ bool FindRootDirectory(const FString& InPath, FString& OutRepositoryRoot)
 	FString PathToGitSubdirectory;
 	OutRepositoryRoot = InPath;
 
+	auto TrimTrailing = [](FString& Str, const TCHAR Char)
+	{
+		int32 Len = Str.Len();
+		while(Len && Str[Len - 1] == Char)
+		{
+			Str = Str.LeftChop(1);
+			Len = Str.Len();
+		}
+	};
+
+	TrimTrailing(OutRepositoryRoot, '\\');
+	TrimTrailing(OutRepositoryRoot, '/');
+
 	while(!bFound && !OutRepositoryRoot.IsEmpty())
 	{
-		PathToGitSubdirectory = OutRepositoryRoot;
-		PathToGitSubdirectory += TEXT(".git"); // Look for the ".git" subdirectory present at the root of every Git repository
+		// Look for the ".git" subdirectory present at the root of every Git repository
+		PathToGitSubdirectory = OutRepositoryRoot / TEXT(".git");
 		bFound = IFileManager::Get().DirectoryExists(*PathToGitSubdirectory);
 		if(!bFound)
 		{
 			int32 LastSlashIndex;
-			OutRepositoryRoot = OutRepositoryRoot.LeftChop(5);
 			if(OutRepositoryRoot.FindLastChar('/', LastSlashIndex))
 			{
-				OutRepositoryRoot = OutRepositoryRoot.Left(LastSlashIndex + 1);
+				OutRepositoryRoot = OutRepositoryRoot.Left(LastSlashIndex);
 			}
 			else
 			{
@@ -896,13 +907,10 @@ bool UpdateCachedStates(const TArray<FGitSourceControlDevState>& InStates)
 	for(const auto& InState : InStates)
 	{
 		TSharedRef<FGitSourceControlDevState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename);
-		if(State->WorkingCopyState != InState.WorkingCopyState)
-		{
-			State->WorkingCopyState = InState.WorkingCopyState;
-			State->PendingMergeBaseFileHash = InState.PendingMergeBaseFileHash;
-		//	State->TimeStamp = InState.TimeStamp; // @todo Bug report: Workaround a bug with the Source Control Module not updating file state after a "Save"
-			NbStatesUpdated++;
-		}
+		auto History = MoveTemp(State->History);
+		*State = InState;
+		State->TimeStamp = FDateTime::Now();
+		State->History = MoveTemp(History);
 	}
 
 	return (NbStatesUpdated > 0);
