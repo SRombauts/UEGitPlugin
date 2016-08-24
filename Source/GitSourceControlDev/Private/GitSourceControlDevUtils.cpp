@@ -863,6 +863,7 @@ bool RunGetHistory(const FString& InPathToGitBinary, const FString& InRepository
 		Parameters.Add(TEXT("--follow")); // follow file renames
 		Parameters.Add(TEXT("--date=raw"));
 		Parameters.Add(TEXT("--name-status")); // relative filename at this revision, preceded by a status character
+		Parameters.Add(TEXT("--pretty=medium")); // make sure format matches expected in ParseLogResults
 		TArray<FString> Files;
 		Files.Add(*InFile);
 		if(bMergeConflict)
