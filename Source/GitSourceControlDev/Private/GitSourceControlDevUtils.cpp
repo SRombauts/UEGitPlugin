@@ -216,6 +216,24 @@ bool CheckGitAvailability(const FString& InPathToGitBinary)
 	return bGitAvailable;
 }
 
+bool CheckLFSAvaliability(const FString & InPathToGitBinary)
+{
+	bool bGitAvailable = false;
+
+	FString InfoMessages;
+	FString ErrorMessages;
+	bGitAvailable = RunCommandInternalRaw(TEXT("lfs version"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	if (bGitAvailable)
+	{
+		if (!InfoMessages.Contains("git-lfs"))
+		{
+			bGitAvailable = false;
+		}
+	}
+
+	return bGitAvailable;
+}
+
 // Find the root of the Git repository, looking from the provided path and upward in its parent directories.
 bool FindRootDirectory(const FString& InPath, FString& OutRepositoryRoot)
 {
@@ -677,44 +695,60 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 			BinaryFileContent.Append(MoveTemp(BinaryData));
 		}
 
-		BinaryFileContent.Add('\0');
-		FString OutputString;
-		OutputString += FUTF8ToTCHAR((const ANSICHAR*)BinaryFileContent.GetData()).Get();
+		if (CheckLFSAvaliability(InPathToGitBinary))
+		{
 
-		const FString SmudgeCommand = "lfs smudge";
+			BinaryFileContent.Add('\0');
+			FString OutputString;
+			OutputString += FUTF8ToTCHAR((const ANSICHAR*)BinaryFileContent.GetData()).Get();
 
-		FInteractiveProcessChooseWD* SmudgeProcess = new FInteractiveProcessChooseWD(*InPathToGitBinary, *SmudgeCommand, InRepositoryRoot, false, false);
+			const FString SmudgeCommand = "lfs smudge";
 
-		bool bSmudgeProcessFinished = false;
+			FInteractiveProcessChooseWD* SmudgeProcess = new FInteractiveProcessChooseWD(*InPathToGitBinary, *SmudgeCommand, InRepositoryRoot, false, false);
 
-		SmudgeProcess->OnOutputArray().BindLambda([&](TArray<uint8> Output) {
-			if (FFileHelper::SaveArrayToFile(Output, *InDumpFileName))
+			bool bSmudgeProcessFinished = false;
+
+			SmudgeProcess->OnOutputArray().BindLambda([&](TArray<uint8> Output) {
+				if (FFileHelper::SaveArrayToFile(Output, *InDumpFileName))
+				{
+					UE_LOG(LogSourceControl, Log, TEXT("Writed '%s' (%d bytes)"), *InDumpFileName, Output.Num());
+					bResult = true;
+				}
+				else
+				{
+					UE_LOG(LogSourceControl, Error, TEXT("Could not write %s"), *InDumpFileName);
+				}
+
+				bSmudgeProcessFinished = true;
+			});
+
+			SmudgeProcess->OnCompleted().BindLambda([&](int32 Data, bool Successful)
 			{
-				UE_LOG(LogSourceControl, Log, TEXT("Writed '%s' (%d bytes)"), *InDumpFileName, Output.Num());
+				UE_LOG(LogTemp, Warning, TEXT("Interactive Process Completed: %d %s"), Data, Successful ? TEXT("True") : TEXT("False"));
+				delete SmudgeProcess;
+
+				FPlatformProcess::ClosePipe(PipeRead, PipeWrite);
+			});
+
+			SmudgeProcess->Launch();
+			SmudgeProcess->SendWhenReady(OutputString);
+
+			while (!bSmudgeProcessFinished)
+			{
+				FPlatformProcess::Sleep(0.01);
+			}
+		}
+		else
+		{
+			if (FFileHelper::SaveArrayToFile(BinaryFileContent, *InDumpFileName))
+			{
+				UE_LOG(LogSourceControl, Log, TEXT("Writed '%s' (%d bytes)"), *InDumpFileName, BinaryFileContent.Num());
 				bResult = true;
 			}
 			else
 			{
 				UE_LOG(LogSourceControl, Error, TEXT("Could not write %s"), *InDumpFileName);
 			}
-
-			bSmudgeProcessFinished = true;
-		});
-
-		SmudgeProcess->OnCompleted().BindLambda([&](int32 Data, bool Successful)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Interactive Process Completed: %d %s"), Data, Successful ? TEXT("True") : TEXT("False"));
-			delete SmudgeProcess;
-
-			FPlatformProcess::ClosePipe(PipeRead, PipeWrite);
-		});
-
-		SmudgeProcess->Launch();
-		SmudgeProcess->SendWhenReady(OutputString);
-
-		while (!bSmudgeProcessFinished)
-		{
-			FPlatformProcess::Sleep(0.01);
 		}
 	}
 	else
