@@ -695,12 +695,12 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 			BinaryFileContent.Append(MoveTemp(BinaryData));
 		}
 
-		if (CheckLFSAvaliability(InPathToGitBinary))
-		{
+		BinaryFileContent.Add('\0');
+		FString OutputString;
+		OutputString += FUTF8ToTCHAR((const ANSICHAR*)BinaryFileContent.GetData()).Get();
 
-			BinaryFileContent.Add('\0');
-			FString OutputString;
-			OutputString += FUTF8ToTCHAR((const ANSICHAR*)BinaryFileContent.GetData()).Get();
+		if (CheckLFSAvaliability(InPathToGitBinary) && OutputString.Contains(TEXT("git-lfs")))
+		{		
 
 			const FString SmudgeCommand = "lfs smudge";
 
@@ -740,6 +740,7 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 		}
 		else
 		{
+			BinaryFileContent.RemoveAt(BinaryFileContent.Num() - 1);
 			if (FFileHelper::SaveArrayToFile(BinaryFileContent, *InDumpFileName))
 			{
 				UE_LOG(LogSourceControl, Log, TEXT("Writed '%s' (%d bytes)"), *InDumpFileName, BinaryFileContent.Num());
