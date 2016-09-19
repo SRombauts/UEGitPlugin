@@ -48,6 +48,13 @@ FString FindGitBinaryPath();
 bool CheckGitAvailability(const FString& InPathToGitBinary);
 
 /**
+* Run a Git lfs "version" command to check the availability of the binary.
+* @param InPathToGitBinary		The path to the Git binary
+* @returns true if the command succeeded and returned no errors
+*/
+bool CheckLFSAvaliability(const FString& InPathToGitBinary);
+
+/**
  * Find the root of the Git repository, looking from the provided path and upward in its parent directories
  * @param InPath				The path to the Game Directory (or any path or file in any git repository)
  * @param OutRepositoryRoot		The path to the root directory of the Git repository if found, else the path to the GameDir

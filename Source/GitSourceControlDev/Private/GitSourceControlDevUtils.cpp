@@ -8,6 +8,7 @@
 #include "GitSourceControlDevState.h"
 #include "GitSourceControlDevModule.h"
 #include "GitSourceControlDevCommand.h"
+#include "InteractiveProcessChooseWD.h"
 
 #if PLATFORM_LINUX
 #include <sys/ioctl.h>
@@ -207,6 +208,24 @@ bool CheckGitAvailability(const FString& InPathToGitBinary)
 	if(bGitAvailable)
 	{
 		if(!InfoMessages.Contains("git"))
+		{
+			bGitAvailable = false;
+		}
+	}
+
+	return bGitAvailable;
+}
+
+bool CheckLFSAvaliability(const FString & InPathToGitBinary)
+{
+	bool bGitAvailable = false;
+
+	FString InfoMessages;
+	FString ErrorMessages;
+	bGitAvailable = RunCommandInternalRaw(TEXT("lfs version"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	if (bGitAvailable)
+	{
+		if (!InfoMessages.Contains("git-lfs"))
 		{
 			bGitAvailable = false;
 		}
@@ -630,15 +649,14 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	bool bResult = false;
 	FString FullCommand;
 
-	if(!InRepositoryRoot.IsEmpty())
+	if (!InRepositoryRoot.IsEmpty())
 	{
 		// Specify the working copy (the root) of the git repository (before the command itself)
 		FullCommand = TEXT("--work-tree=\"");
 		FullCommand += InRepositoryRoot;
 		// and the ".git" subdirectory in it (before the command itself)
 		FullCommand += TEXT("\" --git-dir=\"");
-		FullCommand += InRepositoryRoot;
-		FullCommand += TEXT(".git\" ");
+		FullCommand += FPaths::Combine(*InRepositoryRoot, TEXT(".git\" "));
 	}
 	// then the git command itself
 	FullCommand += TEXT("show ");
@@ -656,35 +674,82 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	verify(FPlatformProcess::CreatePipe(PipeRead, PipeWrite));
 
 	FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*InPathToGitBinary, *FullCommand, bLaunchDetached, bLaunchHidden, bLaunchReallyHidden, nullptr, 0, nullptr, PipeWrite);
-	if(ProcessHandle.IsValid())
+	if (ProcessHandle.IsValid())
 	{
 		FPlatformProcess::Sleep(0.01);
 
 		TArray<uint8> BinaryFileContent;
-		while(FPlatformProcess::IsProcRunning(ProcessHandle))
+		while (FPlatformProcess::IsProcRunning(ProcessHandle))
 		{
 			TArray<uint8> BinaryData;
 			FPlatformProcess::ReadPipeToArray(PipeRead, BinaryData);
-			if(BinaryData.Num() > 0)
+			if (BinaryData.Num() > 0)
 			{
 				BinaryFileContent.Append(MoveTemp(BinaryData));
 			}
 		}
 		TArray<uint8> BinaryData;
 		FPlatformProcess::ReadPipeToArray(PipeRead, BinaryData);
-		if(BinaryData.Num() > 0)
+		if (BinaryData.Num() > 0)
 		{
 			BinaryFileContent.Append(MoveTemp(BinaryData));
 		}
-		// Save buffer into temp file
-		if(FFileHelper::SaveArrayToFile(BinaryFileContent, *InDumpFileName))
-		{
-			UE_LOG(LogSourceControl, Log, TEXT("Writed '%s' (%do)"), *InDumpFileName, BinaryFileContent.Num());
-			bResult = true;
+
+		BinaryFileContent.Add('\0');
+		FString OutputString;
+		OutputString += FUTF8ToTCHAR((const ANSICHAR*)BinaryFileContent.GetData()).Get();
+
+		if (CheckLFSAvaliability(InPathToGitBinary) && OutputString.Contains(TEXT("git-lfs")))
+		{		
+
+			const FString SmudgeCommand = "lfs smudge";
+
+			FInteractiveProcessChooseWD* SmudgeProcess = new FInteractiveProcessChooseWD(*InPathToGitBinary, *SmudgeCommand, InRepositoryRoot, false, false);
+
+			bool bSmudgeProcessFinished = false;
+
+			SmudgeProcess->OnOutputArray().BindLambda([&](TArray<uint8> Output) {
+				if (FFileHelper::SaveArrayToFile(Output, *InDumpFileName))
+				{
+					UE_LOG(LogSourceControl, Log, TEXT("Writed '%s' (%d bytes)"), *InDumpFileName, Output.Num());
+					bResult = true;
+				}
+				else
+				{
+					UE_LOG(LogSourceControl, Error, TEXT("Could not write %s"), *InDumpFileName);
+				}
+
+				bSmudgeProcessFinished = true;
+			});
+
+			SmudgeProcess->OnCompleted().BindLambda([&](int32 Data, bool Successful)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Interactive Process Completed: %d %s"), Data, Successful ? TEXT("True") : TEXT("False"));
+				delete SmudgeProcess;
+
+				FPlatformProcess::ClosePipe(PipeRead, PipeWrite);
+			});
+
+			SmudgeProcess->Launch();
+			SmudgeProcess->SendWhenReady(OutputString);
+
+			while (!bSmudgeProcessFinished)
+			{
+				FPlatformProcess::Sleep(0.01);
+			}
 		}
 		else
 		{
-			UE_LOG(LogSourceControl, Error, TEXT("Could not write %s"), *InDumpFileName);
+			BinaryFileContent.RemoveAt(BinaryFileContent.Num() - 1);
+			if (FFileHelper::SaveArrayToFile(BinaryFileContent, *InDumpFileName))
+			{
+				UE_LOG(LogSourceControl, Log, TEXT("Writed '%s' (%d bytes)"), *InDumpFileName, BinaryFileContent.Num());
+				bResult = true;
+			}
+			else
+			{
+				UE_LOG(LogSourceControl, Error, TEXT("Could not write %s"), *InDumpFileName);
+			}
 		}
 	}
 	else
