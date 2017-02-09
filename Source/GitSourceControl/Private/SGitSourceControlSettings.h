@@ -32,10 +32,8 @@ public:
 
 private:
 
-	/** Delegate to get binary path from settings */
+	/** Delegates to get Git binary path from/to settings */
 	FText GetBinaryPathText() const;
-
-	/** Delegate to commit repository text to settings */
 	void OnBinaryPathTextCommited(const FText& InText, ETextCommit::Type InCommitType) const;
 
 	/** Delegate to get repository root, user name and email from provider */
@@ -43,12 +41,17 @@ private:
 	FText GetUserName() const;
 	FText GetUserEmail() const;
 
-	/** Delegate to initialize a new Git repository */
 	EVisibility CanInitializeGitRepository() const;
+	bool CanInitializeGitLfs() const;
+
+	/** Delegate to initialize a new Git repository */
 	FReply OnClickedInitializeGitRepository();
 
 	void OnCheckedCreateGitIgnore(ECheckBoxState NewCheckedState);
 	bool bAutoCreateGitIgnore;
+
+	void OnCheckedCreateGitAttributes(ECheckBoxState NewCheckedState);
+	bool bAutoCreateGitAttributes;
 
 	void OnCheckedInitialCommit(ECheckBoxState NewCheckedState);
 	bool bAutoInitialCommit;
