@@ -231,22 +231,60 @@ FString FindGitBinaryPath()
 	return GitBinaryPath;
 }
 
-bool CheckGitAvailability(const FString& InPathToGitBinary)
+bool CheckGitAvailability(const FString& InPathToGitBinary, FGitVersion *OutVersion)
 {
-	bool bGitAvailable = false;
-
 	FString InfoMessages;
 	FString ErrorMessages;
-	bGitAvailable = RunCommandInternalRaw(TEXT("version"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	bool bGitAvailable = RunCommandInternalRaw(TEXT("version"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
 	if(bGitAvailable)
 	{
 		if(!InfoMessages.Contains("git"))
 		{
 			bGitAvailable = false;
 		}
+		else if(OutVersion)
+		{
+			ParseGitVersion(InfoMessages, OutVersion);
+			FindGitCapabilities(InPathToGitBinary, OutVersion);
+		}
 	}
 
 	return bGitAvailable;
+}
+
+void ParseGitVersion(const FString& InVersionString, FGitVersion *OutVersion) 
+{
+	// Parse "git version 2.11.0" into the string tokens "git", "version", "2.11.0"
+	TArray<FString> TokenizedString;
+	InVersionString.ParseIntoArrayWS(TokenizedString);
+
+	// Select the string token containing the version "2.11.0"
+	const FString* TokenVersionStringPtr = TokenizedString.FindByPredicate([](FString& s) { return TChar<TCHAR>::IsDigit(s[0]); });
+	if(TokenVersionStringPtr)
+	{
+		// Parse the version into its two Major.Minor numerical components
+		TArray<FString> ParsedVersionString;
+		TokenVersionStringPtr->ParseIntoArray(ParsedVersionString, TEXT("."));
+		if(ParsedVersionString.Num() >= 2)
+		{
+			if(ParsedVersionString[0].IsNumeric() && ParsedVersionString[1].IsNumeric())
+			{
+				OutVersion->Major = FCString::Atoi(*ParsedVersionString[0]);
+				OutVersion->Minor = FCString::Atoi(*ParsedVersionString[1]);
+			}
+		}
+	}
+}
+
+void FindGitCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVersion) 
+{
+	FString InfoMessages;
+	FString ErrorMessages;
+	RunCommandInternalRaw(TEXT("cat-file -h"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	if (InfoMessages.Contains("--filters"))
+	{
+		OutVersion->bHasCatFileWithFilters = true;
+	}
 }
 
 // Find the root of the Git repository, looking from the provided path and upward in its parent directories.
@@ -733,6 +771,9 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	int32 ReturnCode = -1;
 	FString FullCommand;
 
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const FGitVersion& GitVersion = GitSourceControl.GetProvider().GetGitVersion();
+
 	if(!InRepositoryRoot.IsEmpty())
 	{
 		// Specify the working copy (the root) of the git repository (before the command itself)
@@ -742,8 +783,18 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 		FullCommand += TEXT("\" --git-dir=\"");
 		FullCommand += FPaths::Combine(*InRepositoryRoot, TEXT(".git\" "));
 	}
+
 	// then the git command itself
-	FullCommand += TEXT("cat-file --filters ");
+	if(GitVersion.bHasCatFileWithFilters)
+	{
+		// Newer versions (2.9.3.windows.2) support smudge/clean filters used by Git LFS, git-fat, git-annex, etc
+		FullCommand += TEXT("cat-file --filters ");
+	}
+	else
+	{
+		// Previous versions fall-back on "git show" like before
+		FullCommand += TEXT("show ");
+	}
 
 	// Append to the command the parameter
 	FullCommand += InParameter;

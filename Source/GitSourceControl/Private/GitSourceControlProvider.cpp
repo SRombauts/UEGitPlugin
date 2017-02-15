@@ -35,7 +35,7 @@ void FGitSourceControlProvider::CheckGitAvailability()
 	const FString& PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
 	if(!PathToGitBinary.IsEmpty())
 	{
-		bGitAvailable = GitSourceControlUtils::CheckGitAvailability(PathToGitBinary);
+		bGitAvailable = GitSourceControlUtils::CheckGitAvailability(PathToGitBinary, &GitVersion);
 		if(bGitAvailable)
 		{
 			// Find the path to the root Git directory (if any)

@@ -43,9 +43,24 @@ FString FindGitBinaryPath();
 /**
  * Run a Git "version" command to check the availability of the binary.
  * @param InPathToGitBinary		The path to the Git binary
+ * @param OutGitVersion         If provided, populate with the git version parsed from "version" command
  * @returns true if the command succeeded and returned no errors
  */
-bool CheckGitAvailability(const FString& InPathToGitBinary);
+bool CheckGitAvailability(const FString& InPathToGitBinary, FGitVersion* OutVersion = nullptr);
+
+/**
+ * Parse the output from the "version" command into GitMajorVersion and GitMinorVersion.
+ * @param InVersionString       The version string returned by `git --version`
+ * @param OutVersion            The FGitVersion to populate
+ */
+ void ParseGitVersion(const FString& InVersionString, FGitVersion* OutVersion);
+
+/** 
+ * Check git for various optional capabilities by various means.
+ * @param InPathToGitBinary	The path to the Git binary
+ * @param OutGitVersion		If provided, populate with the git version parsed from "version" command
+ */
+void FindGitCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVersion);
 
 /**
  * Find the root of the Git repository, looking from the provided path and upward in its parent directories

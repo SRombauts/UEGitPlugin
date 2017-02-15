@@ -16,6 +16,26 @@ class FGitSourceControlCommand;
 
 DECLARE_DELEGATE_RetVal(FGitSourceControlWorkerRef, FGetGitSourceControlWorker)
 
+struct FGitVersion
+{
+	int Major;
+	int Minor;
+
+	uint32 bHasCatFileWithFilters : 1;
+
+	FGitVersion() 
+		: Major(0)
+		, Minor(0)
+		, bHasCatFileWithFilters(false)
+	{
+	}
+
+	inline bool IsGreaterOrEqualThan(int InMajor, int InMinor) const
+	{
+		return (Major > InMajor) || (Major == InMajor && (Minor >= InMinor));
+	}
+};
+
 class FGitSourceControlProvider : public ISourceControlProvider
 {
 public:
@@ -57,6 +77,12 @@ public:
 	inline bool IsGitAvailable() const
 	{
 		return bGitAvailable;
+	}
+
+	/** Git version for feature checking */
+	inline const FGitVersion& GetGitVersion()
+	{
+		return GitVersion;
 	}
 
 	/** Get the path to the root of the Git repository: can be the GameDir itself, or any parent directory */
@@ -131,4 +157,7 @@ private:
 
 	/** For notifying when the source control states in the cache have changed */
 	FSourceControlStateChanged OnSourceControlStateChanged;
+
+	/** Git version for feature checking */
+	FGitVersion GitVersion;
 };
