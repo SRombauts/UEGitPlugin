@@ -11,43 +11,40 @@ This is a developement fork to be able to develop a "v2" of the plugin alongside
 
 Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.com/Git_source_control_%28Tutorial%29).
 
-### Status
-
 This Git Source Control Plugin is now part of the default Unreal Engine 4.7
 
-Beta version 1.0:
+Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
+
+### Supported features
 - initialize a new Git local repository ('git init') to manage your UE4 Game Project.
 - create an appropriate .gitignore file as part as initialization
 - can also make the initial commit
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
 - visual diff of a blueprint against depot or between previous versions of a file
-- revert modifications of a file
+- revert modifications of a file (works best with UE4.15 "Content Hot-Reload" experimental option)
 - add, delete, rename a file
-- checkin/commit a file (cannot handle atomically more than 20 files)
+- checkin/commit a file (cannot handle atomically more than 50 files)
 - migrate an asset between two projects if both are using Git
 - solve a merge conflict on a blueprint
 - show current branch name in status text
-- Sync to Pull the current branch if there is no local modified files
-- git LFS (Github, Gitlab, Bitbucket...) is working : visual diffs of Blueprints requires using Git for Windows 2.10 or above
-- Windows only
+- Sync to Pull (rebase) the current branch if there is no local modified files
+- Git LFS (Github, Gitlab, Bitbucket), git-annex, git-fat and git-media are working with Git 2.10+
+- Windows, Mac and Linux
 
-#### What *cannot* be done presently (TODO list for v1.0, ordered by priority):
-- Branch is not in the current Editor workflow
-- Merge is not in the current Editor workflow
+### What *cannot* be done presently (TODO list):
+- Branch/Merge are not in the current Editor workflow
 - Fetch/Push are not in the current Editor workflow
 - Amend a commit is not in the current Editor workflow
+- Revert All (using either "Stash" or "reset --hard")
 - configure user name & email ('git config user.name' & git config user.email')
 
-#### Known issues:
+### Known issues:
 - the Editor does not show deleted files (only when deleted externaly?)
 - the Editor does not show missing files
 - missing localisation for git specific messages
 - displaying states of 'Engine' assets (also needs management of 'out of tree' files)
 - issue #22: A Move/Rename leaves a redirector file behind
-- issue #11: Add the "Resolve" operation introduced in Editor 4.3
-- improve the 'Init' window text, hide it if connection is already done, auto connect
-- reverting an asset does not seem to update content in Editor! Issue in Editor?
 - renaming a Blueprint in Editor leaves a tracker file, AND modify too much the asset to enable git to track its history through renaming
 - file history show Changelist as signed integer instead of hexadecimal SHA1
 - standard Editor commit dialog ask if user wants to "Keep Files Checked Out" => no use for Git or Mercurial CanCheckOut()==false
