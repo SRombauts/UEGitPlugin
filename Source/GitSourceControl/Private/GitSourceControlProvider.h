@@ -22,11 +22,15 @@ struct FGitVersion
 	int Minor;
 
 	uint32 bHasCatFileWithFilters : 1;
+	uint32 bHasGitLfs : 1;
+	uint32 bHasGitLfsLocking : 1;
 
 	FGitVersion() 
 		: Major(0)
 		, Minor(0)
 		, bHasCatFileWithFilters(false)
+		, bHasGitLfs(false)
+		, bHasGitLfsLocking(false)
 	{
 	}
 

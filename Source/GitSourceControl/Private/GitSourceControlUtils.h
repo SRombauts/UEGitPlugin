@@ -63,6 +63,13 @@ bool CheckGitAvailability(const FString& InPathToGitBinary, FGitVersion* OutVers
 void FindGitCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVersion);
 
 /**
+ * Run a Git "lfs" command to check the availability of the "Large File System" extension.
+ * @param InPathToGitBinary		The path to the Git binary
+ * @param OutGitVersion			If provided, populate with the git version parsed from "version" command
+ */
+ void FindGitLfsCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVersion);
+
+/**
  * Find the root of the Git repository, looking from the provided path and upward in its parent directories
  * @param InPath				The path to the Game Directory (or any path or file in any git repository)
  * @param OutRepositoryRoot		The path to the root directory of the Git repository if found, else the path to the GameDir
