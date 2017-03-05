@@ -136,12 +136,13 @@ bool RunCommit(const FString& InPathToGitBinary, const FString& InRepositoryRoot
  * Run a Git "status" command and parse it.
  *
  * @param	InPathToGitBinary	The path to the Git binary
- * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+ * @param	InUsingLfsLocking	Tells if using the Git LFS file Locking workflow
  * @param	InFiles				The files to be operated on
  * @param	OutErrorMessages	Any errors (from StdErr) as an array per-line
  * @returns true if the command succeeded and returned no errors
  */
-bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates);
+bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const bool InUsingLfsLocking, const TArray<FString>& InFiles, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates);
 
 /**
  * Run a Git "cat-file" command to dump the binary content of a revision into a file.

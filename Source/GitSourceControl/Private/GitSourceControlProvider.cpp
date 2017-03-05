@@ -107,7 +107,7 @@ void FGitSourceControlProvider::Close()
 	UserEmail.Empty();
 }
 
-TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvider::GetStateInternal(const FString& Filename)
+TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvider::GetStateInternal(const FString& Filename, const bool bUsingGitLfsLocking)
 {
 	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe>* State = StateCache.Find(Filename);
 	if(State != NULL)
@@ -118,7 +118,7 @@ TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvide
 	else
 	{
 		// cache an unknown state for this item
-		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> NewState = MakeShareable( new FGitSourceControlState(Filename, false) );  // TODO bIsUsingGitLfsLocking
+		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> NewState = MakeShareable( new FGitSourceControlState(Filename, bUsingGitLfsLocking) );
 		StateCache.Add(Filename, NewState);
 		return NewState;
 	}
@@ -126,6 +126,10 @@ TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvide
 
 FText FGitSourceControlProvider::GetStatusText() const
 {
+	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
+//	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+//	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
+
 	FFormatNamedArguments Args;
 	Args.Add( TEXT("RepositoryName"), FText::FromString(PathToRepositoryRoot) );
 	Args.Add( TEXT("RemoteUrl"), FText::FromString(RemoteUrl) );
@@ -167,9 +171,13 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 		Execute(ISourceControlOperation::Create<FUpdateStatus>(), AbsoluteFiles);
 	}
 
+	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
+	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
+
 	for(const auto& AbsoluteFile : AbsoluteFiles)
 	{
-		OutState.Add(GetStateInternal(*AbsoluteFile));
+		OutState.Add(GetStateInternal(*AbsoluteFile, bUsingGitLfsLocking));
 	}
 
 	return ECommandResult::Succeeded;

@@ -514,6 +514,31 @@ bool RunCommit(const FString& InPathToGitBinary, const FString& InRepositoryRoot
 }
 
 /**
+ * Parse informations on a file locked with Git LFS
+ *
+ * Example output of "git lfs locks"
+Content\ThirdPersonBP\Blueprints\ThirdPersonCharacter.uasset    SRombauts       ID:891
+Content\ThirdPersonBP\Blueprints\ThirdPersonGameMode.uasset     SRombauts       ID:896
+ */
+class FGitLfsLocksParser
+{
+public:
+	FGitLfsLocksParser(const FString& InRepositoryRoot, const FString& InStatus)
+	{
+		TArray<FString> Informations;
+		InStatus.ParseIntoArray(Informations, TEXT("\t"), true);
+		if(3 <= Informations.Num())
+		{
+			LocalFilename = FPaths::ConvertRelativePathToFull(InRepositoryRoot, Informations[0].TrimTrailing());
+			LockUser = MoveTemp(Informations[1]);
+		}
+	}
+
+	FString LocalFilename;	///< Filename on disk
+	FString LockUser;		///< Name of user who has file locked
+};
+
+/**
  * @brief Extract the relative filename from a Git status result.
  *
  * Examples of status results:
@@ -706,20 +731,25 @@ R  Content/Textures/T_Perlin_Noise_M.uasset -> Content/Textures/T_Perlin_Noise_M
 ?? Content/Materials/M_Basic_Wall.uasset
 !! BasicCode.sln
 */
-static void ParseFileStatusResult(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
+static void ParseFileStatusResult(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const bool InUsingLfsLocking, const TArray<FString>& InFiles, const TMap<FString, FString>& InLockedFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
 {
+	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const FString LfsUserName = GitSourceControl.AccessSettings().GetLfsUserName();
 	const FDateTime Now = FDateTime::Now();
 
 	// Iterate on all files explicitly listed in the command
 	for(const auto& File : InFiles)
 	{
-		FGitSourceControlState FileState(File, false); // TODO bIsUsingGitLfsLocking
+		FGitSourceControlState FileState(File, InUsingLfsLocking);
 		// Search the file in the list of status
 		int32 IdxResult = InResults.IndexOfByPredicate(FGitStatusFileMatcher(File));
 		if(IdxResult != INDEX_NONE)
 		{
 			// File found in status results; only the case for "changed" files
 			FGitStatusParser StatusParser(InResults[IdxResult]);
+			// TODO LFS Debug log
+			UE_LOG(LogSourceControl, Log, TEXT("Status(%s) = '%s' => %d"), *File, *InResults[IdxResult], static_cast<int>(StatusParser.State));
+
 			FileState.WorkingCopyState = StatusParser.State;
 			if(FileState.IsConflicted())
 			{
@@ -734,11 +764,38 @@ static void ParseFileStatusResult(const FString& InPathToGitBinary, const FStrin
 			{
 				// usually means the file is unchanged,
 				FileState.WorkingCopyState = EWorkingCopyState::Unchanged;
+				// TODO LFS Debug log
+				UE_LOG(LogSourceControl, Log, TEXT("Status(%s) not found but exists => unchanged"), *File);
 			}
 			else
 			{
 				// but also the case for newly created content: there is no file on disk until the content is saved for the first time
 				FileState.WorkingCopyState = EWorkingCopyState::NotControlled;
+				// TODO LFS Debug log
+				UE_LOG(LogSourceControl, Log, TEXT("Status(%s) not found and does not exists => new/not controled"), *File);
+			}
+		}
+		if(InLockedFiles.Contains(File))
+		{
+			FileState.LockUser = InLockedFiles[File];
+			if(LfsUserName == FileState.LockUser)
+			{
+				FileState.LockState = ELockState::Locked;
+			}
+			else
+			{
+				FileState.LockState = ELockState::LockedOther;
+			}
+			// TODO LFS Debug log
+			UE_LOG(LogSourceControl, Log, TEXT("Status(%s) Locked by '%s'"), *File, *FileState.LockUser);
+		}
+		else
+		{
+			FileState.LockState = ELockState::NotLocked;
+			// TODO LFS Debug log
+			if (InUsingLfsLocking)
+			{
+				UE_LOG(LogSourceControl, Log, TEXT("Status(%s) Not Locked"), *File);
 			}
 		}
 		FileState.TimeStamp = Now;
@@ -753,7 +810,7 @@ static void ParseFileStatusResult(const FString& InPathToGitBinary, const FStrin
  *
  * @see #ParseFileStatusResult() above for an example of a 'git status' results
 */
-static void ParseDirectoryStatusResult(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
+static void ParseDirectoryStatusResult(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const bool InUsingLfsLocking, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
 {
 	// Iterate on each line of result of the status command
 	for(const FString& Result : InResults)
@@ -761,7 +818,7 @@ static void ParseDirectoryStatusResult(const FString& InPathToGitBinary, const F
 		const FString RelativeFilename = FilenameFromGitStatus(Result);
 		const FString File = FPaths::ConvertRelativePathToFull(InRepositoryRoot, RelativeFilename);
 
-		FGitSourceControlState FileState(File, false); // TODO bIsUsingGitLfsLocking
+		FGitSourceControlState FileState(File, InUsingLfsLocking);
 		FGitStatusParser StatusParser(Result);
 		if((EWorkingCopyState::Deleted == StatusParser.State) || (EWorkingCopyState::Missing == StatusParser.State) || (EWorkingCopyState::NotControlled == StatusParser.State))
 		{
@@ -780,38 +837,60 @@ static void ParseDirectoryStatusResult(const FString& InPathToGitBinary, const F
  *
  * @param[in]	InPathToGitBinary	The path to the Git binary
  * @param[in]	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+ * @param[in]	InUsingLfsLocking	Tells if using the Git LFS file Locking workflow
  * @param[in]	InFiles				List of files in a directory, or the path to the directory itself (never empty).
  * @param[out]	InResults			Results from the "status" command
  * @param[out]	OutStates			States of files for witch the status has been gathered (distinct than InFiles in case of a "directory status")
  */
-static void ParseStatusResults(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
+static void ParseStatusResults(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const bool InUsingLfsLocking, const TArray<FString>& InFiles, const TMap<FString, FString>& InLockedFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
 {
 	if(1 == InFiles.Num() && FPaths::DirectoryExists(InFiles[0]))
 	{
 		// 1) Special case for "status" of a directory: requires to get the list of files by ourselves.
 		//   (this is triggered by the "Submit to Source Control" menu)
+		// TODO LFS Debug Log
+		UE_LOG(LogSourceControl, Log, TEXT("ParseStatusResults: 1) Special case for status of a directory (%s)"), *InFiles[0]);
 		TArray<FString> Files;
 		const FString& Directory = InFiles[0];
 		const bool bResult = ListFilesInDirectoryRecurse(InPathToGitBinary, InRepositoryRoot, Directory, Files);
 		if(bResult)
 		{
-			ParseFileStatusResult(InPathToGitBinary, InRepositoryRoot, Files, InResults, OutStates);
+			ParseFileStatusResult(InPathToGitBinary, InRepositoryRoot, InUsingLfsLocking, Files, InLockedFiles, InResults, OutStates);
 		}
 		// The above cannot detect deleted assets since there is no file left to enumerate (either by the Content Browser or by git ls-files)
 		// => so we also parse the status results to explicitly look for Deleted/Missing assets
-		ParseDirectoryStatusResult(InPathToGitBinary, InRepositoryRoot, InResults, OutStates);
+		ParseDirectoryStatusResult(InPathToGitBinary, InRepositoryRoot, InUsingLfsLocking, InResults, OutStates);
 	}
 	else
 	{
 		// 2) General case for one or more files in the same directory.
-		ParseFileStatusResult(InPathToGitBinary, InRepositoryRoot, InFiles, InResults, OutStates);
+		// TODO LFS Debug Log
+		UE_LOG(LogSourceControl, Log, TEXT("ParseStatusResults: 2) General case for one or more files (%s, ...)"), *InFiles[0]);
+		ParseFileStatusResult(InPathToGitBinary, InRepositoryRoot, InUsingLfsLocking, InFiles, InLockedFiles, InResults, OutStates);
 	}
 }
 
 // Run a batch of Git "status" command to update status of given files and/or directories.
-bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates)
+bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const bool InUsingLfsLocking, const TArray<FString>& InFiles, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates)
 {
 	bool bResults = true;
+	TMap<FString, FString> LockedFiles;
+
+	// 0) Issue a "git lfs locks" command at the root of the repository
+	if(InUsingLfsLocking)
+	{
+		TArray<FString> Results;
+		TArray<FString> ErrorMessages;
+		bool bResult = RunCommand(TEXT("lfs locks"), InPathToGitBinary, InRepositoryRoot, TArray<FString>(), TArray<FString>(), Results, ErrorMessages);
+		for(const FString& Result : Results)
+		{
+			FGitLfsLocksParser LockFile(InRepositoryRoot, Result);
+			// TODO LFS Debug log
+			UE_LOG(LogSourceControl, Log, TEXT("LockedFile(%s, %s)"), *LockFile.LocalFilename, *LockFile.LockUser);
+			LockedFiles.Add(MoveTemp(LockFile.LocalFilename), MoveTemp(LockFile.LockUser));
+		}
+	}
+
 	TArray<FString> Results;
 	TArray<FString> Parameters;
 	Parameters.Add(TEXT("--porcelain"));
@@ -857,7 +936,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		OutErrorMessages.Append(ErrorMessages);
 		if(bResult)
 		{
-			ParseStatusResults(InPathToGitBinary, InRepositoryRoot, Files.Value, Results, OutStates);
+			ParseStatusResults(InPathToGitBinary, InRepositoryRoot, InUsingLfsLocking, Files.Value, LockedFiles, Results, OutStates);
 		}
 	}
 
@@ -1269,13 +1348,16 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
 	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
-//	const FDateTime Now = FDateTime::Now();
+	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
+
+	// TODO without LFS : Workaround a bug with the Source Control Module not updating file state after a simple "Save" with no "Checkout" (when not using File Lock)
+	const FDateTime Now = bUsingGitLfsLocking ? FDateTime::Now() : FDateTime();
 
 	for(const auto& InState : InStates)
 	{
-		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename);
+		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename, bUsingGitLfsLocking);
 		*State = InState;
-		State->TimeStamp = FDateTime(); // @todo Workaround a bug with the Source Control Module not updating file state after a "Save"
+		State->TimeStamp = Now;
 	}
 
 	return (InStates.Num() > 0);

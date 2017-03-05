@@ -25,7 +25,22 @@ public:
 	TArray<FGitSourceControlState> States;
 };
 
-/** Commit (check-in) a set of file to the local depot. */
+/** Lock (check-out) a set of files using Git LFS 2. */
+class FGitCheckOutWorker : public IGitSourceControlWorker
+{
+public:
+	virtual ~FGitCheckOutWorker() {}
+	// IGitSourceControlWorker interface
+	virtual FName GetName() const override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
+	virtual bool UpdateStates() const override;
+
+public:
+	/** Temporary states for results */
+	TArray<FGitSourceControlState> States;
+};
+
+/** Commit (check-in) a set of files to the local depot. */
 class FGitCheckInWorker : public IGitSourceControlWorker
 {
 public:
