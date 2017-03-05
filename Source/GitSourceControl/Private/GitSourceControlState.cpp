@@ -62,6 +62,15 @@ TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlS
 // @todo add Slate icons for git specific states (NotAtHead vs Conflicted...)
 FName FGitSourceControlState::GetIconName() const
 {
+	if(LockState == ELockState::Locked)
+	{
+		return FName("Subversion.CheckedOut");
+	}
+	else if(LockState == ELockState::LockedOther)
+	{
+		return FName("Subversion.CheckedOutByOtherUser");
+	}
+
 	switch(WorkingCopyState)
 	{
 	case EWorkingCopyState::Modified:
@@ -90,6 +99,15 @@ FName FGitSourceControlState::GetIconName() const
 
 FName FGitSourceControlState::GetSmallIconName() const
 {
+	if(LockState == ELockState::Locked)
+	{
+		return FName("Subversion.CheckedOut_Small");
+	}
+	else if(LockState == ELockState::LockedOther)
+	{
+		return FName("Subversion.CheckedOutByOtherUser_Small");
+	}
+
 	switch(WorkingCopyState)
 	{
 	case EWorkingCopyState::Modified:
@@ -118,6 +136,15 @@ FName FGitSourceControlState::GetSmallIconName() const
 
 FText FGitSourceControlState::GetDisplayName() const
 {
+	if(LockState == ELockState::Locked)
+	{
+		return LOCTEXT("Locked", "Locked For Editing");
+	}
+	else if(LockState == ELockState::LockedOther)
+	{
+		return FText::Format( LOCTEXT("LockedOther", "Locked by "), FText::FromString(LockUser) );
+	}
+
 	switch(WorkingCopyState)
 	{
 	case EWorkingCopyState::Unknown:
@@ -149,6 +176,15 @@ FText FGitSourceControlState::GetDisplayName() const
 
 FText FGitSourceControlState::GetDisplayTooltip() const
 {
+	if(LockState == ELockState::Locked)
+	{
+		return LOCTEXT("Locked_Tooltip", "Locked for editing by current user");
+	}
+	else if(LockState == ELockState::LockedOther)
+	{
+		return FText::Format( LOCTEXT("LockedOther_Tooltip", "Locked for editing by: {0}"), FText::FromString(LockUser) );
+	}
+
 	switch(WorkingCopyState)
 	{
 	case EWorkingCopyState::Unknown:
@@ -195,25 +231,50 @@ const FDateTime& FGitSourceControlState::GetTimeStamp() const
 // Deleted and Missing assets cannot appear in the Content Browser
 bool FGitSourceControlState::CanCheckIn() const
 {
-	return WorkingCopyState == EWorkingCopyState::Added
-		|| WorkingCopyState == EWorkingCopyState::Deleted
-		|| WorkingCopyState == EWorkingCopyState::Modified
-		|| WorkingCopyState == EWorkingCopyState::Renamed;
+	if(bUsingGitLfsLocking)
+	{
+		return ( ( (LockState == ELockState::Locked) && !IsConflicted() ) || (WorkingCopyState == EWorkingCopyState::Added) );
+	}
+	else
+	{
+		return WorkingCopyState == EWorkingCopyState::Added
+			|| WorkingCopyState == EWorkingCopyState::Deleted
+			|| WorkingCopyState == EWorkingCopyState::Modified
+			|| WorkingCopyState == EWorkingCopyState::Renamed;
+	}
 }
 
 bool FGitSourceControlState::CanCheckout() const
 {
-	return false; // With Git all tracked files in the working copy are always already checked-out (as opposed to Perforce)
+	if(bUsingGitLfsLocking)
+	{
+		return (WorkingCopyState == EWorkingCopyState::Unchanged || WorkingCopyState == EWorkingCopyState::Modified) && LockState == ELockState::NotLocked;
+	}
+	else
+	{
+		return false; // With Git all tracked files in the working copy are always already checked-out (as opposed to Perforce)
+	}
 }
 
 bool FGitSourceControlState::IsCheckedOut() const
 {
-	return IsSourceControlled(); // With Git all tracked files in the working copy are always checked-out (as opposed to Perforce)
+	if (bUsingGitLfsLocking)
+	{
+		return LockState == ELockState::Locked;
+	}
+	else
+	{
+		return IsSourceControlled(); // With Git all tracked files in the working copy are always checked-out (as opposed to Perforce)
+	}
 }
 
 bool FGitSourceControlState::IsCheckedOutOther(FString* Who) const
 {
-	return false; // Git does not lock checked-out files as Perforce does
+	if (Who != NULL)
+	{
+		*Who = LockUser;
+	}
+	return LockState == ELockState::LockedOther;
 }
 
 bool FGitSourceControlState::IsCurrent() const

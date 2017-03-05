@@ -28,12 +28,25 @@ namespace EWorkingCopyState
 	};
 }
 
+namespace ELockState
+{
+	enum Type
+	{
+		Unknown,
+		NotLocked,
+		Locked,
+		LockedOther,
+	};
+}
+
 class FGitSourceControlState : public ISourceControlState, public TSharedFromThis<FGitSourceControlState, ESPMode::ThreadSafe>
 {
 public:
-	FGitSourceControlState( const FString& InLocalFilename )
+	FGitSourceControlState( const FString& InLocalFilename, const bool InUsingLfsLocking)
 		: LocalFilename(InLocalFilename)
 		, WorkingCopyState(EWorkingCopyState::Unknown)
+		, LockState(ELockState::Unknown)
+		, bUsingGitLfsLocking(InUsingLfsLocking)
 		, TimeStamp(0)
 	{
 	}
@@ -78,6 +91,15 @@ public:
 
 	/** State of the working copy */
 	EWorkingCopyState::Type WorkingCopyState;
+
+	/** Lock state */
+	ELockState::Type LockState;
+
+	/** Name of user who has locked the file */
+	FString LockUser;
+
+	/** Tells if using the Git LFS file Locking workflow */
+	bool bUsingGitLfsLocking;
 
 	/** The timestamp of the last update */
 	FDateTime TimeStamp;

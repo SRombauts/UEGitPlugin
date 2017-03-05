@@ -702,7 +702,7 @@ static void ParseFileStatusResult(const FString& InPathToGitBinary, const FStrin
 	// Iterate on all files explicitly listed in the command
 	for(const auto& File : InFiles)
 	{
-		FGitSourceControlState FileState(File);
+		FGitSourceControlState FileState(File, false); // TODO bIsUsingGitLfsLocking
 		// Search the file in the list of status
 		int32 IdxResult = InResults.IndexOfByPredicate(FGitStatusFileMatcher(File));
 		if(IdxResult != INDEX_NONE)
