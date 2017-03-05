@@ -43,6 +43,7 @@ private:
 
 	EVisibility CanInitializeGitRepository() const;
 	bool CanInitializeGitLfs() const;
+	bool CanUseGitLfsLocking() const;
 
 	/** Delegate to initialize a new Git repository */
 	FReply OnClickedInitializeGitRepository();
@@ -52,6 +53,9 @@ private:
 
 	void OnCheckedCreateGitAttributes(ECheckBoxState NewCheckedState);
 	bool bAutoCreateGitAttributes;
+
+	ECheckBoxState IsUsingGitLfsLocking();
+	void OnCheckedUseGitLfsLocking(ECheckBoxState NewCheckedState);
 
 	void OnCheckedInitialCommit(ECheckBoxState NewCheckedState);
 	bool bAutoInitialCommit;

@@ -240,6 +240,33 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 					.Font(Font)
 				]
 			]
+			// Option to use the Git LFS file Locking workflow (false by default)
+			// Enabled even after init to switch it off in case of no network
+			// TODO turning it off afterwards does not work because all files are readonly !
+			+SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(2.0f)
+			.VAlign(VAlign_Center)
+			[
+				SNew(SHorizontalBox)
+				.ToolTipText(LOCTEXT("UseGitLfsLocking_Tooltip", "Uses Git LFS 2 file Locking worflow (CheckOut and Commit/Push)."))
+				+SHorizontalBox::Slot()
+				.FillWidth(0.1f)
+				[
+					SNew(SCheckBox)
+					.IsChecked(SGitSourceControlSettings::IsUsingGitLfsLocking())
+					.OnCheckStateChanged(this, &SGitSourceControlSettings::OnCheckedUseGitLfsLocking)
+					.IsEnabled(this, &SGitSourceControlSettings::CanUseGitLfsLocking)
+				]
+				+SHorizontalBox::Slot()
+				.FillWidth(2.9f)
+				.VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("UseGitLfsLocking", "Uses Git LFS 2 file Locking worflow"))
+					.Font(Font)
+				]
+			]
 			// Option to Make the initial Git commit with custom message
 			+SVerticalBox::Slot()
 			.AutoHeight()
@@ -357,6 +384,15 @@ bool SGitSourceControlSettings::CanInitializeGitLfs() const
 	return (bGitLfsAvailable);
 }
 
+bool SGitSourceControlSettings::CanUseGitLfsLocking() const
+{
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const bool bGitLfsLockingAvailable = GitSourceControl.GetProvider().GetGitVersion().bHasGitLfsLocking;
+	// TODO SRombauts : check if .gitattributes file is present and if Content/ is already tracked!
+	const bool bGitAttributesCreated = true;
+	return (bGitLfsLockingAvailable && (bAutoCreateGitAttributes || bGitAttributesCreated));
+}
+
 FReply SGitSourceControlSettings::OnClickedInitializeGitRepository()
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
@@ -406,7 +442,17 @@ FReply SGitSourceControlSettings::OnClickedInitializeGitRepository()
 
 			// 2.c. Create a ".gitattributes" file to enable Git LFS (Large File System) for the whole "Content/" subdir
 			const FString GitAttributesFilename = FPaths::Combine(FPaths::GameDir(), TEXT(".gitattributes"));
-			const FString GitAttributesContent = TEXT("Content/** filter=lfs diff=lfs merge=lfs -text\n"); // TODO lockable only if file locking is selected
+			FString GitAttributesContent;
+			const bool bIsUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
+			if (bIsUsingGitLfsLocking)
+			{
+				// Git LFS 2.x File Locking mechanism
+				GitAttributesContent = TEXT("Content/** filter=lfs diff=lfs merge=lfs -text lockable\n");
+			}
+			else
+			{
+				GitAttributesContent = TEXT("Content/** filter=lfs diff=lfs merge=lfs -text\n");
+			}
 			if (FFileHelper::SaveStringToFile(GitAttributesContent, *GitAttributesFilename, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
 			{
 				ProjectFiles.Add(GitAttributesFilename);
@@ -528,6 +574,23 @@ void SGitSourceControlSettings::OnCheckedCreateGitIgnore(ECheckBoxState NewCheck
 void SGitSourceControlSettings::OnCheckedCreateGitAttributes(ECheckBoxState NewCheckedState)
 {
 	bAutoCreateGitAttributes = (NewCheckedState == ECheckBoxState::Checked);
+}
+
+ECheckBoxState SGitSourceControlSettings::IsUsingGitLfsLocking()
+{
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const bool bIsUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
+	return (bIsUsingGitLfsLocking ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
+}
+
+void SGitSourceControlSettings::OnCheckedUseGitLfsLocking(ECheckBoxState NewCheckedState)
+{
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const bool bChanged = GitSourceControl.AccessSettings().SetUsingGitLfsLocking(NewCheckedState == ECheckBoxState::Checked);
+	if(bChanged)
+	{
+		GitSourceControl.SaveSettings();
+	}
 }
 
 void SGitSourceControlSettings::OnCheckedInitialCommit(ECheckBoxState NewCheckedState)

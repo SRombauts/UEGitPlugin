@@ -45,6 +45,9 @@ public:
 	/** Path to the root of the Git repository: can be the GameDir itself, or any parent directory (found by the "Connect" operation) */
 	FString PathToRepositoryRoot;
 
+	/** Tell if using the Git LFS file Locking workflow */
+	bool bUsingGitLfsLocking;
+
 	/** Operation we want to perform - contains outward-facing parameters & results */
 	TSharedRef<class ISourceControlOperation, ESPMode::ThreadSafe> Operation;
 
@@ -59,6 +62,9 @@ public:
 
 	/**If true, the source control command succeeded*/
 	bool bCommandSuccessful;
+
+	/**If true, the source control connection was dropped while this command was being executed*/
+	bool bConnectionDropped;
 
 	/** If true, this command will be automatically cleaned up in Tick() */
 	bool bAutoDelete;

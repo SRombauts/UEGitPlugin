@@ -16,6 +16,12 @@ public:
 	/** Set the Git Binary Path */
 	bool SetBinaryPath(const FString& InString);
 
+	/** Tell if using the Git LFS file Locking workflow */
+	bool IsUsingGitLfsLocking() const;
+
+	/** Configure the usage of Git LFS file Locking workflow */
+	bool SetUsingGitLfsLocking(const bool InUsingGitLfsLocking);
+
 	/** Load settings from ini file */
 	void LoadSettings();
 
@@ -28,4 +34,7 @@ private:
 
 	/** Git binary path */
 	FString BinaryPath;
+
+	/** Tells if using the Git LFS file Locking workflow */
+	bool bUsingGitLfsLocking;
 };
