@@ -96,7 +96,7 @@ public:
 	}
 
 	/** Git version for feature checking */
-	inline const FGitVersion& GetGitVersion()
+	inline const FGitVersion& GetGitVersion() const
 	{
 		return GitVersion;
 	}

@@ -41,8 +41,10 @@ private:
 	FText GetUserName() const;
 	FText GetUserEmail() const;
 
-	EVisibility CanInitializeGitRepository() const;
+	EVisibility MustInitializeGitRepository() const;
+	bool CanInitializeGitRepository() const;
 	bool CanInitializeGitLfs() const;
+	bool CanUseGitLfsLocking() const;
 
 	/** Delegate to initialize a new Git repository */
 	FReply OnClickedInitializeGitRepository();
@@ -53,7 +55,15 @@ private:
 	void OnCheckedCreateGitAttributes(ECheckBoxState NewCheckedState);
 	bool bAutoCreateGitAttributes;
 
+	void OnCheckedUseGitLfsLocking(ECheckBoxState NewCheckedState);
+	ECheckBoxState IsUsingGitLfsLocking() const;
+	bool GetIsUsingGitLfsLocking() const;
+
+	void OnLfsUserNameCommited(const FText& InText, ETextCommit::Type InCommitType);
+	FText GetLfsUserName() const;
+
 	void OnCheckedInitialCommit(ECheckBoxState NewCheckedState);
+	bool GetAutoInitialCommit() const;
 	bool bAutoInitialCommit;
 	void OnInitialCommitMessageCommited(const FText& InText, ETextCommit::Type InCommitType);
 	FText GetInitialCommitMessage() const;

@@ -45,6 +45,9 @@ public:
 	/** Path to the root of the Git repository: can be the GameDir itself, or any parent directory (found by the "Connect" operation) */
 	FString PathToRepositoryRoot;
 
+	/** Tell if using the Git LFS file Locking workflow */
+	bool bUsingGitLfsLocking;
+
 	/** Operation we want to perform - contains outward-facing parameters & results */
 	TSharedRef<class ISourceControlOperation, ESPMode::ThreadSafe> Operation;
 
