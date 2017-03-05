@@ -32,6 +32,7 @@ Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
 - show current branch name in status text
 - Sync to Pull (rebase) the current branch if there is no local modified files
 - Git LFS (Github, Gitlab, Bitbucket), git-annex, git-fat and git-media are working with Git 2.10+
+- Git LFS 2 File Locking is working with Git 2.10+ and Git LFS 2.0.0
 - Windows, Mac and Linux
 
 ### What *cannot* be done presently
