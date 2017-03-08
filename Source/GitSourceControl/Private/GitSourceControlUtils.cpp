@@ -1075,21 +1075,16 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
 	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
-	int NbStatesUpdated = 0;
+//	const FDateTime Now = FDateTime::Now();
 
 	for(const auto& InState : InStates)
 	{
 		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename);
-		if(State->WorkingCopyState != InState.WorkingCopyState)
-		{
-			State->WorkingCopyState = InState.WorkingCopyState;
-			State->PendingMergeBaseFileHash = InState.PendingMergeBaseFileHash;
-		//	State->TimeStamp = InState.TimeStamp; // @todo Bug report: Workaround a bug with the Source Control Module not updating file state after a "Save"
-			NbStatesUpdated++;
-		}
+		*State = InState;
+		State->TimeStamp = FDateTime(); // @todo Workaround a bug with the Source Control Module not updating file state after a "Save"
 	}
 
-	return (NbStatesUpdated > 0);
+	return (InStates.Num() > 0);
 }
 
 /**
