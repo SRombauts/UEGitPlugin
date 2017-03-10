@@ -1104,6 +1104,27 @@ bool RunGetHistory(const FString& InPathToGitBinary, const FString& InRepository
 	return bResults;
 }
 
+TArray<FString> RelativeFilenames(const TArray<FString>& InFileNames, const FString& InRelativeTo)
+{
+	TArray<FString> RelativeFiles;
+	FString RelativeTo = InRelativeTo;
+
+	// Ensure that the path ends w/ '/'
+	if((RelativeTo.Len() > 0) && (RelativeTo.EndsWith(TEXT("/"), ESearchCase::CaseSensitive) == false) && (RelativeTo.EndsWith(TEXT("\\"), ESearchCase::CaseSensitive) == false))
+	{
+		RelativeTo += TEXT("/");
+	}
+	for(FString FileName : InFileNames) // string copy to be able to convert it inplace
+	{
+		if(FPaths::MakePathRelativeTo(FileName, *RelativeTo))
+		{
+			RelativeFiles.Add(FileName);
+		}
+	}
+
+	return RelativeFiles;
+}
+
 bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>( "GitSourceControl" );

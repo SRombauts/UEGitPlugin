@@ -167,6 +167,14 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 bool RunGetHistory(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InFile, bool bMergeConflict, TArray<FString>& OutErrorMessages, TGitSourceControlHistory& OutHistory);
 
 /**
+ * Helper function to convert a filename array to relative paths.
+ * @param	InFileNames		The filename array
+ * @param	InRelativeTo	Path to the WorkspaceRoot
+ * @return an array of filenames, transformed into relative paths
+ */
+TArray<FString> RelativeFilenames(const TArray<FString>& InFileNames, const FString& InRelativeTo);
+
+/**
  * Helper function for various commands to update cached states.
  * @returns true if any states were updated
  */
