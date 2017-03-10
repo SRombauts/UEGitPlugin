@@ -896,6 +896,70 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 }
 
 
+// Run a Git LFS command in the RepositoryRoot (required by Git LFS, vs the standard RunCommand for normal git commands).
+bool RunLfsCommand(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
+{
+	int32 ReturnCode = -1;
+	
+	// First, the git LFS command itself (lfs lock/lfs unlock/lfs locks)
+	FString FullCommand = InCommand;
+
+	// Append to the command all the files
+	for(const auto& File : InFiles)
+	{
+		FullCommand += TEXT(" \"");
+		FullCommand += File;
+		FullCommand += TEXT("\"");
+	}
+
+	const bool bLaunchDetached = false;
+	const bool bLaunchHidden = true;
+	const bool bLaunchReallyHidden = bLaunchHidden;
+
+	void* PipeRead = nullptr;
+	void* PipeWrite = nullptr;
+
+	verify(FPlatformProcess::CreatePipe(PipeRead, PipeWrite));
+
+#if UE_BUILD_DEBUG
+	UE_LOG(LogSourceControl, Log, TEXT("RunLfsCommand: 'git %s'"), *FullCommand);
+#endif
+
+	// Execute Git LFS command relative to the RepositoryRoot
+	FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*InPathToGitBinary, *FullCommand, bLaunchDetached, bLaunchHidden, bLaunchReallyHidden, nullptr, 0, *InRepositoryRoot, PipeWrite);
+	if(ProcessHandle.IsValid())
+	{
+		FPlatformProcess::WaitForProc(ProcessHandle);
+		FPlatformProcess::GetProcReturnCode(ProcessHandle, &ReturnCode);
+		if(ReturnCode == 0)
+		{
+			const FString StdOut = FPlatformProcess::ReadPipe(PipeRead);
+			StdOut.ParseIntoArray(OutResults, TEXT("\n"), true);
+#if UE_BUILD_DEBUG
+			UE_LOG(LogSourceControl, Log, TEXT("RunLfsCommand(%s) success:\n%s"), *InCommand, *StdOut);
+#endif
+		}
+		else
+		{
+			const FString StdOut = FPlatformProcess::ReadPipe(PipeRead);
+			StdOut.ParseIntoArray(OutErrorMessages, TEXT("\n"), true);
+#if UE_BUILD_DEBUG
+			UE_LOG(LogSourceControl, Warning, TEXT("RunLfsCommand(%s) ReturnCode=%d:\n%s"), *InCommand, ReturnCode, *StdOut);
+#endif
+		}
+
+		FPlatformProcess::CloseProc(ProcessHandle);
+	}
+	else
+	{
+		UE_LOG(LogSourceControl, Error, TEXT("RunLfsCommand(%s): Failed to launch 'git'"), *InCommand);
+	}
+
+	FPlatformProcess::ClosePipe(PipeRead, PipeWrite);
+
+	return (ReturnCode == 0);
+}
+
 /**
 * Extract and interpret the file state from the given Git log --name-status.
 * @see https://www.kernel.org/pub/software/scm/git/docs/git-log.html
