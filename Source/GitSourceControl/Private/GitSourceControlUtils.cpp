@@ -585,33 +585,16 @@ static void RunGetConflictStatus(const FString& InPathToGitBinary, const FString
 	}
 }
 
-/** Parse the array of strings results of a 'git status' command for a directory
+/** Run a 'git ls-files' command to get all files tracked by Git recursively in a directory.
  *
  * Called in case of a "directory status" (no file listed in the command) when using the "Submit to Source Control" menu.
- *
- * @see #ParseFileStatusResult() below for an example of a cm status results
 */
-static void ParseDirectoryStatusResult(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
+static bool ListFilesInDirectoryRecurse(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const FString& InDirectory, TArray<FString>& OutFiles)
 {
-	// Iterate on each line of result of the status command
-	for (const FString& Result : InResults)
-	{
-		const FString RelativeFilename = FilenameFromGitStatus(Result);
-		const FString File = FPaths::ConvertRelativePathToFull(InRepositoryRoot, RelativeFilename);
-		if (FPaths::FileExists(File))
-		{
-			FGitSourceControlState FileState(File);
-			FGitStatusParser StatusParser(Result);
-			FileState.WorkingCopyState = StatusParser.State;
-			FileState.TimeStamp.Now();
-			if (FileState.IsConflicted())
-			{
-				// In case of a conflict (unmerged file) get the base revision to merge
-				RunGetConflictStatus(InPathToGitBinary, InRepositoryRoot, File, FileState);
-			}
-			OutStates.Add(MoveTemp(FileState));
-		}
-	}
+	TArray<FString> ErrorMessages;
+	TArray<FString> Directory;
+	Directory.Add(InDirectory);
+	return RunCommandInternal(TEXT("ls-files"), InPathToGitBinary, InRepositoryRoot, TArray<FString>(), Directory, OutFiles, ErrorMessages);
 }
 
 /** Parse the array of strings results of a 'git status' command for a provided list of files all in a common directory
@@ -626,7 +609,9 @@ R  Content/Textures/T_Perlin_Noise_M.uasset -> Content/Textures/T_Perlin_Noise_M
 */
 static void ParseFileStatusResult(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
 {
-	// Iterate on all files explicitely listed in the command
+	const FDateTime Now = FDateTime::Now();
+
+	// Iterate on all files explicitly listed in the command
 	for(const auto& File : InFiles)
 	{
 		FGitSourceControlState FileState(File);
@@ -657,7 +642,7 @@ static void ParseFileStatusResult(const FString& InPathToGitBinary, const FStrin
 				FileState.WorkingCopyState = EWorkingCopyState::NotControlled;
 			}
 		}
-		FileState.TimeStamp.Now();
+		FileState.TimeStamp = Now;
 		OutStates.Add(FileState);
 	}
 }
@@ -678,9 +663,15 @@ static void ParseStatusResults(const FString& InPathToGitBinary, const FString& 
 {
 	if (1 == InFiles.Num() && FPaths::DirectoryExists(InFiles[0]))
 	{
-		// 1) Special case for "status" of a directory: requires a specific parse logic.
+		// 1) Special case for "status" of a directory: requires to get the list of files by ourselves.
 		//   (this is triggered by the "Submit to Source Control" menu)
-		ParseDirectoryStatusResult(InPathToGitBinary, InRepositoryRoot, InResults, OutStates);
+		TArray<FString> Files;
+		const FString& Directory = InFiles[0];
+		const bool bResult = ListFilesInDirectoryRecurse(InPathToGitBinary, InRepositoryRoot, Directory, Files);
+		if (bResult)
+		{
+			ParseFileStatusResult(InPathToGitBinary, InRepositoryRoot, Files, InResults, OutStates);
+		}
 	}
 	else
 	{
