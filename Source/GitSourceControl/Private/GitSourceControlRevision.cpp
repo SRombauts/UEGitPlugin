@@ -104,8 +104,7 @@ const FDateTime& FGitSourceControlRevision::GetDate() const
 
 int32 FGitSourceControlRevision::GetCheckInIdentifier() const
 {
-	// in Git, revisions apply to the whole repository so (in Perforce terms) the revision *is* the changelist
-	return RevisionNumber;
+	return CommitIdNumber;
 }
 
 int32 FGitSourceControlRevision::GetFileSize() const

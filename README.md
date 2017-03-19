@@ -29,13 +29,13 @@ Beta version 1.0:
 - solve a merge conflict on a blueprint
 - show current branch name in status text
 - Sync to Pull the current branch if there is no local modified files
-- git LFS (Github & Gitlab) is only partially working under Windows (using Git For Windows): diffs are broken (issue #35)!
-- Windows, Mac and Linux
+- git LFS (Github, Gitlab, Bitbucket...) is working : visual diffs of Blueprints requires using Git for Windows 2.10 or above
+- Windows only
 
 #### What *cannot* be done presently (TODO list for v1.0, ordered by priority):
-- tags: implement ISourceControlLabel to manage git tags
-- Branch is not in the current Editor workflow (but on Epic Roadmap)
-- Pull/Fetch/Push are not in the current Editor workflow
+- Branch is not in the current Editor workflow
+- Merge is not in the current Editor workflow
+- Fetch/Push are not in the current Editor workflow
 - Amend a commit is not in the current Editor workflow
 - configure user name & email ('git config user.name' & git config user.email')
 
@@ -52,20 +52,6 @@ Beta version 1.0:
 - file history show Changelist as signed integer instead of hexadecimal SHA1
 - standard Editor commit dialog ask if user wants to "Keep Files Checked Out" => no use for Git or Mercurial CanCheckOut()==false
 
-- FGitConnectWorker::Execute()
-  popup to propose to initialize the git repository "git init + .gitignore"
-
-- FGitSyncWorker (GitSourceControlOperations.h)
-  git fetch remote(s) to be able to show files not up-to-date with the serveur
-- FGitSourceControlState::IsCurrent() const
-  check the state of the HEAD versus the state of tracked branch on remote
-
-- FGitSourceControlRevision::GetFileSize() const
-	git log does not give us the file size, but we could run a specific command
-
-- GitSourceControlUtils::CheckGitAvailability
-  also check Git config user.name & user.email
-
 Windows:
 ### Getting started
 
@@ -75,73 +61,24 @@ Quick demo of the Git Plugin on Unreal Engine 4.12 (preview)
 #### Install Git
 
 Under Windows 64bits, you could either:
-- install a standalone Git, usually in "C:\Program Files (x86)\Git\bin\git.exe".
+- install a standalone Git, usually in "C:\Program Files\Git\bin\git.exe".
 - or copy a [portable Git](https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit)
 inside "<UnrealEngine>/Engine/Binaries/ThirdParty/git/Win32".
 
-#### Initialize your Game Project directory with Git
-
-Use your favorite Git program to initialize and manage your whole game project directory.
-For instance:
-
-```
-C:/Users/<username>/Documents/Unreal Projects/<YourGameProject>
-```
 
 #### Install this Git Plugin
 
-There are a few ways to use a Plugin with UE4.
-
 See also the [Plugins official Documentation](https://docs.unrealengine.com/latest/INT/Programming/Plugins/index.html)
-
-##### Within a standard installed Unreal Engine binary release:
-
-You can simply [download a ZIP of source code from the latest release](https://github.com/SRombauts/UE4GitPlugin/releases),
-and unzip it under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:
-
-```
-<UnrealEngineInstallation>/4.1/Engine/Plugins/Developer
-```
-
-Or you can clone the plugin repository, and as the name of the destination directory is unimportant, its just:
-
-```bash
-git clone https://github.com/SRombauts/UE4GitPlugin.git
-```
-
-##### Within an Unreal Engine source release from GitHub:
-
-Donwload and unzip or clone the plugin repository under the "Plugins" directory of the Engine, beside PerforceSourceControl and SubversionSourceControl:
-
-```
-<UnrealEngineClone>/Engine/Plugins/Developer
-```
-
-Take care to use **GitSourceControl** as the name of the destination directory (same name as the "GitSourceControl.uplugin" file):
-
-```bash
-git clone https://github.com/SRombauts/UE4GitPlugin.git GitSourceControl
-```
 
 ##### Within your Game Project only
 
-Alternatively, you could choose to install the plugin into a subfolder or your Game Project "Plugins" directory:
+This alternate "Git development plugin" needs to be installed into a subfolder or your Game Project "Plugins" directory:
 
 ```
 <YourGameProject>/Plugins
 ```
 
-In this case, you will obviously only be able to use the plugin within this project.
-
-#### Enable Git Plugin within the Editor
-
-Launch the UE4 Editor, then open:
-
-```
-Windows->Plugins, enable Editor->Source Control->Git
-```
-
-click Enable and restart the Editor.
+You will obviously only be able to use the plugin within this project.
 
 #### Activate Git Source Control for your Game Project
 
@@ -155,7 +92,7 @@ See also the [Source Control official Documentation](https://docs.unrealengine.c
 
 ### License
 
-Copyright (c) 2014-2015 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+Copyright (c) 2014-2017 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 
 Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 or copy at http://opensource.org/licenses/MIT)

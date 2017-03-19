@@ -10,6 +10,9 @@
 #include "Input/Reply.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SCompoundWidget.h"
+#include "SlateFwd.h"
+#include "ISourceControlOperation.h"
+#include "ISourceControlProvider.h"
 
 enum class ECheckBoxState : uint8;
 
@@ -24,6 +27,8 @@ public:
 public:
 
 	void Construct(const FArguments& InArgs);
+
+	~SGitSourceControlSettings();
 
 private:
 
@@ -50,4 +55,19 @@ private:
 	void OnInitialCommitMessageCommited(const FText& InText, ETextCommit::Type InCommitType);
 	FText GetInitialCommitMessage() const;
 	FText InitialCommitMessage;
+
+	/** Launch initial asynchronous add and commit operations */
+	void LaunchMarkForAddOperation(const TArray<FString>& InFiles);
+	void LaunchCheckInOperation();
+
+	/** Delegate called when a source control operation has completed */
+	void OnSourceControlOperationComplete(const FSourceControlOperationRef& InOperation, ECommandResult::Type InResult);
+
+	/** Asynchronous operation progress notifications */
+	TWeakPtr<SNotificationItem> OperationInProgressNotification;
+	
+	void DisplayInProgressNotification(const FSourceControlOperationRef& InOperation);
+	void RemoveInProgressNotification();
+	void DisplaySuccessNotification(const FSourceControlOperationRef& InOperation);
+	void DisplayFailureNotification(const FSourceControlOperationRef& InOperation);
 };

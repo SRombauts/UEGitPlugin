@@ -45,7 +45,9 @@ public:
 	FString ShortCommitId;
 
 	/** The numeric value of the short SHA1 (8 first hex char out of 40) */
-	// @todo NOCOMMIT : the blueprint menu assume it to be in order !?
+	int32 CommitIdNumber;
+
+	/** The index of the revision in the history (SBlueprintRevisionMenu assumes order for the "Depot" label) */
 	int32 RevisionNumber;
 
 	/** The SHA1 identifier of the file at this revision */

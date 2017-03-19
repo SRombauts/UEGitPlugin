@@ -17,10 +17,13 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "EditorStyleSet.h"
-#include "GitSourceControlModule.h"
-#include "GitSourceControlUtils.h"
 #include "SSeparator.h"
 #include "SMultiLineEditableTextBox.h"
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
+#include "SourceControlOperations.h"
+#include "GitSourceControlModule.h"
+#include "GitSourceControlUtils.h"
 
 #define LOCTEXT_NAMESPACE "SGitSourceControlSettings"
 
@@ -247,6 +250,11 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 	];
 }
 
+SGitSourceControlSettings::~SGitSourceControlSettings()
+{
+	RemoveInProgressNotification();
+}
+
 FText SGitSourceControlSettings::GetBinaryPathText() const
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
@@ -289,47 +297,143 @@ EVisibility SGitSourceControlSettings::CanInitializeGitRepository() const
 FReply SGitSourceControlSettings::OnClickedInitializeGitRepository()
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
-	TArray<FString> InfoMessages;
-	TArray<FString> ErrorMessages;
 	const FString& PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
 	const FString PathToGameDir = FPaths::ConvertRelativePathToFull(FPaths::GameDir());
+	TArray<FString> InfoMessages;
+	TArray<FString> ErrorMessages;
+
+	// 1. Synchronous (very quick) "git init" operation: initialize a Git local repository with a .git/ subdirectory
 	GitSourceControlUtils::RunCommand(TEXT("init"), PathToGitBinary, PathToGameDir, TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+
 	// Check the new repository status to enable connection
 	GitSourceControl.GetProvider().CheckGitAvailability();
 	if(GitSourceControl.GetProvider().IsEnabled())
 	{
+		// List of files to add to Source Control (.uproject, Config/, Content/, Source/ files and .gitignore if any)
 		TArray<FString> ProjectFiles;
-		ProjectFiles.Add(FPaths::GetCleanFilename(FPaths::GetProjectFilePath()));
-		ProjectFiles.Add(FPaths::GetCleanFilename(FPaths::GameConfigDir()));
-		ProjectFiles.Add(FPaths::GetCleanFilename(FPaths::GameContentDir()));
-		if(FPaths::DirectoryExists(FPaths::GameSourceDir()))
+		ProjectFiles.Add(FPaths::GetProjectFilePath());
+		ProjectFiles.Add(FPaths::GameConfigDir());
+		ProjectFiles.Add(FPaths::GameContentDir());
+		if (FPaths::DirectoryExists(FPaths::GameSourceDir()))
 		{
-			ProjectFiles.Add(FPaths::GetCleanFilename(FPaths::GameSourceDir()));
+			ProjectFiles.Add(FPaths::GameSourceDir());
 		}
 		if(bAutoCreateGitIgnore)
 		{
-			// Create a standard ".gitignore" file with common patterns for a typical Blueprint & C++ project
-			const FString Filename = FString::Printf(TEXT("%s.gitignore"), *PathToGameDir);
+			// 2. Create a standard ".gitignore" file with common patterns for a typical Blueprint & C++ project
+			const FString GitIgnoreFilename = FPaths::Combine(FPaths::GameDir(), TEXT(".gitignore"));
 			const FString GitIgnoreContent = TEXT("Binaries\nDerivedDataCache\nIntermediate\nSaved\n*.VC.db\n*.opensdf\n*.opendb\n*.sdf\n*.sln\n*.suo\n*.xcodeproj\n*.xcworkspace");
-			if(FFileHelper::SaveStringToFile(GitIgnoreContent, *Filename, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+			if(FFileHelper::SaveStringToFile(GitIgnoreContent, *GitIgnoreFilename, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
 			{
-				ProjectFiles.Add(TEXT(".gitignore"));
+				ProjectFiles.Add(GitIgnoreFilename);
 			}
 		}
-		// Add .uproject, Config/, Content/ and Source/ files (and .gitignore if any)
-		GitSourceControlUtils::RunCommand(TEXT("add"), PathToGitBinary, PathToGameDir, TArray<FString>(), ProjectFiles, InfoMessages, ErrorMessages);
-		if(bAutoInitialCommit)
-		{
-			// optionnal initial git commit with custom message
-			TArray<FString> Parameters;
-			FString ParamCommitMsg = TEXT("--message=\"");
-			ParamCommitMsg += InitialCommitMessage.ToString();
-			ParamCommitMsg += TEXT("\"");
-			Parameters.Add(ParamCommitMsg);
-			GitSourceControlUtils::RunCommit(PathToGitBinary, PathToGameDir, Parameters, TArray<FString>(), InfoMessages, ErrorMessages);
-		}
+
+		// 3. Add files to Source Control: launch an asynchronous MarkForAdd operation
+		LaunchMarkForAddOperation(ProjectFiles);
+
+		// 4. The CheckIn will follow, at completion of the MarkForAdd operation
 	}
 	return FReply::Handled();
+}
+
+// Launch an asynchronous "MarkForAdd" operation and start an ongoing notification
+void SGitSourceControlSettings::LaunchMarkForAddOperation(const TArray<FString>& InFiles)
+{
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	TSharedRef<FMarkForAdd, ESPMode::ThreadSafe> MarkForAddOperation = ISourceControlOperation::Create<FMarkForAdd>();
+	ECommandResult::Type Result = GitSourceControl.GetProvider().Execute(MarkForAddOperation, InFiles, EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateSP(this, &SGitSourceControlSettings::OnSourceControlOperationComplete));
+	if (Result == ECommandResult::Succeeded)
+	{
+		DisplayInProgressNotification(MarkForAddOperation);
+	}
+	else
+	{
+		DisplayFailureNotification(MarkForAddOperation);
+	}
+}
+
+// Launch an asynchronous "CheckIn" operation and start another ongoing notification
+void SGitSourceControlSettings::LaunchCheckInOperation()
+{
+	TSharedRef<FCheckIn, ESPMode::ThreadSafe> CheckInOperation = ISourceControlOperation::Create<FCheckIn>();
+	CheckInOperation->SetDescription(InitialCommitMessage);
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	ECommandResult::Type Result = GitSourceControl.GetProvider().Execute(CheckInOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateSP(this, &SGitSourceControlSettings::OnSourceControlOperationComplete));
+	if (Result == ECommandResult::Succeeded)
+	{
+		DisplayInProgressNotification(CheckInOperation);
+	}
+	else
+	{
+		DisplayFailureNotification(CheckInOperation);
+	}
+}
+
+/// Delegate called when a source control operation has completed: launch the next one and manage notifications
+void SGitSourceControlSettings::OnSourceControlOperationComplete(const FSourceControlOperationRef& InOperation, ECommandResult::Type InResult)
+{
+	RemoveInProgressNotification();
+
+	// Report result with a notification
+	if (InResult == ECommandResult::Succeeded)
+	{
+		DisplaySuccessNotification(InOperation);
+	}
+	else
+	{
+		DisplayFailureNotification(InOperation);
+	}
+
+	if ((InOperation->GetName() == "MarkForAdd") && (InResult == ECommandResult::Succeeded) && bAutoInitialCommit)
+	{
+		// 4. optional initial Asynchronous commit with custom message: launch a "CheckIn" Operation
+		LaunchCheckInOperation();
+	}
+}
+
+
+// Display an ongoing notification during the whole operation
+void SGitSourceControlSettings::DisplayInProgressNotification(const FSourceControlOperationRef& InOperation)
+{
+	FNotificationInfo Info(InOperation->GetInProgressString());
+	Info.bFireAndForget = false;
+	Info.ExpireDuration = 0.0f;
+	Info.FadeOutDuration = 1.0f;
+	OperationInProgressNotification = FSlateNotificationManager::Get().AddNotification(Info);
+	if (OperationInProgressNotification.IsValid())
+	{
+		OperationInProgressNotification.Pin()->SetCompletionState(SNotificationItem::CS_Pending);
+	}
+}
+
+// Remove the ongoing notification at the end of the operation
+void SGitSourceControlSettings::RemoveInProgressNotification()
+{
+	if (OperationInProgressNotification.IsValid())
+	{
+		OperationInProgressNotification.Pin()->ExpireAndFadeout();
+		OperationInProgressNotification.Reset();
+	}
+}
+
+// Display a temporary success notification at the end of the operation
+void SGitSourceControlSettings::DisplaySuccessNotification(const FSourceControlOperationRef& InOperation)
+{
+	const FText NotificationText = FText::Format(LOCTEXT("InitialCommit_Success", "{0} operation was successfull!"), FText::FromName(InOperation->GetName()));
+	FNotificationInfo Info(NotificationText);
+	Info.bUseSuccessFailIcons = true;
+	Info.Image = FEditorStyle::GetBrush(TEXT("NotificationList.SuccessImage"));
+	FSlateNotificationManager::Get().AddNotification(Info);
+}
+
+// Display a temporary failure notification at the end of the operation
+void SGitSourceControlSettings::DisplayFailureNotification(const FSourceControlOperationRef& InOperation)
+{
+	const FText NotificationText = FText::Format(LOCTEXT("InitialCommit_Failure", "Error: {0} operation failed!"), FText::FromName(InOperation->GetName()));
+	FNotificationInfo Info(NotificationText);
+	Info.ExpireDuration = 8.0f;
+	FSlateNotificationManager::Get().AddNotification(Info);
 }
 
 void SGitSourceControlSettings::OnCheckedCreateGitIgnore(ECheckBoxState NewCheckedState)
