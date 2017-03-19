@@ -5,9 +5,12 @@
 
 #include "GitSourceControlPrivatePCH.h"
 #include "GitSourceControlOperations.h"
-#include "GitSourceControlState.h"
-#include "GitSourceControlCommand.h"
+#include "Misc/Paths.h"
+#include "Modules/ModuleManager.h"
+#include "SourceControlOperations.h"
+#include "ISourceControlModule.h"
 #include "GitSourceControlModule.h"
+#include "GitSourceControlCommand.h"
 #include "GitSourceControlUtils.h"
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"

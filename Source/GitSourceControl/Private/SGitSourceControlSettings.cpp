@@ -5,8 +5,22 @@
 
 #include "GitSourceControlPrivatePCH.h"
 #include "SGitSourceControlSettings.h"
+#include "Fonts/SlateFontInfo.h"
+#include "Misc/Paths.h"
+#include "Misc/FileHelper.h"
+#include "Modules/ModuleManager.h"
+#include "Widgets/SBoxPanel.h"
+#include "Styling/SlateTypes.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/Text/STextBlock.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SCheckBox.h"
+#include "EditorStyleSet.h"
 #include "GitSourceControlModule.h"
 #include "GitSourceControlUtils.h"
+#include "SSeparator.h"
+#include "SMultiLineEditableTextBox.h"
 
 #define LOCTEXT_NAMESPACE "SGitSourceControlSettings"
 
@@ -26,8 +40,9 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 		.Padding(FMargin(0.0f, 3.0f, 0.0f, 0.0f))
 		[
 			SNew(SVerticalBox)
+			// Path to the Git command line executable
 			+SVerticalBox::Slot()
-			.FillHeight(1.5f)
+			.AutoHeight()
 			.Padding(2.0f)
 			.VAlign(VAlign_Center)
 			[
@@ -35,34 +50,22 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				+SHorizontalBox::Slot()
 				.FillWidth(1.0f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.0f)
-					.Padding(2.0f)
-					.VAlign(VAlign_Center)
-					[
-						SNew(STextBlock)
-						.Text(LOCTEXT("BinaryPathLabel", "Git Path"))
-						.ToolTipText(LOCTEXT("BinaryPathLabel_Tooltip", "Path to Git binary"))
-						.Font(Font)
-					]
+					SNew(STextBlock)
+					.Text(LOCTEXT("BinaryPathLabel", "Git Path"))
+					.ToolTipText(LOCTEXT("BinaryPathLabel_Tooltip", "Path to Git binary"))
+					.Font(Font)
 				]
 				+SHorizontalBox::Slot()
 				.FillWidth(2.0f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.5f)
-					.Padding(2.0f)
-					[
-						SNew(SEditableTextBox)
-						.Text(this, &SGitSourceControlSettings::GetBinaryPathText)
-						.ToolTipText(LOCTEXT("BinaryPathLabel_Tooltip", "Path to Git binary"))
-						.OnTextCommitted(this, &SGitSourceControlSettings::OnBinaryPathTextCommited)
-						.Font(Font)
-					]
+					SNew(SEditableTextBox)
+					.Text(this, &SGitSourceControlSettings::GetBinaryPathText)
+					.ToolTipText(LOCTEXT("BinaryPathLabel_Tooltip", "Path to Git binary"))
+					.OnTextCommitted(this, &SGitSourceControlSettings::OnBinaryPathTextCommited)
+					.Font(Font)
 				]
 			]
+			// Root of the local repository
 			+SVerticalBox::Slot()
 			.FillHeight(1.0f)
 			.Padding(2.0f)
@@ -72,33 +75,21 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				+SHorizontalBox::Slot()
 				.FillWidth(1.0f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.0f)
-					.Padding(2.0f)
-					.VAlign(VAlign_Center)
-					[
-						SNew(STextBlock)
-						.Text(LOCTEXT("RepositoryRootLabel", "Root of the repository"))
-						.ToolTipText(LOCTEXT("RepositoryRootLabel_Tooltip", "Path to the root of the Git repository"))
-						.Font(Font)
-					]
+					SNew(STextBlock)
+					.Text(LOCTEXT("RepositoryRootLabel", "Root of the repository"))
+					.ToolTipText(LOCTEXT("RepositoryRootLabel_Tooltip", "Path to the root of the Git repository"))
+					.Font(Font)
 				]
 				+SHorizontalBox::Slot()
 				.FillWidth(2.0f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.0f)
-					.Padding(2.0f)
-					[
-						SNew(STextBlock)
-						.Text(this, &SGitSourceControlSettings::GetPathToRepositoryRoot)
-						.ToolTipText(LOCTEXT("RepositoryRootLabel_Tooltip", "Path to the root of the Git repository"))
-						.Font(Font)
-					]
+					SNew(STextBlock)
+					.Text(this, &SGitSourceControlSettings::GetPathToRepositoryRoot)
+					.ToolTipText(LOCTEXT("RepositoryRootLabel_Tooltip", "Path to the root of the Git repository"))
+					.Font(Font)
 				]
 			]
+			// User Name
 			+SVerticalBox::Slot()
 			.FillHeight(1.0f)
 			.Padding(2.0f)
@@ -108,33 +99,21 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				+SHorizontalBox::Slot()
 				.FillWidth(1.0f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.0f)
-					.Padding(2.0f)
-					.VAlign(VAlign_Center)
-					[
-						SNew(STextBlock)
-						.Text(LOCTEXT("GitUserName", "User Name"))
-						.ToolTipText(LOCTEXT("GitUserName_Tooltip", "User name configured for the Git repository"))
-						.Font(Font)
-					]
+					SNew(STextBlock)
+					.Text(LOCTEXT("GitUserName", "User Name"))
+					.ToolTipText(LOCTEXT("GitUserName_Tooltip", "User name configured for the Git repository"))
+					.Font(Font)
 				]
 				+SHorizontalBox::Slot()
 				.FillWidth(2.0f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.0f)
-					.Padding(2.0f)
-					[
-						SNew(STextBlock)
-						.Text(this, &SGitSourceControlSettings::GetUserName)
-						.ToolTipText(LOCTEXT("GitUserName_Tooltip", "User name configured for the Git repository"))
-						.Font(Font)
-					]
+					SNew(STextBlock)
+					.Text(this, &SGitSourceControlSettings::GetUserName)
+					.ToolTipText(LOCTEXT("GitUserName_Tooltip", "User name configured for the Git repository"))
+					.Font(Font)
 				]
 			]
+			// User e-mail
 			+SVerticalBox::Slot()
 			.FillHeight(1.0f)
 			.Padding(2.0f)
@@ -144,33 +123,29 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				+SHorizontalBox::Slot()
 				.FillWidth(1.0f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.0f)
-					.Padding(2.0f)
-					.VAlign(VAlign_Center)
-					[
-						SNew(STextBlock)
-						.Text(LOCTEXT("GitUserEmail", "E-Mail"))
-						.ToolTipText(LOCTEXT("GitUserEmail_Tooltip", "User e-mail configured for the Git repository"))
-						.Font(Font)
-					]
+					SNew(STextBlock)
+					.Text(LOCTEXT("GitUserEmail", "E-Mail"))
+					.ToolTipText(LOCTEXT("GitUserEmail_Tooltip", "User e-mail configured for the Git repository"))
+					.Font(Font)
 				]
 				+SHorizontalBox::Slot()
 				.FillWidth(2.0f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.0f)
-					.Padding(2.0f)
-					[
-						SNew(STextBlock)
-						.Text(this, &SGitSourceControlSettings::GetUserEmail)
-						.ToolTipText(LOCTEXT("GitUserEmail_Tooltip", "User e-mail configured for the Git repository"))
-						.Font(Font)
-					]
+					SNew(STextBlock)
+					.Text(this, &SGitSourceControlSettings::GetUserEmail)
+					.ToolTipText(LOCTEXT("GitUserEmail_Tooltip", "User e-mail configured for the Git repository"))
+					.Font(Font)
 				]
 			]
+			// Separator
+			+SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(2.0f)
+			.VAlign(VAlign_Center)
+			[
+				SNew(SSeparator)
+			]
+			// Explanation text
 			+SVerticalBox::Slot()
 			.FillHeight(1.0f)
 			.Padding(2.0f)
@@ -179,38 +154,44 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				SNew(SHorizontalBox)
 				.Visibility(this, &SGitSourceControlSettings::CanInitializeGitRepository)
 				+SHorizontalBox::Slot()
+				.FillWidth(1.0f)
+				.HAlign(HAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("RepositoryNotFound", "Current Project is not contained in a Git Repository. Fill the form below to initialize a new Repository."))
+					.ToolTipText(LOCTEXT("RepositoryNotFound_Tooltip", "No Repository found at the level or above the current Project"))
+					.Font(Font)
+				]
+			]
+			// Option to add a proper .gitignore file (true by default)
+			+SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(2.0f)
+			.VAlign(VAlign_Center)
+			[
+				SNew(SHorizontalBox)
+				.Visibility(this, &SGitSourceControlSettings::CanInitializeGitRepository)
+				+SHorizontalBox::Slot()
 				.FillWidth(0.1f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.0f)
-					.Padding(2.0f)
-					.VAlign(VAlign_Center)
-					[
-						SNew(SCheckBox)
-						.ToolTipText(LOCTEXT("CreateGitIgnore_Tooltip", "Create and add a standard '.gitignore' file"))
-						.IsChecked(ECheckBoxState::Checked)
-						.OnCheckStateChanged(this, &SGitSourceControlSettings::OnCheckedCreateGitIgnore)
-					]
+					SNew(SCheckBox)
+					.ToolTipText(LOCTEXT("CreateGitIgnore_Tooltip", "Create and add a standard '.gitignore' file"))
+					.IsChecked(ECheckBoxState::Checked)
+					.OnCheckStateChanged(this, &SGitSourceControlSettings::OnCheckedCreateGitIgnore)
 				]
 				+SHorizontalBox::Slot()
 				.FillWidth(2.9f)
+				.VAlign(VAlign_Center)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.0f)
-					.Padding(2.0f)
-					.VAlign(VAlign_Center)
-					[
-						SNew(STextBlock)
-						.Text(LOCTEXT("CreateGitIgnore", "Add a .gitignore file"))
-						.ToolTipText(LOCTEXT("CreateGitIgnore_Tooltip", "Create and add a standard '.gitignore' file"))
-						.Font(Font)
-					]
+					SNew(STextBlock)
+					.Text(LOCTEXT("CreateGitIgnore", "Add a .gitignore file"))
+					.ToolTipText(LOCTEXT("CreateGitIgnore_Tooltip", "Create and add a standard '.gitignore' file"))
+					.Font(Font)
 				]
 			]
+			// Option to Make the initial Git commit with custom message
 			+SVerticalBox::Slot()
-			.FillHeight(1.5f)
+			.AutoHeight()
 			.Padding(2.0f)
 			.VAlign(VAlign_Center)
 			[
@@ -219,49 +200,32 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				+SHorizontalBox::Slot()
 				.FillWidth(0.1f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.0f)
-					.Padding(2.0f)
-					.VAlign(VAlign_Center)
-					[
-						SNew(SCheckBox)
-						.ToolTipText(LOCTEXT("InitialGitCommit_Tooltip", "Make the initial Git commit"))
-						.IsChecked(ECheckBoxState::Checked)
-						.OnCheckStateChanged(this, &SGitSourceControlSettings::OnCheckedInitialCommit)
-					]
+					SNew(SCheckBox)
+					.ToolTipText(LOCTEXT("InitialGitCommit_Tooltip", "Make the initial Git commit"))
+					.IsChecked(ECheckBoxState::Checked)
+					.OnCheckStateChanged(this, &SGitSourceControlSettings::OnCheckedInitialCommit)
 				]
 				+SHorizontalBox::Slot()
 				.FillWidth(0.9f)
+				.VAlign(VAlign_Center)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.0f)
-					.Padding(2.0f)
-					.VAlign(VAlign_Center)
-					[
-						SNew(STextBlock)
-						.Text(LOCTEXT("InitialGitCommit", "Make the initial Git Commit"))
-						.ToolTipText(LOCTEXT("InitialGitCommit_Tooltip", "Make the initial Git commit"))
-						.Font(Font)
-					]
+					SNew(STextBlock)
+					.Text(LOCTEXT("InitialGitCommit", "Make the initial Git Commit"))
+					.ToolTipText(LOCTEXT("InitialGitCommit_Tooltip", "Make the initial Git commit"))
+					.Font(Font)
 				]
 				+SHorizontalBox::Slot()
 				.FillWidth(2.0f)
+				.Padding(2.0f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(1.5f)
-					.Padding(2.0f)
-					[
-						SNew(SEditableTextBox)
-						.Text(this, &SGitSourceControlSettings::GetInitialCommitMessage)
-						.ToolTipText(LOCTEXT("InitialCommitMessage_Tooltip", "Message of initial commit"))
-						.OnTextCommitted(this, &SGitSourceControlSettings::OnInitialCommitMessageCommited)
-						.Font(Font)
-					]
+					SNew(SMultiLineEditableTextBox)
+					.Text(this, &SGitSourceControlSettings::GetInitialCommitMessage)
+					.ToolTipText(LOCTEXT("InitialCommitMessage_Tooltip", "Message of initial commit"))
+					.OnTextCommitted(this, &SGitSourceControlSettings::OnInitialCommitMessageCommited)
+					.Font(Font)
 				]
 			]
+			// Button to initialize the project with Git, create the .gitignore, and make the first commit)
 			+SVerticalBox::Slot()
 			.FillHeight(2.0f)
 			.Padding(2.0f)
@@ -272,19 +236,11 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				+SHorizontalBox::Slot()
 				.FillWidth(1.0f)
 				[
-					SNew(SVerticalBox)
-					+SVerticalBox::Slot()
-					.FillHeight(2.0f)
-					.Padding(2.0f)
-					.VAlign(VAlign_Center)
-					.AutoHeight()
-					[
-						SNew(SButton)
-						.Text(LOCTEXT("GitInitRepository", "Initialize project with Git"))
-						.ToolTipText(LOCTEXT("GitInitRepository_Tooltip", "Initialize current project as a new Git repository"))
-						.OnClicked(this, &SGitSourceControlSettings::OnClickedInitializeGitRepository)
-						.HAlign(HAlign_Center)
-					]
+					SNew(SButton)
+					.Text(LOCTEXT("GitInitRepository", "Initialize project with Git"))
+					.ToolTipText(LOCTEXT("GitInitRepository_Tooltip", "Initialize current project as a new Git repository"))
+					.OnClicked(this, &SGitSourceControlSettings::OnClickedInitializeGitRepository)
+					.HAlign(HAlign_Center)
 				]
 			]
 		]

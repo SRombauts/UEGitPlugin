@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
+
 class IGitSourceControlWorker
 {
 public:

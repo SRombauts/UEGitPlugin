@@ -5,9 +5,14 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
+#include "ISourceControlOperation.h"
+#include "ISourceControlState.h"
 #include "ISourceControlProvider.h"
 #include "IGitSourceControlWorker.h"
 #include "GitSourceControlState.h"
+
+class FGitSourceControlCommand;
 
 DECLARE_DELEGATE_RetVal(FGitSourceControlWorkerRef, FGetGitSourceControlWorker)
 

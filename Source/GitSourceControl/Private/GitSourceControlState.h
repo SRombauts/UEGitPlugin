@@ -5,7 +5,9 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "ISourceControlState.h"
+#include "ISourceControlRevision.h"
 #include "GitSourceControlRevision.h"
 
 namespace EWorkingCopyState

@@ -5,9 +5,9 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "IGitSourceControlWorker.h"
 #include "GitSourceControlState.h"
-#include "GitSourceControlRevision.h"
 
 /** Called when first activated on a project, and then at project load time.
  *  Look for the root directory of the git repository (where the ".git/" subdirectory is located). */

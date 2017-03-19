@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "ISourceControlRevision.h"
 
 /** Revision of a file, linked to a specific commit */

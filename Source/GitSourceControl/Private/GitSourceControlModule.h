@@ -5,7 +5,8 @@
 
 #pragma once
 
-#include "ISourceControlModule.h"
+#include "CoreMinimal.h"
+#include "Modules/ModuleInterface.h"
 #include "GitSourceControlSettings.h"
 #include "GitSourceControlProvider.h"
 
