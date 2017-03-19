@@ -15,28 +15,31 @@
 bool FGitSourceControlRevision::Get( FString& InOutFilename ) const
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
-	FString PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
-	FString PathToRepositoryRoot = GitSourceControl.GetProvider().GetPathToRepositoryRoot();
+	const FString PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
+	const FString PathToRepositoryRoot = GitSourceControl.GetProvider().GetPathToRepositoryRoot();
 
 	// if a filename for the temp file wasn't supplied generate a unique-ish one
 	if(InOutFilename.Len() == 0)
 	{
-		// create the diff dir if we don't already have it (SVN wont)
+		// create the diff dir if we don't already have it (Git wont)
 		IFileManager::Get().MakeDirectory(*FPaths::DiffDir(), true);
-
-		// @todo Bug report: a counter is needed to avoid overlapping files; temp files are not (never?) released by Editor!
-		static int32 TempFileCount = 0;
-		FString TempFileName = FString::Printf(TEXT("%stemp-%d-%s-%s"), *FPaths::DiffDir(), TempFileCount++, *CommitId, *FPaths::GetCleanFilename(Filename));
+		// create a unique temp file name based on the unique commit Id
+		const FString TempFileName = FString::Printf(TEXT("%stemp-%s-%s"), *FPaths::DiffDir(), *CommitId, *FPaths::GetCleanFilename(Filename));
 		InOutFilename = FPaths::ConvertRelativePathToFull(TempFileName);
 	}
 
 	// Diff against the revision
-	FString Parameter = CommitId;
-	Parameter += TEXT(":");
-	Parameter += *Filename;
+	const FString Parameter = FString::Printf(TEXT("%s:%s"), *CommitId, *Filename);
 
-	bool bCommandSuccessful = GitSourceControlUtils::RunDumpToFile(PathToGitBinary, PathToRepositoryRoot, Parameter, InOutFilename);
-
+	bool bCommandSuccessful;
+	if(FPaths::FileExists(InOutFilename))
+	{
+		bCommandSuccessful = true; // if the temp file already exists, reuse it directly
+	}
+	else
+	{
+		bCommandSuccessful = GitSourceControlUtils::RunDumpToFile(PathToGitBinary, PathToRepositoryRoot, Parameter, InOutFilename);
+	}
 	return bCommandSuccessful;
 }
 
@@ -62,7 +65,7 @@ int32 FGitSourceControlRevision::GetRevisionNumber() const
 
 const FString& FGitSourceControlRevision::GetRevision() const
 {
-	return CommitId;
+	return ShortCommitId;
 }
 
 const FString& FGitSourceControlRevision::GetDescription() const
@@ -106,8 +109,7 @@ int32 FGitSourceControlRevision::GetCheckInIdentifier() const
 
 int32 FGitSourceControlRevision::GetFileSize() const
 {
-	// @todo git log does not give us the file size, but we could run a specific command
-	return 0;
+	return FileSize;
 }
 
 #undef LOCTEXT_NAMESPACE

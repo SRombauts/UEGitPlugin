@@ -23,18 +23,15 @@ void FGitSourceControlModule::StartupModule()
 {
 	// Register our operations
 	GitSourceControlProvider.RegisterWorker( "Connect", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitConnectWorker> ) );
-	GitSourceControlProvider.RegisterWorker( "Init", FGetGitSourceControlWorker::CreateStatic(&CreateWorker<FGitInitWorker>));
 	// Note: this provider does not uses the "CheckOut" command, which is a Perforce "lock", as Git has no lock command (all tracked files in the working copy are always already checked-out).
 	GitSourceControlProvider.RegisterWorker( "UpdateStatus", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitUpdateStatusWorker> ) );
 	GitSourceControlProvider.RegisterWorker( "MarkForAdd", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitMarkForAddWorker> ) );
 	GitSourceControlProvider.RegisterWorker( "Delete", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitDeleteWorker> ) );
 	GitSourceControlProvider.RegisterWorker( "Revert", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitRevertWorker> ) );
-	// @todo: git fetch remote(s) to be able to show files not up-to-date with the serveur
-//	GitSourceControlProvider.RegisterWorker( "Sync", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitSyncWorker> ) );
+	GitSourceControlProvider.RegisterWorker( "Sync", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitSyncWorker> ) );
 	GitSourceControlProvider.RegisterWorker( "CheckIn", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitCheckInWorker> ) );
 	GitSourceControlProvider.RegisterWorker( "Copy", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitCopyWorker> ) );
-	// @todo: git add to mark a conflict as resolved
-//	GitSourceControlProvider.RegisterWorker( "Resolve", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitResolveWorker> ) );
+	GitSourceControlProvider.RegisterWorker( "Resolve", FGetGitSourceControlWorker::CreateStatic( &CreateWorker<FGitResolveWorker> ) );
 
 	// load our settings
 	GitSourceControlSettings.LoadSettings();
@@ -52,11 +49,6 @@ void FGitSourceControlModule::ShutdownModule()
 	IModularFeatures::Get().UnregisterModularFeature("SourceControl", &GitSourceControlProvider);
 }
 
-FGitSourceControlSettings& FGitSourceControlModule::AccessSettings()
-{
-	return GitSourceControlSettings;
-}
-
 void FGitSourceControlModule::SaveSettings()
 {
 	if (FApp::IsUnattended() || IsRunningCommandlet())
@@ -65,66 +57,6 @@ void FGitSourceControlModule::SaveSettings()
 	}
 
 	GitSourceControlSettings.SaveSettings();
-}
-
-void FGitSourceControlModule::ShowGitInitDialog(EGitInitWindowMode::Type InGitInitWindowMode)
-{
-#if SOURCE_CONTROL_WITH_SLATE
-	
-	// if we are showing a modal version of the dialog & a modeless version already exists, we must destroy the modeless dialog first
-	if (InGitInitWindowMode == ELoginWindowMode::Modal && GitSourceControlInitPtr.IsValid())
-	{
-		// unhook the delegate so it doesn't fire in this case
-		GitSourceControlInitWindowPtr->SetOnWindowClosed(FOnWindowClosed());
-		GitSourceControlInitWindowPtr->RequestDestroyWindow();
-		GitSourceControlInitWindowPtr = NULL;
-		GitSourceControlInitPtr = NULL;
-	}
-
-	if (GitSourceControlInitWindowPtr.IsValid())
-	{
-		GitSourceControlInitWindowPtr->BringToFront();
-	}
-	else
-	{
-		// Create the window
-		GitSourceControlInitWindowPtr = SNew(SWindow)
-			.Title(LOCTEXT("GitSourceControlInitTitle", "Git Source Control Init"))
-			.SupportsMaximize(false)
-			.SupportsMinimize(false)
-			.CreateTitleBar(false)
-			.SizingRule(ESizingRule::Autosized);
-
-		// Setup the content for the created login window.
-		GitSourceControlInitWindowPtr->SetContent(
-			SNew(SBox)
-			.WidthOverride(300.0f)
-			[
-				SAssignNew(GitSourceControlInitPtr, SGitInitDialog)
-				.ParentWindow(GitSourceControlInitWindowPtr)
-			]
-		);
-
-		TSharedPtr<SWindow> RootWindow = FGlobalTabmanager::Get()->GetRootWindow();
-		if (RootWindow.IsValid())
-		{
-			if (InGitInitWindowMode == ELoginWindowMode::Modal)
-			{
-				FSlateApplication::Get().AddModalWindow(GitSourceControlInitWindowPtr.ToSharedRef(), RootWindow);
-			}
-			else
-			{
-				FSlateApplication::Get().AddWindowAsNativeChild(GitSourceControlInitWindowPtr.ToSharedRef(), RootWindow.ToSharedRef());
-			}
-		}
-		else
-		{
-			FSlateApplication::Get().AddWindow(GitSourceControlInitWindowPtr.ToSharedRef());
-		}
-	}
-#else
-	STUBBED("FGitSourceControlModule::ShowGitInitDialog - no Slate");
-#endif // SOURCE_CONTROL_WITH_SLATE
 }
 
 IMPLEMENT_MODULE(FGitSourceControlModule, GitSourceControl);

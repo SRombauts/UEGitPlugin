@@ -1,22 +1,25 @@
 {
 	"FileVersion" : 3,
-	
-	"FriendlyName" : "Git",
-	"Version" : 12,
-	"VersionName" : "0.6.3",
-	"EngineVersion" : "4.7.0",
-	"Description" : "Git source control management",
-	"Category" : "Editor.Source Control",
+	"Version" : 20,
+	"VersionName" : "2.0",
+	"FriendlyName" : "Git2",
+	"Description" : "Git source control management v2",
+	"Category" : "Source Control",
 	"CreatedBy" : "SRombauts",
 	"CreatedByURL" : "http://srombauts.github.com",
+	"DocsURL" : "",
+	"MarketplaceURL" : "",
+	"SupportURL" : "",
+	"EnabledByDefault" : true,
 	"CanContainContent" : false,
 	"IsBetaVersion" : true,
-	
+	"Installed" : false,
 	"Modules" :
 	[
 		{
 			"Name" : "GitSourceControl",
-			"Type" : "Editor"
+			"Type" : "Editor",
+			"LoadingPhase" : "Default"
 		}
 	]
 }

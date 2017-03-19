@@ -25,6 +25,21 @@ private:
 	/** Delegate to commit repository text to settings */
 	void OnBinaryPathTextCommited(const FText& InText, ETextCommit::Type InCommitType) const;
 
-	/** Delegate to open the Init window */
-	FReply OnClickedInit();
+	/** Delegate to get repository root, user name and email from provider */
+	FText GetPathToRepositoryRoot() const;
+	FText GetUserName() const;
+	FText GetUserEmail() const;
+
+	/** Delegate to initialize a new Git repository */
+	EVisibility CanInitializeGitRepository() const;
+	FReply OnClickedInitializeGitRepository();
+
+	void OnCheckedCreateGitIgnore(ECheckBoxState NewCheckedState);
+	bool bAutoCreateGitIgnore;
+
+	void OnCheckedInitialCommit(ECheckBoxState NewCheckedState);
+	bool bAutoInitialCommit;
+	void OnInitialCommitMessageCommited(const FText& InText, ETextCommit::Type InCommitType);
+	FText GetInitialCommitMessage() const;
+	FText InitialCommitMessage;
 };

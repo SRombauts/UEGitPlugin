@@ -24,7 +24,6 @@ FGitSourceControlCommand::FGitSourceControlCommand(const TSharedRef<class ISourc
 	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
 	PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
 	PathToRepositoryRoot = GitSourceControl.GetProvider().GetPathToRepositoryRoot();
-	PathToGameDir = GitSourceControl.GetProvider().GetPathToGameDir();
 }
 
 bool FGitSourceControlCommand::DoWork()

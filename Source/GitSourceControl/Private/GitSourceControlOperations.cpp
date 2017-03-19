@@ -21,30 +21,11 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	check(InCommand.Operation->GetName() == GetName());
 
-	InCommand.bCommandSuccessful = GitSourceControlUtils::FindRootDirectory(InCommand.PathToGameDir, InCommand.PathToRepositoryRoot);
-	if(InCommand.bCommandSuccessful)
-	{
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("status"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
-	}
+	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("status"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 	if(!InCommand.bCommandSuccessful || InCommand.ErrorMessages.Num() > 0 || InCommand.InfoMessages.Num() == 0)
 	{
-		// @todo popup to propose to initialize the git repository "git init + .gitignore"
-		StaticCastSharedRef<FConnect>(InCommand.Operation)->SetErrorText(LOCTEXT("NotAWorkingCopyError", "Project is not part of a Git working copy."));
-		// @todo Double error messages (and displayed in reverse order): Perforce distinguish the two errors
-		InCommand.ErrorMessages.Add(LOCTEXT("NotAWorkingCopyErrorHelp", "You should check out a working copy into your project directory.").ToString());
+		StaticCastSharedRef<FConnect>(InCommand.Operation)->SetErrorText(LOCTEXT("NotAGitRepository", "Failed to enable Git source control. You need to initialize the project as a Git repository first."));
 		InCommand.bCommandSuccessful = false;
-	}
-	else // if(InCommand.bCommandSuccessful)
-	{
-		TArray<FString> Parameters;
-		Parameters.Add("--short HEAD");
-
-		// Get current branche name
-		GitSourceControlUtils::RunCommand(TEXT("symbolic-ref"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
-		if(InCommand.InfoMessages.Num() == 1)
-		{
-			InCommand.BranchName = InCommand.InfoMessages[0];
-		}
 	}
 
 	return InCommand.bCommandSuccessful;
@@ -77,7 +58,7 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 	TSharedRef<FCheckIn, ESPMode::ThreadSafe> Operation = StaticCastSharedRef<FCheckIn>(InCommand.Operation);
 
 	// make a temp file to place our commit message in
-	FScopedTempFile CommitMsgFile(Operation->GetDescription());
+	FGitScopedTempFile CommitMsgFile(Operation->GetDescription());
 	if(CommitMsgFile.GetFilename().Len() > 0)
 	{
 		TArray<FString> Parameters;
@@ -89,6 +70,20 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommit(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
 		if(InCommand.bCommandSuccessful)
 		{
+			// Remove any deleted files from status cache
+			FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+			FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+
+			TArray<TSharedRef<ISourceControlState, ESPMode::ThreadSafe>> LocalStates;
+			Provider.GetState(InCommand.Files, LocalStates, EStateCacheUsage::Use);
+			for (const auto& State : LocalStates)
+			{
+				if (State->IsDeleted())
+				{
+					Provider.RemoveFileFromCache(State->GetFilename());
+				}
+			}
+
 			Operation->SetSuccessMessage(ParseCommitResults(InCommand.InfoMessages));
 			UE_LOG(LogSourceControl, Log, TEXT("FGitCheckInWorker: commit successful"));
 		}
@@ -177,6 +172,32 @@ bool FGitRevertWorker::UpdateStates() const
 	return GitSourceControlUtils::UpdateCachedStates(States);
 }
 
+FName FGitSyncWorker::GetName() const
+{
+   return "Sync";
+}
+
+bool FGitSyncWorker::Execute(FGitSourceControlCommand& InCommand)
+{
+   // pull the branch to get remote changes by rebasing any local commits (not merging them to avoid complex graphs)
+   // (this cannot work if any local files are modified but not commited)
+   {
+      TArray<FString> Parameters;
+      Parameters.Add(TEXT("--rebase"));
+      InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("pull"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+   }
+
+   // now update the status of our files
+   GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.Files, InCommand.ErrorMessages, States);
+
+   return InCommand.bCommandSuccessful;
+}
+
+bool FGitSyncWorker::UpdateStates() const
+{
+   return GitSourceControlUtils::UpdateCachedStates(States);
+}
+
 FName FGitUpdateStatusWorker::GetName() const
 {
 	return "UpdateStatus";
@@ -195,23 +216,19 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 
 		if(Operation->ShouldUpdateHistory())
 		{
-			for(const auto& ItFile : InCommand.Files)
+			for(int32 Index = 0; Index < States.Num(); Index++)
 			{
-				TArray<FString> Results;
-				TArray<FString> Parameters;
-
-				Parameters.Add(TEXT("--max-count 100"));
-				Parameters.Add(TEXT("--follow")); // follow file renames
-				Parameters.Add(TEXT("--date=raw"));
-				Parameters.Add(TEXT("--name-status")); // relative filename at this revision, preceded by a status character
-
-				TArray<FString> Files;
-				Files.Add(*ItFile);
-
-				InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(TEXT("log"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, Files, Results, InCommand.ErrorMessages);
+				FString& File = InCommand.Files[Index];
 				TGitSourceControlHistory History;
-				GitSourceControlUtils::ParseLogResults(Results, History);
-				Histories.Add(*ItFile, History);
+
+				if(States[Index].IsConflicted())
+				{
+					// In case of a merge conflict, we first need to get the tip of the "remote branch" (MERGE_HEAD)
+					GitSourceControlUtils::RunGetHistory(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, File, true, InCommand.ErrorMessages, History);
+				}
+				// Get the history of the file in the current branch
+				InCommand.bCommandSuccessful &= GitSourceControlUtils::RunGetHistory(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, File, false, InCommand.ErrorMessages, History);
+				Histories.Add(*File, History);
 			}
 		}
 	}
@@ -239,10 +256,10 @@ bool FGitUpdateStatusWorker::UpdateStates() const
 	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 
 	// add history, if any
-	for(const auto& ItHistory : Histories)
+	for(const auto& History : Histories)
 	{
-		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(ItHistory.Key);
-		State->History = ItHistory.Value;
+		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(History.Key);
+		State->History = History.Value;
 		State->TimeStamp = FDateTime::Now();
 		bUpdated = true;
 	}
@@ -273,7 +290,6 @@ bool FGitCopyWorker::UpdateStates() const
 	return GitSourceControlUtils::UpdateCachedStates(OutStates);
 }
 
-/* @todo
 FName FGitResolveWorker::GetName() const
 {
 	return "Resolve";
@@ -286,52 +302,18 @@ bool FGitResolveWorker::Execute( class FGitSourceControlCommand& InCommand )
 	// mark the conflicting files as resolved:
 	{
 		TArray<FString> Results;
-		TArray<FString> ResolveParameters;
-		ResolveParameters.Add(TEXT("--accept mine-full"));
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("resolve"), InCommand.Files, ResolveParameters, Results, InCommand.ErrorMessages, InCommand.UserName);
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("add"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), InCommand.Files, Results, InCommand.ErrorMessages);
 	}
 
 	// now update the status of our files
-	{
-		TArray<FXmlFile> ResultsXml;
-		TArray<FString> StatusParameters;
-		StatusParameters.Add(TEXT("--verbose"));
-		StatusParameters.Add(TEXT("--show-updates"));
-
-		InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(TEXT("status"), InCommand.Files, StatusParameters, ResultsXml, InCommand.ErrorMessages, InCommand.UserName);
-		GitSourceControlUtils::ParseStatusResults(ResultsXml, InCommand.ErrorMessages, InCommand.UserName, InCommand.WorkingCopyRoot, OutStates);
-	}
+	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.Files, InCommand.ErrorMessages, States);
 
 	return InCommand.bCommandSuccessful;
 }
 
 bool FGitResolveWorker::UpdateStates() const
 {
-	return GitSourceControlUtils::UpdateCachedStates(OutStates);
-}
-*/
-
-FName FGitInitWorker::GetName() const
-{
-	return "Init";
-}
-
-bool FGitInitWorker::Execute(FGitSourceControlCommand& InCommand)
-{
-	check(InCommand.Operation->GetName() == GetName());
-	
-	InCommand.bCommandSuccessful = false;
-
-	if (GitSourceControlUtils::RunCommand(TEXT("init"), InCommand.PathToGitBinary, InCommand.PathToGameDir, TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages)){
-		InCommand.bCommandSuccessful = true;
-	}
-
-	return InCommand.bCommandSuccessful;
-}
-
-bool FGitInitWorker::UpdateStates() const
-{
-	return false;
+	return GitSourceControlUtils::UpdateCachedStates(States);
 }
 
 #undef LOCTEXT_NAMESPACE

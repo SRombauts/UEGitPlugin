@@ -81,7 +81,7 @@ public:
 	TArray<FGitSourceControlState> States;
 };
 
-/** @todo: git fetch remote(s) to be able to show files not up-to-date with the serveur
+/** Git pull --rebase to update branch from its configure remote */
 class FGitSyncWorker : public IGitSourceControlWorker
 {
 public:
@@ -95,7 +95,6 @@ public:
 	/// Map of filenames to Git state
 	TArray<FGitSourceControlState> States;
 };
-*/
 
 /** Get source control status of files on local working copy. */
 class FGitUpdateStatusWorker : public IGitSourceControlWorker
@@ -130,44 +129,16 @@ public:
 	TArray<FGitSourceControlState> OutStates;
 };
 
-/**
- *  Called when clicking Initialize Git.
- *  Runs 'git init'.
- */
-class FGitInitWorker : public IGitSourceControlWorker
-{
-public:
-	virtual ~FGitInitWorker() {}
-	// IGitSourceControlWorker interface
-	virtual FName GetName() const override;
-	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
-	virtual bool UpdateStates() const override;
-};
-
-/**
-* Operation used to initialize a git repo.
-*/
-class FGitInit : public ISourceControlOperation
-{
-public:
-	// ISourceControlOperation interface
-	virtual FName GetName() const override
-	{
-		return "Init";
-	}
-};
-
-/** @todo: git add to mark a conflict as resolved
+/** git add to mark a conflict as resolved */
 class FGitResolveWorker : public IGitSourceControlWorker
 {
 public:
 	virtual ~FGitResolveWorker() {}
 	virtual FName GetName() const override;
-	virtual bool Execute( class FGitSourceControlCommand& InCommand ) override;
+	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
 	virtual bool UpdateStates() const override;
 	
 private:
-	/// Temporary states for results
-	TArray<FGitSourceControlState> OutStates;
+	/** Temporary states for results */
+	TArray<FGitSourceControlState> States;
 };
-*/
