@@ -20,7 +20,7 @@
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"
 
-static FName ProviderName("Git");
+static FName ProviderName("Git (dev)");
 
 void FGitSourceControlProvider::Init(bool bForceConnection)
 {
