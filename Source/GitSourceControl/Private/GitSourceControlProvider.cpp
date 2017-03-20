@@ -40,19 +40,17 @@ void FGitSourceControlProvider::CheckGitAvailability()
 		{
 			// Find the path to the root Git directory (if any)
 			const FString PathToGameDir = FPaths::ConvertRelativePathToFull(FPaths::GameDir());
-			const bool bRepositoryFound = GitSourceControlUtils::FindRootDirectory(PathToGameDir, PathToRepositoryRoot);
+			bGitRepositoryFound = GitSourceControlUtils::FindRootDirectory(PathToGameDir, PathToRepositoryRoot);
 			// Get user name & email (of the repository, else from the global Git config)
 			GitSourceControlUtils::GetUserConfig(PathToGitBinary, PathToRepositoryRoot, UserName, UserEmail);
-			if (bRepositoryFound)
+			if (bGitRepositoryFound)
 			{
 				// Get branch name
 				GitSourceControlUtils::GetBranchName(PathToGitBinary, PathToRepositoryRoot, BranchName);
-				bGitRepositoryFound = true;
 			}
 			else
 			{
 				UE_LOG(LogSourceControl, Error, TEXT("'%s' is not part of a Git repository"), *FPaths::GameDir());
-				bGitRepositoryFound = false;
 			}
 		}
 	}
