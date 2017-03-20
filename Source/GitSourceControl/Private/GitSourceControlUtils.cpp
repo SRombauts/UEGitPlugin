@@ -104,16 +104,16 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 	FullCommand += LogableCommand;
 
 #if UE_BUILD_DEBUG
-	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *FullCommand);
+	UE_LOG(LogSourceControl, Log, TEXT("RunCommand: 'git %s'"), *LogableCommand);
 #endif
 	
 	FPlatformProcess::ExecProcess(*InPathToGitBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
 	
 #if UE_BUILD_DEBUG
-	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'OutResults=\n%s'"), *OutResults);
+	UE_LOG(LogSourceControl, Log, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutResults);
 	if(ReturnCode != 0)
 	{
-		UE_LOG(LogSourceControl, Warning, TEXT("RunCommandInternalRaw: 'OutErrors=\n%s'"), *OutErrors);
+		UE_LOG(LogSourceControl, Warning, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutErrors);
 	}
 #endif
 
