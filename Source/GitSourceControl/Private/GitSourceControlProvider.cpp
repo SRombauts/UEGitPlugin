@@ -50,7 +50,7 @@ void FGitSourceControlProvider::CheckGitAvailability()
 			}
 			else
 			{
-				UE_LOG(LogSourceControl, Error, TEXT("'%s' is not part of a Git repository"), *FPaths::GameDir());
+				UE_LOG(LogSourceControl, Warning, TEXT("'%s' is not part of a Git repository"), *FPaths::GameDir());
 			}
 		}
 	}
