@@ -73,9 +73,14 @@ public:
 #endif
 
 	/**
-	 * Run a Git "version" command to check the availability of the binary.
+	 * Check configuration, else standard paths, and run a Git "version" command to check the availability of the binary.
 	 */
 	void CheckGitAvailability();
+
+	/**
+	 * Find the .git/ repository and check it's status.
+	 */
+	void CheckRepositoryStatus(const FString& InPathToGitBinary);
 
 	/** Is git binary found and working. */
 	inline bool IsGitAvailable() const

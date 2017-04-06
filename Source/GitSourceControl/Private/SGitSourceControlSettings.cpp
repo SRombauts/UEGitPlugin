@@ -265,8 +265,16 @@ FText SGitSourceControlSettings::GetBinaryPathText() const
 void SGitSourceControlSettings::OnBinaryPathTextCommited(const FText& InText, ETextCommit::Type InCommitType) const
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
-	GitSourceControl.AccessSettings().SetBinaryPath(InText.ToString());
-	GitSourceControl.SaveSettings();
+	const bool bChanged = GitSourceControl.AccessSettings().SetBinaryPath(InText.ToString());
+	if(bChanged)
+	{
+		// Re-Check provided git binary path for each change
+		GitSourceControl.GetProvider().CheckGitAvailability();
+		if(GitSourceControl.GetProvider().IsGitAvailable())
+		{
+			GitSourceControl.SaveSettings();
+		}
+	}
 }
 
 FText SGitSourceControlSettings::GetPathToRepositoryRoot() const
@@ -306,9 +314,9 @@ FReply SGitSourceControlSettings::OnClickedInitializeGitRepository()
 	// 1. Synchronous (very quick) "git init" operation: initialize a Git local repository with a .git/ subdirectory
 	GitSourceControlUtils::RunCommand(TEXT("init"), PathToGitBinary, PathToGameDir, TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
 
-	// Check the new repository status to enable connection
-	GitSourceControl.GetProvider().CheckGitAvailability();
-	if(GitSourceControl.GetProvider().IsEnabled())
+	// Check the new repository status to enable connection (branch, user e-mail)
+	GitSourceControl.GetProvider().CheckRepositoryStatus(PathToGitBinary);
+	if(GitSourceControl.GetProvider().IsAvailable())
 	{
 		// List of files to add to Source Control (.uproject, Config/, Content/, Source/ files and .gitignore if any)
 		TArray<FString> ProjectFiles;

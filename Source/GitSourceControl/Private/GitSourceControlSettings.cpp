@@ -19,16 +19,21 @@ static const FString SettingsSection = TEXT("GitSourceControl.GitSourceControlSe
 
 }
 
-const FString& FGitSourceControlSettings::GetBinaryPath() const
+const FString FGitSourceControlSettings::GetBinaryPath() const
 {
 	FScopeLock ScopeLock(&CriticalSection);
 	return BinaryPath;
 }
 
-void FGitSourceControlSettings::SetBinaryPath(const FString& InString)
+bool FGitSourceControlSettings::SetBinaryPath(const FString& InString)
 {
 	FScopeLock ScopeLock(&CriticalSection);
-	BinaryPath = InString;
+	const bool bChanged = (BinaryPath != InString);
+	if(bChanged)
+	{
+		BinaryPath = InString;
+	}
+	return bChanged;
 }
 
 // This is called at startup nearly before anything else in our module: BinaryPath will then be used by the provider
@@ -36,23 +41,12 @@ void FGitSourceControlSettings::LoadSettings()
 {
 	FScopeLock ScopeLock(&CriticalSection);
 	const FString& IniFile = SourceControlHelpers::GetSettingsIni();
-	bool bLoaded = GConfig->GetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), BinaryPath, IniFile);
-	if(!bLoaded || BinaryPath.IsEmpty())
-	{
-		BinaryPath = GitSourceControlUtils::FindGitBinaryPath();
-	}
+	GConfig->GetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), BinaryPath, IniFile);
 }
 
 void FGitSourceControlSettings::SaveSettings() const
 {
 	FScopeLock ScopeLock(&CriticalSection);
-
-	// Re-Check provided git binary path for each change
-	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
-	GitSourceControl.GetProvider().CheckGitAvailability();
-	if (GitSourceControl.GetProvider().IsAvailable())
-	{
-		const FString& IniFile = SourceControlHelpers::GetSettingsIni();
-		GConfig->SetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), *BinaryPath, IniFile);
-	}
+	const FString& IniFile = SourceControlHelpers::GetSettingsIni();
+	GConfig->SetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), *BinaryPath, IniFile);
 }

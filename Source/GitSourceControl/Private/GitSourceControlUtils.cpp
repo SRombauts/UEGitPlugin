@@ -372,7 +372,7 @@ void GetUserConfig(const FString& InPathToGitBinary, const FString& InRepository
 	}
 }
 
-void GetBranchName(const FString& InPathToGitBinary, const FString& InRepositoryRoot, FString& OutBranchName)
+bool GetBranchName(const FString& InPathToGitBinary, const FString& InRepositoryRoot, FString& OutBranchName)
 {
 	bool bResults;
 	TArray<FString> InfoMessages;
@@ -397,7 +397,13 @@ void GetBranchName(const FString& InPathToGitBinary, const FString& InRepository
 			OutBranchName = "HEAD detached at ";
 			OutBranchName += InfoMessages[0];
 		}
+		else
+		{
+			bResults = false;
+		}
 	}
+
+	return bResults;
 }
 
 bool RunCommand(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InParameters, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
