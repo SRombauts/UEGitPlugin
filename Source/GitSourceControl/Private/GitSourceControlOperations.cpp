@@ -82,7 +82,7 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 		if(InCommand.bCommandSuccessful)
 		{
 			// Remove any deleted files from status cache
-			FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+			FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 			FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 
 			TArray<TSharedRef<ISourceControlState, ESPMode::ThreadSafe>> LocalStates;
