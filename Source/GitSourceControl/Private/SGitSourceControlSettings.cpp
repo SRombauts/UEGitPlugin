@@ -231,7 +231,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 			// Button to initialize the project with Git, create the .gitignore, and make the first commit)
 			+SVerticalBox::Slot()
 			.FillHeight(2.0f)
-			.Padding(2.0f)
+			.Padding(2.5f)
 			.VAlign(VAlign_Center)
 			[
 				SNew(SHorizontalBox)
@@ -244,6 +244,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 					.ToolTipText(LOCTEXT("GitInitRepository_Tooltip", "Initialize current project as a new Git repository"))
 					.OnClicked(this, &SGitSourceControlSettings::OnClickedInitializeGitRepository)
 					.HAlign(HAlign_Center)
+					.ContentPadding(6)
 				]
 			]
 		]
