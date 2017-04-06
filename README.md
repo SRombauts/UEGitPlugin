@@ -15,6 +15,15 @@ This Git Source Control Plugin is now part of the default Unreal Engine 4.7
 
 Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
 
+Source Control Login screen to create a new workspace/a new repository :
+<img src="Screenshots/SourceControlLogin_Init.png" width="720">
+
+History menu entry to look a the changelog of an asset :
+<img src="Screenshots/FileHistory.png" width="720">
+
+Visual Diffing of different revision of a Blueprint :
+<img src="https://cdn2.unrealengine.com/blog/DiffTool-1009x542-719850393.png" width="720">
+
 ### Supported features
 - initialize a new Git local repository ('git init') to manage your UE4 Game Project.
 - create an appropriate .gitignore file as part as initialization
@@ -57,25 +66,29 @@ Quick demo of the Git Plugin on Unreal Engine 4.12 (preview)
 
 #### Install Git
 
-Under Windows 64bits, you could either:
-- install a standalone Git, usually in "C:\Program Files\Git\bin\git.exe".
-- or copy a [portable Git](https://code.google.com/p/msysgit/downloads/list?can=1&q=PortableGit)
-inside "<UnrealEngine>/Engine/Binaries/ThirdParty/git/Win32".
+Under Windows 64bits, you should install the standard standalone Git for Windows
+(now comming with Git LFS 2 with File Locking) with default parameters,
+usually in "C:\Program Files\Git\bin\git.exe".
 
+Then you have to configure your name and e-mail that will appear in each of your commits:
 
-#### Install this Git Plugin
+```
+git config --global user.name "Sébastien Rombauts"
+git config --global user.email sebastien.rombauts@gmail.com
+```
 
-See also the [Plugins official Documentation](https://docs.unrealengine.com/latest/INT/Programming/Plugins/index.html)
+#### Install this Git Plugin into your Game Project
 
-##### Within your Game Project only
-
-This alternate "Git development plugin" needs to be installed into a subfolder or your Game Project "Plugins" directory:
+This alternate "Git development plugin" needs to be installed into a subfolder or your Game Project "Plugins" directory
+(that is, you cannot install it into the Engine Plugins directory):
 
 ```
 <YourGameProject>/Plugins
 ```
 
 You will obviously only be able to use the plugin within this project.
+
+See also the [Plugins official Documentation](https://docs.unrealengine.com/latest/INT/Programming/Plugins/index.html)
 
 #### Activate Git Source Control for your Game Project
 
@@ -85,11 +98,13 @@ Load your Game Project, then open:
 File->Connect To Source Control... -> Git: Accept Settings
 ```
 
+The Git Plugin is able to create (initialize) a new local Git Repository with your project Assets and Sources files.
+
 See also the [Source Control official Documentation](https://docs.unrealengine.com/latest/INT/Engine/UI/SourceControl/index.html)
 
 ### License
 
-Copyright (c) 2014-2017 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+Copyright (c) 2014-2017 Sébastien Rombauts (sebastien.rombauts@gmail.com)
 
 Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 or copy at http://opensource.org/licenses/MIT)
