@@ -14,6 +14,7 @@
 #include "Modules/ModuleManager.h"
 #include "ISourceControlModule.h"
 #include "GitSourceControlModule.h"
+#include "GitSourceControlProvider.h"
 
 #if PLATFORM_LINUX
 #include <sys/ioctl.h>
@@ -113,7 +114,7 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutResults);
 	if(ReturnCode != 0)
 	{
-		UE_LOG(LogSourceControl, Warning, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutErrors);
+		UE_LOG(LogSourceControl, Warning, TEXT("RunCommand(%s) ReturnCode=%d:\n%s"), *InCommand, ReturnCode, *OutErrors);
 	}
 #endif
 
