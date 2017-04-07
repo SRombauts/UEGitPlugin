@@ -17,9 +17,10 @@ UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine
 Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
 
 ### Supported features
-- initialize a new Git local repository ('git init') to manage your UE4 Game Project.
-- create an appropriate .gitignore file as part as initialization
-- can also make the initial commit
+- initialize a new Git local repository ('git init') to manage your UE4 Game Project
+  - can also create an appropriate .gitignore file as part of initialization
+  - can also create a .gitattributes file to enable Git LFS (Large File System) as part of initialization
+  - can also make the initial commit, with custom multi-line message
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
 - visual diff of a blueprint against depot or between previous versions of a file
@@ -33,20 +34,21 @@ Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
 - Git LFS (Github, Gitlab, Bitbucket), git-annex, git-fat and git-media are working with Git 2.10+
 - Windows, Mac and Linux
 
-### What *cannot* be done presently (TODO list):
+### What *cannot* be done presently
 - Branch/Merge are not in the current Editor workflow
 - Fetch/Push are not in the current Editor workflow
 - Amend a commit is not in the current Editor workflow
 - Revert All (using either "Stash" or "reset --hard")
-- configure user name & email ('git config user.name' & git config user.email')
+- Configure user name & email ('git config user.name' & git config user.email')
+- Configure remote origin URL ('git remote add origin url')
 
-### Known issues:
+### Known issues
 - the Editor does not show deleted files (only when deleted externaly?)
 - the Editor does not show missing files
 - missing localisation for git specific messages
 - displaying states of 'Engine' assets (also needs management of 'out of tree' files)
-- renaming a Blueprint in Editor leaves a tracker file, AND modify too much the asset to enable git to track its history through renaming
-- file history show Changelist as signed integer instead of hexadecimal SHA1
+- renaming a Blueprint in Editor leaves a redirector file, AND modify too much the asset to enable git to track its history through renaming
+- standard Editor commit dialog asks if user wants to "Keep Files Checked Out" => no use for Git or Mercurial CanCheckOut()==false
 
  */
 class FGitSourceControlModule : public IModuleInterface
