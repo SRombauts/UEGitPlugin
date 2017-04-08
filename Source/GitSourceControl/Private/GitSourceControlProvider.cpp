@@ -17,6 +17,7 @@
 #include "SGitSourceControlSettings.h"
 #include "Logging/MessageLog.h"
 #include "ScopedSourceControlProgress.h"
+#include "IPluginManager.h"
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"
 
@@ -27,6 +28,12 @@ void FGitSourceControlProvider::Init(bool bForceConnection)
 	// Init() is called multiple times at startup: do not check git each time
 	if(!bGitAvailable)
 	{
+		const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin(TEXT("GitSourceControl"));
+		if(Plugin.IsValid())
+		{
+			UE_LOG(LogSourceControl, Log, TEXT("Git plugin '%s'"), *(Plugin->GetDescriptor().VersionName));
+		}
+
 		CheckGitAvailability();
 	}
 
