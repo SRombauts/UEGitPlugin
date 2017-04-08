@@ -112,6 +112,12 @@ public:
 		return UserEmail;
 	}
 
+	/** Git remote origin url */
+	inline const FString& GetRemoteUrl() const
+	{
+		return RemoteUrl;
+	}
+
 	/** Helper function used to update state cache */
 	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> GetStateInternal(const FString& Filename);
 
@@ -154,6 +160,9 @@ private:
 
 	/** Name of the current branch */
 	FString BranchName;
+
+	/** URL of the "origin" defaut remote server */
+	FString RemoteUrl;
 
 	/** State cache */
 	TMap<FString, TSharedRef<class FGitSourceControlState, ESPMode::ThreadSafe> > StateCache;

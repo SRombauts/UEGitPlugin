@@ -98,6 +98,15 @@ void GetUserConfig(const FString& InPathToGitBinary, const FString& InRepository
 bool GetBranchName(const FString& InPathToGitBinary, const FString& InRepositoryRoot, FString& OutBranchName);
 
 /**
+ * Get the URL of the "origin" defaut remote server
+ * @param	InPathToGitBinary	The path to the Git binary
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+ * @param	OutRemoteUrl		URL of "origin" defaut remote server
+ * @returns true if the command succeeded and returned no errors
+ */
+bool GetRemoteUrl(const FString& InPathToGitBinary, const FString& InRepositoryRoot, FString& OutRemoteUrl);
+
+/**
  * Run a Git command - output is a string TArray.
  *
  * @param	InCommand			The Git command - e.g. commit

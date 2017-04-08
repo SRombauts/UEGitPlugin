@@ -25,6 +25,15 @@ static FName ProviderName("Git (dev)");
 
 void FGitSourceControlProvider::Init(bool bForceConnection)
 {
+	if(bForceConnection)
+	{
+		UE_LOG(LogSourceControl, Error, TEXT("FGitSourceControlProvider::Init(bForceConnection=%d)"), bForceConnection);
+	}
+	else
+	{
+		UE_LOG(LogSourceControl, Log, TEXT("FGitSourceControlProvider::Init(bForceConnection=%d)"), bForceConnection);
+	}
+
 	// Init() is called multiple times at startup: do not check git each time
 	if(!bGitAvailable)
 	{
@@ -77,7 +86,11 @@ void FGitSourceControlProvider::CheckRepositoryStatus(const FString& InPathToGit
 	{
 		// Get branch name
 		bGitRepositoryFound = GitSourceControlUtils::GetBranchName(InPathToGitBinary, PathToRepositoryRoot, BranchName);
-		if (!bGitRepositoryFound)
+		if(bGitRepositoryFound)
+		{
+			GitSourceControlUtils::GetRemoteUrl(InPathToGitBinary, PathToRepositoryRoot, RemoteUrl);
+		}
+		else
 		{
 			UE_LOG(LogSourceControl, Error, TEXT("'%s' is not a valid Git repository"), *PathToRepositoryRoot);
 		}
@@ -123,11 +136,12 @@ FText FGitSourceControlProvider::GetStatusText() const
 {
 	FFormatNamedArguments Args;
 	Args.Add( TEXT("RepositoryName"), FText::FromString(PathToRepositoryRoot) );
+	Args.Add( TEXT("RemoteUrl"), FText::FromString(RemoteUrl) );
 	Args.Add( TEXT("BranchName"), FText::FromString(BranchName) );
 	Args.Add( TEXT("UserName"), FText::FromString(UserName) );
 	Args.Add( TEXT("UserEmail"), FText::FromString(UserEmail) );
 
-	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Repository: {RepositoryName}\nBranch: {BranchName}\nUser: {UserName}\nE-mail: {UserEmail}"), Args );
+	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Local repository: {RepositoryName}\nRemote origin: {RemoteUrl}\nBranch: {BranchName}\nUser: {UserName}\nE-mail: {UserEmail}"), Args );
 }
 
 /** Quick check if source control is enabled */
@@ -227,11 +241,15 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 	if(InConcurrency == EConcurrency::Synchronous)
 	{
 		Command->bAutoDelete = false;
+
+		UE_LOG(LogSourceControl, Log, TEXT("ExecuteSynchronousCommand(%s)"), *InOperation->GetName().ToString());
 		return ExecuteSynchronousCommand(*Command, InOperation->GetInProgressString());
 	}
 	else
 	{
 		Command->bAutoDelete = true;
+
+		UE_LOG(LogSourceControl, Log, TEXT("IssueAsynchronousCommand(%s)"), *InOperation->GetName().ToString());
 		return IssueCommand(*Command);
 	}
 }
