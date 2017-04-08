@@ -3,9 +3,12 @@ Unreal Engine 4 Git Source Control Plugin
 
 [![Join the chat at https://gitter.im/SRombauts/UE4GitPlugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SRombauts/UE4GitPlugin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine
+UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine.
 
-**It has been integrated by default in UE4.7 in "Beta".**
+Developped and contributted by SÃ©bastien Rombauts 2014-2017 (sebastien.rombauts@gmail.com)
+&nbsp;&nbsp;&nbsp; <a href="https://www.paypal.me/SRombauts" title="Pay Me a Beer! Donate with PayPal :)"><img src="https://www.paypalobjects.com/webstatic/paypalme/images/pp_logo_small.png" width="118"></a>
+
+**It has been integrated by default in UE4.7 in "beta version".**
 
 This is a developement fork to be able to develop a "v2" of the plugin alongside the existing git plugin inside currents version of the engine.
 For now, you need to install it into your Project Plugins folder, and it will overwrite (replace) the default "Git (beta version)" Source Control Provider with the "Git (dev)" plugin.
@@ -72,7 +75,7 @@ usually in "C:\Program Files\Git\bin\git.exe".
 Then you have to configure your name and e-mail that will appear in each of your commits:
 
 ```
-git config --global user.name "Sébastien Rombauts"
+git config --global user.name "SÃ©bastien Rombauts"
 git config --global user.email sebastien.rombauts@gmail.com
 ```
 
@@ -103,7 +106,7 @@ See also the [Source Control official Documentation](https://docs.unrealengine.c
 
 ### License
 
-Copyright (c) 2014-2017 Sébastien Rombauts (sebastien.rombauts@gmail.com)
+Copyright (c) 2014-2017 SÃ©bastien Rombauts (sebastien.rombauts@gmail.com)
 
 Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 or copy at http://opensource.org/licenses/MIT)
