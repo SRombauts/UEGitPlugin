@@ -273,6 +273,11 @@ bool FGitSourceControlProvider::UsesChangelists() const
 	return false;
 }
 
+bool FGitSourceControlProvider::UsesCheckout() const
+{
+	return false;
+}
+
 TSharedPtr<IGitSourceControlWorker, ESPMode::ThreadSafe> FGitSourceControlProvider::CreateWorker(const FName& InOperationName) const
 {
 	const FGetGitSourceControlWorker* Operation = WorkersMap.Find(InOperationName);
