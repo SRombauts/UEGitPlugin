@@ -256,23 +256,32 @@ bool CheckGitAvailability(const FString& InPathToGitBinary, FGitVersion *OutVers
 
 void ParseGitVersion(const FString& InVersionString, FGitVersion *OutVersion) 
 {
-	// Parse "git version 2.11.0" into the string tokens "git", "version", "2.11.0"
+	// Parse "git version 2.11.0.windows.3" into the string tokens "git", "version", "2.11.0.windows.3"
 	TArray<FString> TokenizedString;
 	InVersionString.ParseIntoArrayWS(TokenizedString);
 
-	// Select the string token containing the version "2.11.0"
+	// Select the string token containing the version "2.11.0.windows.3"
 	const FString* TokenVersionStringPtr = TokenizedString.FindByPredicate([](FString& s) { return TChar<TCHAR>::IsDigit(s[0]); });
 	if(TokenVersionStringPtr)
 	{
-		// Parse the version into its two Major.Minor numerical components
+		// Parse the version into its numerical components
 		TArray<FString> ParsedVersionString;
 		TokenVersionStringPtr->ParseIntoArray(ParsedVersionString, TEXT("."));
-		if(ParsedVersionString.Num() >= 2)
+		if(ParsedVersionString.Num() >= 3)
 		{
-			if(ParsedVersionString[0].IsNumeric() && ParsedVersionString[1].IsNumeric())
+			if(ParsedVersionString[0].IsNumeric() && ParsedVersionString[1].IsNumeric() && ParsedVersionString[2].IsNumeric())
 			{
 				OutVersion->Major = FCString::Atoi(*ParsedVersionString[0]);
 				OutVersion->Minor = FCString::Atoi(*ParsedVersionString[1]);
+				OutVersion->Patch = FCString::Atoi(*ParsedVersionString[2]);
+				if(ParsedVersionString.Num() >= 5)
+				{
+					if((ParsedVersionString[3] == TEXT("windows")) && ParsedVersionString[4].IsNumeric())
+					{
+						OutVersion->Windows = FCString::Atoi(*ParsedVersionString[4]);
+					}
+				}
+				UE_LOG(LogSourceControl, Log, TEXT("Git version %d.%d.%d(%d)"), OutVersion->Major, OutVersion->Minor, OutVersion->Patch, OutVersion->Windows);
 			}
 		}
 	}
@@ -293,7 +302,7 @@ void FindGitLfsCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVe
 {
 	FString InfoMessages;
 	FString ErrorMessages;
-	bool bGitLfsAvailable = RunCommandInternalRaw(TEXT("lfs"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	bool bGitLfsAvailable = RunCommandInternalRaw(TEXT("lfs version"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
 	if(bGitLfsAvailable)
 	{
 		OutVersion->bHasGitLfs = true;
@@ -302,6 +311,7 @@ void FindGitLfsCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVe
 		{
 			OutVersion->bHasGitLfsLocking = true; // Git LFS File Locking workflow introduced in "git-lfs/2.0.0"
 		}
+		UE_LOG(LogSourceControl, Log, TEXT("%s"), *InfoMessages);
 	}
 }
 

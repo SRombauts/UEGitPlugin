@@ -16,10 +16,14 @@ class FGitSourceControlCommand;
 
 DECLARE_DELEGATE_RetVal(FGitSourceControlWorkerRef, FGetGitSourceControlWorker)
 
+/// Git version and capabilites extracted from the string "git version 2.11.0.windows.3"
 struct FGitVersion
 {
-	int Major;
-	int Minor;
+	// Git version extracted from the string "git version 2.11.0.windows.3" (Windows) or "git version 2.11.0" (Linux/Mac/Cygwin/WSL)
+	int Major;   // 2	Major version number
+	int Minor;   // 11	Minor version number
+	int Patch;   // 0	Patch/bugfix number
+	int Windows; // 3	Windows specific revision number (under Windows only)
 
 	uint32 bHasCatFileWithFilters : 1;
 	uint32 bHasGitLfs : 1;
@@ -28,6 +32,8 @@ struct FGitVersion
 	FGitVersion() 
 		: Major(0)
 		, Minor(0)
+		, Patch(0)
+		, Windows(0)
 		, bHasCatFileWithFilters(false)
 		, bHasGitLfs(false)
 		, bHasGitLfsLocking(false)
