@@ -642,7 +642,7 @@ public:
 		CommonAncestorFileId = FirstResult.Mid(7, 40);
 	}
 
-	FString CommonAncestorFileId;	/// SHA1 Id of the file (warning: not the commit Id)
+	FString CommonAncestorFileId;	///< SHA1 Id of the file (warning: not the commit Id)
 };
 
 /** Execute a command to get the details of a conflict */
@@ -1043,8 +1043,8 @@ public:
 		}
 	}
 
-	FString FileHash;	/// SHA1 Id of the file (warning: not the commit Id)
-	int32	FileSize;	/// Size of the file (in bytes)
+	FString FileHash;	///< SHA1 Id of the file (warning: not the commit Id)
+	int32	FileSize;	///< Size of the file (in bytes)
 };
 
 // Run a Git "log" command and parse it.

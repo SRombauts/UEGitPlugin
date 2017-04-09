@@ -91,7 +91,7 @@ void GetUserConfig(const FString& InPathToGitBinary, const FString& InRepository
 /**
  * Get Git current checked-out branch
  * @param	InPathToGitBinary	The path to the Git binary
- * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory
  * @param	OutBranchName		Name of the current checked-out branch (if any, ie. not in detached HEAD)
  * @returns true if the command succeeded and returned no errors
  */
@@ -100,7 +100,7 @@ bool GetBranchName(const FString& InPathToGitBinary, const FString& InRepository
 /**
  * Get the URL of the "origin" defaut remote server
  * @param	InPathToGitBinary	The path to the Git binary
- * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory
  * @param	OutRemoteUrl		URL of "origin" defaut remote server
  * @returns true if the command succeeded and returned no errors
  */
@@ -124,7 +124,7 @@ bool RunCommand(const FString& InCommand, const FString& InPathToGitBinary, cons
  * Run a Git "commit" command by batches.
  *
  * @param	InPathToGitBinary	The path to the Git binary
- * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory
  * @param	InParameter			The parameters to the Git commit command
  * @param	InFiles				The files to be operated on
  * @param	OutErrorMessages	Any errors (from StdErr) as an array per-line
@@ -136,7 +136,7 @@ bool RunCommit(const FString& InPathToGitBinary, const FString& InRepositoryRoot
  * Run a Git "status" command and parse it.
  *
  * @param	InPathToGitBinary	The path to the Git binary
- * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory
  * @param	InFiles				The files to be operated on
  * @param	OutErrorMessages	Any errors (from StdErr) as an array per-line
  * @returns true if the command succeeded and returned no errors
@@ -147,7 +147,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
  * Run a Git "cat-file" command to dump the binary content of a revision into a file.
  *
  * @param	InPathToGitBinary	The path to the Git binary
- * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory
  * @param	InParameter			The parameters to the Git show command (rev:path)
  * @param	InDumpFileName		The temporary file to dump the revision
  * @returns true if the command succeeded and returned no errors
@@ -158,7 +158,7 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
  * Run a Git "log" command and parse it.
  *
  * @param	InPathToGitBinary	The path to the Git binary
- * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory (can be empty)
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory
  * @param	InFile				The file to be operated on
  * @param	bMergeConflict		In case of a merge conflict, we also need to get the tip of the "remote branch" (MERGE_HEAD) before the log of the "current branch" (HEAD)
  * @param	OutErrorMessages	Any errors (from StdErr) as an array per-line
