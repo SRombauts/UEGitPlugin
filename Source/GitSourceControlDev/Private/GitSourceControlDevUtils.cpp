@@ -58,13 +58,21 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 
 	if(!InRepositoryRoot.IsEmpty())
 	{
+		FString RepositoryRoot = InRepositoryRoot;
+
+		// Detect a "migrate asset" scenario (a "git add" command is applied to files outside the current project)
+		if ( (InFiles.Num() > 0) && (!InFiles[0].StartsWith(InRepositoryRoot)) )
+		{
+			// in this case, find the git repository (if any) of the destination Project
+			FindRootDirectory(FPaths::GetPath(InFiles[0]), RepositoryRoot);
+		}
+
 		// Specify the working copy (the root) of the git repository (before the command itself)
 		FullCommand  = TEXT("--work-tree=\"");
-		FullCommand += InRepositoryRoot;
+		FullCommand += RepositoryRoot;
 		// and the ".git" subdirectory in it (before the command itself)
 		FullCommand += TEXT("\" --git-dir=\"");
-		FullCommand += InRepositoryRoot;
-		FullCommand += TEXT(".git\" ");
+		FullCommand += FPaths::Combine(*RepositoryRoot, TEXT(".git\" "));
 	}
 	// then the git command itself ("status", "log", "commit"...)
 	LogableCommand += InCommand;
@@ -86,8 +94,8 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 	FullCommand += LogableCommand;
 
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *LogableCommand);
-	// @todo: temporary debug logs
-	//	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *FullCommand);
+// @todo: temporary debug logs
+// UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *FullCommand);
 	FPlatformProcess::ExecProcess(*InPathToGitBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
 	if (!OutErrors.IsEmpty())
@@ -207,25 +215,37 @@ bool CheckGitAvailability(const FString& InPathToGitBinary)
 	return bGitAvailable;
 }
 
-// Find the root of the Git repository, looking from the GameDir and upward in its parent directories.
-bool FindRootDirectory(const FString& InPathToGameDir, FString& OutRepositoryRoot)
+// Find the root of the Git repository, looking from the provided path and upward in its parent directories.
+bool FindRootDirectory(const FString& InPath, FString& OutRepositoryRoot)
 {
 	bool bFound = false;
 	FString PathToGitSubdirectory;
-	OutRepositoryRoot = InPathToGameDir;
+	OutRepositoryRoot = InPath;
+
+	auto TrimTrailing = [](FString& Str, const TCHAR Char)
+	{
+		int32 Len = Str.Len();
+		while(Len && Str[Len - 1] == Char)
+		{
+			Str = Str.LeftChop(1);
+			Len = Str.Len();
+		}
+	};
+
+	TrimTrailing(OutRepositoryRoot, '\\');
+	TrimTrailing(OutRepositoryRoot, '/');
 
 	while(!bFound && !OutRepositoryRoot.IsEmpty())
 	{
-		PathToGitSubdirectory = OutRepositoryRoot;
-		PathToGitSubdirectory += TEXT(".git"); // Look for the ".git" subdirectory present at the root of every Git repository
+		// Look for the ".git" subdirectory present at the root of every Git repository
+		PathToGitSubdirectory = OutRepositoryRoot / TEXT(".git");
 		bFound = IFileManager::Get().DirectoryExists(*PathToGitSubdirectory);
 		if(!bFound)
 		{
 			int32 LastSlashIndex;
-			OutRepositoryRoot = OutRepositoryRoot.LeftChop(5);
 			if(OutRepositoryRoot.FindLastChar('/', LastSlashIndex))
 			{
-				OutRepositoryRoot = OutRepositoryRoot.Left(LastSlashIndex + 1);
+				OutRepositoryRoot = OutRepositoryRoot.Left(LastSlashIndex);
 			}
 			else
 			{
@@ -235,7 +255,7 @@ bool FindRootDirectory(const FString& InPathToGameDir, FString& OutRepositoryRoo
 	}
 	if (!bFound)
 	{
-		OutRepositoryRoot = InPathToGameDir; // If not found, return the GameDir as best possible root.
+		OutRepositoryRoot = InPath; // If not found, return the provided dir as best possible root.
 	}
 	return bFound;
 }
@@ -843,6 +863,7 @@ bool RunGetHistory(const FString& InPathToGitBinary, const FString& InRepository
 		Parameters.Add(TEXT("--follow")); // follow file renames
 		Parameters.Add(TEXT("--date=raw"));
 		Parameters.Add(TEXT("--name-status")); // relative filename at this revision, preceded by a status character
+		Parameters.Add(TEXT("--pretty=medium")); // make sure format matches expected in ParseLogResults
 		TArray<FString> Files;
 		Files.Add(*InFile);
 		if(bMergeConflict)
@@ -887,13 +908,10 @@ bool UpdateCachedStates(const TArray<FGitSourceControlDevState>& InStates)
 	for(const auto& InState : InStates)
 	{
 		TSharedRef<FGitSourceControlDevState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename);
-		if(State->WorkingCopyState != InState.WorkingCopyState)
-		{
-			State->WorkingCopyState = InState.WorkingCopyState;
-			State->PendingMergeBaseFileHash = InState.PendingMergeBaseFileHash;
-		//	State->TimeStamp = InState.TimeStamp; // @todo Bug report: Workaround a bug with the Source Control Module not updating file state after a "Save"
-			NbStatesUpdated++;
-		}
+		auto History = MoveTemp(State->History);
+		*State = InState;
+		State->TimeStamp = FDateTime::Now();
+		State->History = MoveTemp(History);
 	}
 
 	return (NbStatesUpdated > 0);

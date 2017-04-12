@@ -48,12 +48,12 @@ FString FindGitBinaryPath();
 bool CheckGitAvailability(const FString& InPathToGitBinary);
 
 /**
- * Find the root of the Git repository, looking from the GameDir and upward in its parent directories
- * @param InPathToGameDir		The path to the Game Directory
+ * Find the root of the Git repository, looking from the provided path and upward in its parent directories
+ * @param InPath				The path to the Game Directory (or any path or file in any git repository)
  * @param OutRepositoryRoot		The path to the root directory of the Git repository if found, else the path to the GameDir
  * @returns true if the command succeeded and returned no errors
  */
-bool FindRootDirectory(const FString& InPathToGameDir, FString& OutRepositoryRoot);
+bool FindRootDirectory(const FString& InPath, FString& OutRepositoryRoot);
 
 /**
  * Get Git config user.name & user.email
