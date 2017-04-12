@@ -59,6 +59,10 @@ private:
 	FText GetInitialCommitMessage() const;
 	FText InitialCommitMessage;
 
+	void OnRemoteUrlCommited(const FText& InText, ETextCommit::Type InCommitType);
+	FText GetRemoteUrl() const;
+	FText RemoteUrl;
+
 	/** Launch initial asynchronous add and commit operations */
 	void LaunchMarkForAddOperation(const TArray<FString>& InFiles);
 	void LaunchCheckInOperation();

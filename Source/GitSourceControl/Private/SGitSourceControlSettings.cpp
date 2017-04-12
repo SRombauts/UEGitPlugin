@@ -163,6 +163,32 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 					.Font(Font)
 				]
 			]
+			// Option to configure the URL of the default remote 'origin'
+			+SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(2.0f)
+			.VAlign(VAlign_Center)
+			[
+				SNew(SHorizontalBox)
+				.Visibility(this, &SGitSourceControlSettings::CanInitializeGitRepository)
+				.ToolTipText(LOCTEXT("ConfigureOrigin_Tooltip", "Configure the URL of the default remote 'origin'"))
+				+SHorizontalBox::Slot()
+				.FillWidth(1.0f)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("ConfigureOrigin", "URL of the remote server 'origin'"))
+					.Font(Font)
+				]
+				+SHorizontalBox::Slot()
+				.FillWidth(2.0f)
+				.VAlign(VAlign_Center)
+				[
+					SNew(SEditableTextBox)
+					.Text(this, &SGitSourceControlSettings::GetRemoteUrl)
+					.OnTextCommitted(this, &SGitSourceControlSettings::OnRemoteUrlCommited)
+					.Font(Font)
+				]
+			]
 			// Option to add a proper .gitignore file (true by default)
 			+SVerticalBox::Slot()
 			.AutoHeight()
@@ -339,8 +365,16 @@ FReply SGitSourceControlSettings::OnClickedInitializeGitRepository()
 	TArray<FString> InfoMessages;
 	TArray<FString> ErrorMessages;
 
-	// 1. Synchronous (very quick) "git init" operation: initialize a Git local repository with a .git/ subdirectory
+	// 1.a. Synchronous (very quick) "git init" operation: initialize a Git local repository with a .git/ subdirectory
 	GitSourceControlUtils::RunCommand(TEXT("init"), PathToGitBinary, PathToGameDir, TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	// 1.b. Synchronous (very quick) "git remote add" operation: configure the URL of the default remote server 'origin' if specified
+	if(!RemoteUrl.IsEmpty())
+	{
+		TArray<FString> Parameters;
+		Parameters.Add(TEXT("add origin"));
+		Parameters.Add(RemoteUrl.ToString());
+		GitSourceControlUtils::RunCommand(TEXT("remote"), PathToGitBinary, PathToGameDir, Parameters, TArray<FString>(), InfoMessages, ErrorMessages);
+	}
 
 	// Check the new repository status to enable connection (branch, user e-mail)
 	GitSourceControl.GetProvider().CheckRepositoryStatus(PathToGitBinary);
@@ -377,9 +411,6 @@ FReply SGitSourceControlSettings::OnClickedInitializeGitRepository()
 			{
 				ProjectFiles.Add(GitAttributesFilename);
 			}
-
-			// 2.d. TODO NOCOMMIT RemoteUrl
-
 		}
 
 		// 3. Add files to Source Control: launch an asynchronous MarkForAdd operation
@@ -512,6 +543,16 @@ void SGitSourceControlSettings::OnInitialCommitMessageCommited(const FText& InTe
 FText SGitSourceControlSettings::GetInitialCommitMessage() const
 {
 	return InitialCommitMessage;
+}
+
+void SGitSourceControlSettings::OnRemoteUrlCommited(const FText& InText, ETextCommit::Type InCommitType)
+{
+	RemoteUrl = InText;
+}
+
+FText SGitSourceControlSettings::GetRemoteUrl() const
+{
+	return RemoteUrl;
 }
 
 #undef LOCTEXT_NAMESPACE
