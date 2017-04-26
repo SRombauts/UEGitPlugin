@@ -194,7 +194,7 @@ bool FGitSyncWorker::Execute(FGitSourceControlCommand& InCommand)
    // (this cannot work if any local files are modified but not commited)
    {
       TArray<FString> Parameters;
-      Parameters.Add(TEXT("--rebase"));
+      Parameters.Add(TEXT("--rebase origin HEAD"));
       InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("pull"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
    }
 

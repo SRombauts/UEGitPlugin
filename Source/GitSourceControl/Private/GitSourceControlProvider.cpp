@@ -79,7 +79,7 @@ void FGitSourceControlProvider::CheckGitAvailability()
 
 void FGitSourceControlProvider::CheckRepositoryStatus(const FString& InPathToGitBinary)
 {
-	// Find the path to the root Git directory (if any)
+	// Find the path to the root Git directory (if any, else uses the GameDir)
 	const FString PathToGameDir = FPaths::ConvertRelativePathToFull(FPaths::GameDir());
 	bGitRepositoryFound = GitSourceControlUtils::FindRootDirectory(PathToGameDir, PathToRepositoryRoot);
 	if(bGitRepositoryFound)

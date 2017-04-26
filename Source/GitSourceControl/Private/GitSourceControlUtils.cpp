@@ -104,19 +104,19 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 
 	FullCommand += LogableCommand;
 
-#if UE_BUILD_DEBUG
+//#if UE_BUILD_DEBUG
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommand: 'git %s'"), *LogableCommand);
-#endif
+//#endif
 	
 	FPlatformProcess::ExecProcess(*InPathToGitBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
 	
-#if UE_BUILD_DEBUG
+//#if UE_BUILD_DEBUG
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutResults);
 	if(ReturnCode != 0)
 	{
 		UE_LOG(LogSourceControl, Warning, TEXT("RunCommand(%s) ReturnCode=%d:\n%s"), *InCommand, ReturnCode, *OutErrors);
 	}
-#endif
+//#endif
 
 	return ReturnCode == 0;
 }
@@ -921,9 +921,9 @@ bool RunLfsCommand(const FString& InCommand, const FString& InPathToGitBinary, c
 
 	verify(FPlatformProcess::CreatePipe(PipeRead, PipeWrite));
 
-#if UE_BUILD_DEBUG
+//#if UE_BUILD_DEBUG
 	UE_LOG(LogSourceControl, Log, TEXT("RunLfsCommand: 'git %s'"), *FullCommand);
-#endif
+//#endif
 
 	// Execute Git LFS command relative to the RepositoryRoot
 	FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*InPathToGitBinary, *FullCommand, bLaunchDetached, bLaunchHidden, bLaunchReallyHidden, nullptr, 0, *InRepositoryRoot, PipeWrite);
@@ -935,17 +935,17 @@ bool RunLfsCommand(const FString& InCommand, const FString& InPathToGitBinary, c
 		{
 			const FString StdOut = FPlatformProcess::ReadPipe(PipeRead);
 			StdOut.ParseIntoArray(OutResults, TEXT("\n"), true);
-#if UE_BUILD_DEBUG
+//#if UE_BUILD_DEBUG
 			UE_LOG(LogSourceControl, Log, TEXT("RunLfsCommand(%s) success:\n%s"), *InCommand, *StdOut);
-#endif
+//#endif
 		}
 		else
 		{
 			const FString StdOut = FPlatformProcess::ReadPipe(PipeRead);
 			StdOut.ParseIntoArray(OutErrorMessages, TEXT("\n"), true);
-#if UE_BUILD_DEBUG
+//#if UE_BUILD_DEBUG
 			UE_LOG(LogSourceControl, Warning, TEXT("RunLfsCommand(%s) ReturnCode=%d:\n%s"), *InCommand, ReturnCode, *StdOut);
-#endif
+//#endif
 		}
 
 		FPlatformProcess::CloseProc(ProcessHandle);

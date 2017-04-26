@@ -41,6 +41,7 @@ Visual Diffing of different revision of a Blueprint :
 - migrate an asset between two projects if both are using Git
 - solve a merge conflict on a blueprint
 - show current branch name in status text
+- Configure remote origin URL ('git remote add origin url')
 - Sync to Pull (rebase) the current branch if there is no local modified files
 - Git LFS (Github, Gitlab, Bitbucket), git-annex, git-fat and git-media are working with Git 2.10+
 - Windows, Mac and Linux
@@ -51,7 +52,6 @@ Visual Diffing of different revision of a Blueprint :
 - Amend a commit is not in the current Editor workflow
 - Revert All (using either "Stash" or "reset --hard")
 - Configure user name & email ('git config user.name' & git config user.email')
-- Configure remote origin URL ('git remote add origin url')
 - Authentication is not managed if needed for Sync (Pull)
 
 ### Known issues
