@@ -46,14 +46,16 @@ Visual Diffing of different revision of a Blueprint :
 - Windows, Mac and Linux
 
 ### What *cannot* be done presently
+- Push is not in the current Editor workflow
 - Branch/Merge are not in the current Editor workflow
-- Fetch/Push are not in the current Editor workflow
 - Amend a commit is not in the current Editor workflow
 - Revert All (using either "Stash" or "reset --hard")
 - Configure user name & email ('git config user.name' & git config user.email')
 - Configure remote origin URL ('git remote add origin url')
+- Authentication is not managed if needed for Sync (Pull)
 
 ### Known issues
+- Rebase/cherry-pick conflicts not working (only merge-conflicts)
 - the Editor does not show deleted files (only when deleted externaly?)
 - the Editor does not show missing files
 - missing localisation for git specific messages
@@ -64,7 +66,7 @@ Visual Diffing of different revision of a Blueprint :
 Windows:
 ### Getting started
 
-Quick demo of the Git Plugin on Unreal Engine 4.12 (preview) 
+Quick demo of the Git Plugin on Unreal Engine 4.12 (preview)
 [![Git Plugin on Unreal Engine 4.12 (preview)](https://img.youtube.com/vi/rRhPl9vL58Q/0.jpg)](https://youtu.be/rRhPl9vL58Q)
 
 #### Install Git
