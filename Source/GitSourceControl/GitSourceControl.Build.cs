@@ -7,7 +7,7 @@ using UnrealBuildTool;
 
 public class GitSourceControl : ModuleRules
 {
-	public GitSourceControl(TargetInfo Target)
+	public GitSourceControl(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {

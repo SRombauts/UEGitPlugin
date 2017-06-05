@@ -1,7 +1,7 @@
 {
 	"FileVersion" : 3,
-	"Version" : 20,
-	"VersionName" : "2.0",
+	"Version" : 21,
+	"VersionName" : "2.1",
 	"FriendlyName" : "Git (dev)",
 	"Description" : "Git source control management (dev)",
 	"Category" : "Source Control",
