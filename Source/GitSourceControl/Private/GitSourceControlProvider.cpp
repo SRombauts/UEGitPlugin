@@ -65,6 +65,7 @@ void FGitSourceControlProvider::CheckGitAvailability()
 
 	if(!PathToGitBinary.IsEmpty())
 	{
+		UE_LOG(LogSourceControl, Log, TEXT("Using '%s'"), *PathToGitBinary);
 		bGitAvailable = GitSourceControlUtils::CheckGitAvailability(PathToGitBinary, &GitVersion);
 		if(bGitAvailable)
 		{

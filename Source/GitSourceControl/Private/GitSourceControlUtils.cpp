@@ -858,6 +858,8 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 
 	verify(FPlatformProcess::CreatePipe(PipeRead, PipeWrite));
 
+	UE_LOG(LogSourceControl, Log, TEXT("RunDumpToFile: 'git %s'"), *FullCommand);
+
 	FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*InPathToGitBinary, *FullCommand, bLaunchDetached, bLaunchHidden, bLaunchReallyHidden, nullptr, 0, *InRepositoryRoot, PipeWrite);
 	if(ProcessHandle.IsValid())
 	{
