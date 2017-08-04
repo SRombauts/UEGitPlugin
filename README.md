@@ -18,14 +18,17 @@ Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.c
 
 Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
 
-Source Control Login screen to create a new workspace/a new repository :
+Source Control Login screen to create a new workspace/a new repository:
 <img src="Screenshots/SourceControlLogin_Init.png" width="720">
 
-History menu entry to look a the changelog of an asset :
+History menu entry to look a the changelog of an asset:
 <img src="Screenshots/FileHistory.png" width="720">
 
-Visual Diffing of different revision of a Blueprint :
+Visual Diffing of two revisions of a Blueprint:
 <img src="https://cdn2.unrealengine.com/blog/DiffTool-1009x542-719850393.png" width="720">
+
+Merge conflict of a Blueprint:
+<img src="https://docs.unrealengine.com/latest/images/Support/Builds/ReleaseNotes/2015/4_7/BPmergeTool.jpg" width="720">
 
 ### Supported features
 - initialize a new Git local repository ('git init') to manage your UE4 Game Project
@@ -35,7 +38,7 @@ Visual Diffing of different revision of a Blueprint :
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
 - visual diff of a blueprint against depot or between previous versions of a file
-- revert modifications of a file (works best with UE4.15 "Content Hot-Reload" experimental option)
+- revert modifications of a file (works best with "Content Hot-Reload" experimental option of UE4.15, by default since 4.16)
 - add, delete, rename a file
 - checkin/commit a file (cannot handle atomically more than 50 files)
 - migrate an asset between two projects if both are using Git
@@ -125,7 +128,7 @@ use the tools provided by GitHub:
 You can also email me directly, I will answer any questions and requests.
 
 ### Coding Style Guidelines
-The source code follow the UnreaEngine official [Coding Standard](https://docs.unrealengine.com/latest/INT/Programming/Development/CodingStandard/index.html) :
+The source code follow the UnreaEngine official [Coding Standard](https://docs.unrealengine.com/latest/INT/Programming/Development/CodingStandard/index.html):
 - CamelCase naming convention, with a prefix letter to differentiate classes ('F'), interfaces ('I'), templates ('T')
 - files (.cpp/.h) are named like the class they contains
 - Doxygen comments, documentation is located with declaration, on headers
