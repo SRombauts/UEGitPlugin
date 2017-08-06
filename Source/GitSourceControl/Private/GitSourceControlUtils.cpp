@@ -863,13 +863,29 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*InPathToGitBinary, *FullCommand, bLaunchDetached, bLaunchHidden, bLaunchReallyHidden, nullptr, 0, *InRepositoryRoot, PipeWrite);
 	if(ProcessHandle.IsValid())
 	{
-		FPlatformProcess::WaitForProc(ProcessHandle);
+		FPlatformProcess::Sleep(0.01);
+
+		TArray<uint8> BinaryFileContent;
+		while(FPlatformProcess::IsProcRunning(ProcessHandle))
+		{
+			TArray<uint8> BinaryData;
+			FPlatformProcess::ReadPipeToArray(PipeRead, BinaryData);
+			if(BinaryData.Num() > 0)
+			{
+				BinaryFileContent.Append(MoveTemp(BinaryData));
+			}
+		}
+		TArray<uint8> BinaryData;
+		FPlatformProcess::ReadPipeToArray(PipeRead, BinaryData);
+		if(BinaryData.Num() > 0)
+		{
+			BinaryFileContent.Append(MoveTemp(BinaryData));
+		}
+
 		FPlatformProcess::GetProcReturnCode(ProcessHandle, &ReturnCode);
 		if(ReturnCode == 0)
 		{
-			// Read output as binary buffer, and save it into temp file
-			TArray<uint8> BinaryFileContent;
-			FPlatformProcess::ReadPipeToArray(PipeRead, BinaryFileContent);
+			// Save buffer into temp file
 			if(FFileHelper::SaveArrayToFile(BinaryFileContent, *InDumpFileName))
 			{
 				UE_LOG(LogSourceControl, Log, TEXT("Writed '%s' (%do)"), *InDumpFileName, BinaryFileContent.Num());
