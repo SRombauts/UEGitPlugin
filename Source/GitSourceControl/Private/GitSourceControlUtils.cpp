@@ -979,18 +979,21 @@ bool RunLfsCommand(const FString& InCommand, const FString& InPathToGitBinary, c
 }
 
 /**
-* Extract and interpret the file state from the given Git log --name-status.
-* @see https://www.kernel.org/pub/software/scm/git/docs/git-log.html
-* ' ' = unmodified
-* 'M' = modified
-* 'A' = added
-* 'D' = deleted
-* 'R' = renamed
-* 'C' = copied
-* 'T' = type changed
-* 'U' = updated but unmerged
-* 'X' = unknown
-* 'B' = broken pairing
+ * Translate file actions from the given Git log --name-status command to keywords used by the Editor UI.
+ *
+ * @see https://www.kernel.org/pub/software/scm/git/docs/git-log.html
+ * ' ' = unmodified
+ * 'M' = modified
+ * 'A' = added
+ * 'D' = deleted
+ * 'R' = renamed
+ * 'C' = copied
+ * 'T' = type changed
+ * 'U' = updated but unmerged
+ * 'X' = unknown
+ * 'B' = broken pairing
+ *
+ * @see SHistoryRevisionListRowContent::GenerateWidgetForColumn(): "add", "edit", "delete", "branch" and "integrate" (everything else is taken like "edit")
 */
 static FString LogStatusToString(TCHAR InStatus)
 {
@@ -1000,14 +1003,14 @@ static FString LogStatusToString(TCHAR InStatus)
 		return FString("unmodified");
 	case TEXT('M'):
 		return FString("modified");
-	case TEXT('A'):
-		return FString("added");
-	case TEXT('D'):
-		return FString("deleted");
-	case TEXT('R'):
-		return FString("renamed");
-	case TEXT('C'):
-		return FString("copied");
+	case TEXT('A'): // added: keyword "add" to display a specific icon instead of the default "edit" action one
+		return FString("add");
+	case TEXT('D'): // deleted: keyword "delete" to display a specific icon instead of the default "edit" action one
+		return FString("delete");
+	case TEXT('R'): // renamed keyword "branch" to display a specific icon instead of the default "edit" action one
+		return FString("branch");
+	case TEXT('C'): // copied keyword "branch" to display a specific icon instead of the default "edit" action one
+		return FString("branch");
 	case TEXT('T'):
 		return FString("type changed");
 	case TEXT('U'):
