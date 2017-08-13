@@ -73,10 +73,10 @@ public:
 	virtual bool IsDeleted() const override;
 	virtual bool IsIgnored() const override;
 	virtual bool CanEdit() const override;
+	virtual bool CanDelete() const override;
 	virtual bool IsUnknown() const override;
 	virtual bool IsModified() const override;
 	virtual bool CanAdd() const override;
-	virtual bool CanDelete() const override;
 	virtual bool IsConflicted() const override;
 
 public:
