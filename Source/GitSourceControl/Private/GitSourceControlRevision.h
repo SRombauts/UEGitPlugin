@@ -59,8 +59,11 @@ public:
 	/** The user that made the change */
 	FString UserName;
 
-	/** The action (add, edit etc.) performed at this revision */
+	/** The action (add, edit, branch etc.) performed at this revision */
 	FString Action;
+
+	/** Source of move ("branch" in Perforce term) if any */
+	TSharedPtr<FGitSourceControlRevision, ESPMode::ThreadSafe> BranchSource;
 
 	/** The date this revision was made */
 	FDateTime Date;

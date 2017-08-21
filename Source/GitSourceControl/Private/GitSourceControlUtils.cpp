@@ -1108,11 +1108,17 @@ static void ParseLogResults(const TArray<FString>& InResults, TGitSourceControlH
 		OutHistory.Add(MoveTemp(SourceControlRevision));
 	}
 
-	// Then set the Index number of each Revision
-	int32 RevisionIndex = OutHistory.Num();
-	for(const auto& SourceControlRevisionItem : OutHistory)
+	// Then set the revision number of each Revision based on its index (reverse order since the log starts with the most recent change)
+	for(int32 RevisionIndex = 0; RevisionIndex < OutHistory.Num(); RevisionIndex++)
 	{
-		SourceControlRevisionItem->RevisionNumber = RevisionIndex--;
+		const auto& SourceControlRevisionItem = OutHistory[RevisionIndex];
+		SourceControlRevisionItem->RevisionNumber = OutHistory.Num() - RevisionIndex;
+
+		// Special case of a move ("branch" in Perforce term): point to the previous change (so the next one in the order of the log)
+		if((SourceControlRevisionItem->Action == "branch") && (RevisionIndex < OutHistory.Num() - 1))
+		{
+			SourceControlRevisionItem->BranchSource = OutHistory[RevisionIndex + 1];
+		}
 	}
 }
 
