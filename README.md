@@ -66,7 +66,6 @@ Merge conflict of a Blueprint:
 - renaming a Blueprint in Editor leaves a redirector file, AND modify too much the asset to enable git to track its history through renaming
 - standard Editor commit dialog asks if user wants to "Keep Files Checked Out" => no use for Git or Mercurial CanCheckOut()==false
 
-Windows:
 ### Getting started
 
 Quick demo of the Git Plugin on Unreal Engine 4.12 (preview)
@@ -85,7 +84,9 @@ git config --global user.name "Sébastien Rombauts"
 git config --global user.email sebastien.rombauts@gmail.com
 ```
 
-#### Install this Git Plugin into your Game Project
+#### Install this Git Plugin (dev) into your Game Project
+
+Unreal Engine comes with a stable version of this plugin, so no need to install it.
 
 This alternate "Git development plugin" needs to be installed into a subfolder or your Game Project "Plugins" directory
 (that is, you cannot install it into the Engine Plugins directory):
@@ -100,13 +101,42 @@ See also the [Plugins official Documentation](https://docs.unrealengine.com/late
 
 #### Activate Git Source Control for your Game Project
 
-Load your Game Project, then open:
+Load your Game Project in Unreal Engine, then open:
 
 ```
-File->Connect To Source Control... -> Git: Accept Settings
+File->Connect To Source Control... -> Git
 ```
 
-The Git Plugin is able to create (initialize) a new local Git Repository with your project Assets and Sources files.
+##### Project already managed by Git
+
+If your project is alreay under Git (it contains a ".git" subfolder), just click on "Accept Settings". This connect the Editor to your local Git repository ("Depot").
+
+##### Project not already under Git
+
+Otherwise, the Git Plugin is able to create (initialize) a new local Git Repository with your project Assets and Sources files:
+
+<img src="Screenshots/SourceControlLogin_Init.png" width="720">
+
+Click "Initialize project with Git" that will add all relevant files to source control and make the initial commit with the customizable message.
+When everything is done, click on "Accept Settings".
+
+#### Using the Git Source Control Provider in the Unreal Engine Editor
+
+The plugin only interacts with you local Git repository ("Depot"), not with the remote server (usually "origin").
+
+It display Git status icons on top of assets in the Asset Browser:
+- No icon means that the file is under source control and unchanged since last commit.
+- A red mark is for "modified" assets, that is the one that needs to be commited (so not the same as "Check-out" in Perforce/SVN/Plastic SCM).
+- A red cross is for "added" assets, that also needs to be commited
+- A blue lightning means "renamed".
+- A yellow exclamation point is for files in conflict after a merge.
+- A yellow question mark is for files not in source control.
+
+TODO:
+- display corresponding icons
+- rename and redirectors
+- history / visual diff
+- Checkin = Commit
 
 See also the [Source Control official Documentation](https://docs.unrealengine.com/latest/INT/Engine/UI/SourceControl/index.html)
 
@@ -125,7 +155,8 @@ use the tools provided by GitHub:
 - fork the repository, make some small changes and submit them with independent pull-requests
 
 ### Contact
-You can also email me directly, I will answer any questions and requests.
+- You can use the Unreal Engine forums.
+- You can also email me directly, I will answer any questions and requests.
 
 ### Coding Style Guidelines
 The source code follow the UnreaEngine official [Coding Standard](https://docs.unrealengine.com/latest/INT/Programming/Development/CodingStandard/index.html):
