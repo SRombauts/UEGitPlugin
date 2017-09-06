@@ -107,9 +107,9 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 //#if UE_BUILD_DEBUG
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommand: 'git %s'"), *LogableCommand);
 //#endif
-	
+
 	FPlatformProcess::ExecProcess(*InPathToGitBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
-	
+
 //#if UE_BUILD_DEBUG
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutResults);
 	if(ReturnCode != 0)
@@ -254,7 +254,7 @@ bool CheckGitAvailability(const FString& InPathToGitBinary, FGitVersion *OutVers
 	return bGitAvailable;
 }
 
-void ParseGitVersion(const FString& InVersionString, FGitVersion *OutVersion) 
+void ParseGitVersion(const FString& InVersionString, FGitVersion *OutVersion)
 {
 	// Parse "git version 2.11.0.windows.3" into the string tokens "git", "version", "2.11.0.windows.3"
 	TArray<FString> TokenizedString;
@@ -287,7 +287,7 @@ void ParseGitVersion(const FString& InVersionString, FGitVersion *OutVersion)
 	}
 }
 
-void FindGitCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVersion) 
+void FindGitCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVersion)
 {
 	FString InfoMessages;
 	FString ErrorMessages;
@@ -391,7 +391,7 @@ bool GetBranchName(const FString& InPathToGitBinary, const FString& InRepository
 	TArray<FString> Parameters;
 	Parameters.Add(TEXT("--short"));
 	Parameters.Add(TEXT("--quiet"));		// no error message while in detached HEAD
-	Parameters.Add(TEXT("HEAD"));	
+	Parameters.Add(TEXT("HEAD"));
 	bResults = RunCommandInternal(TEXT("symbolic-ref"), InPathToGitBinary, InRepositoryRoot, Parameters, TArray<FString>(), InfoMessages, ErrorMessages);
 	if(bResults && InfoMessages.Num() > 0)
 	{
@@ -482,7 +482,7 @@ bool RunCommit(const FString& InPathToGitBinary, const FString& InRepositoryRoot
 			// First batch is a simple "git commit" command with only the first files
 			bResult &= RunCommandInternal(TEXT("commit"), InPathToGitBinary, InRepositoryRoot, InParameters, FilesInBatch, OutResults, OutErrorMessages);
 		}
-		
+
 		TArray<FString> Parameters;
 		for(const auto& Parameter : InParameters)
 		{
@@ -735,6 +735,32 @@ static void ParseFileStatusResult(const FString& InPathToGitBinary, const FStrin
 	}
 }
 
+/** Parse the array of strings results of a 'git status' command for a directory
+ *
+ *  Called in case of a "directory status" (no file listed in the command) ONLY to detect Deleted/Missing/Untracked files
+ * since those files are not listed by the 'git ls-files' command.
+ *
+ * @see #ParseFileStatusResult() above for an example of a 'git status' results
+*/
+static void ParseDirectoryStatusResult(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
+{
+	// Iterate on each line of result of the status command
+	for(const FString& Result : InResults)
+	{
+		const FString RelativeFilename = FilenameFromGitStatus(Result);
+		const FString File = FPaths::ConvertRelativePathToFull(InRepositoryRoot, RelativeFilename);
+
+		FGitSourceControlState FileState(File, false); // TODO bIsUsingGitLfsLocking
+		FGitStatusParser StatusParser(Result);
+		if((EWorkingCopyState::Deleted == StatusParser.State) || (EWorkingCopyState::Missing == StatusParser.State) || (EWorkingCopyState::NotControlled == StatusParser.State))
+		{
+			FileState.WorkingCopyState = StatusParser.State;
+			FileState.TimeStamp.Now();
+			OutStates.Add(MoveTemp(FileState));
+		}
+	}
+}
+
 /**
  * @brief Detects how to parse the result of a "status" command to get workspace file states
  *
@@ -749,17 +775,20 @@ static void ParseFileStatusResult(const FString& InPathToGitBinary, const FStrin
  */
 static void ParseStatusResults(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
 {
-	if (1 == InFiles.Num() && FPaths::DirectoryExists(InFiles[0]))
+	if(1 == InFiles.Num() && FPaths::DirectoryExists(InFiles[0]))
 	{
 		// 1) Special case for "status" of a directory: requires to get the list of files by ourselves.
 		//   (this is triggered by the "Submit to Source Control" menu)
 		TArray<FString> Files;
 		const FString& Directory = InFiles[0];
 		const bool bResult = ListFilesInDirectoryRecurse(InPathToGitBinary, InRepositoryRoot, Directory, Files);
-		if (bResult)
+		if(bResult)
 		{
 			ParseFileStatusResult(InPathToGitBinary, InRepositoryRoot, Files, InResults, OutStates);
 		}
+		// The above cannot detect deleted assets since there is no file left to enumerate (either by the Content Browser or by git ls-files)
+		// => so we also parse the status results to explicitly look for Deleted/Missing assets
+		ParseDirectoryStatusResult(InPathToGitBinary, InRepositoryRoot, InResults, OutStates);
 	}
 	else
 	{
@@ -799,16 +828,25 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 	// 2) then we can batch git status operation by subdirectory
 	for(const auto& Files : GroupOfFiles)
 	{
+		// "git status" can only detect renamed and deleted files when it operate on a folder, so use one folder path for all files in a directory
+		const FString Path = FPaths::GetPath(*Files.Value[0]);
+		TArray<FString> OnePath;
+		// Only one file: optim very useful for the .uproject file at the root to avoid parsing the whole repository
+		// (works only if the file exists)
+		if((1 == Files.Value.Num()) && (FPaths::FileExists(Files.Value[0])))
+		{
+			OnePath.Add(Files.Value[0]);
+		}
+		else
+		{
+			OnePath.Add(Path);
+		}
 		TArray<FString> ErrorMessages;
-		bool bResult = RunCommand(TEXT("status"), InPathToGitBinary, InRepositoryRoot, Parameters, Files.Value, Results, ErrorMessages);
+		const bool bResult = RunCommand(TEXT("status"), InPathToGitBinary, InRepositoryRoot, Parameters, OnePath, Results, ErrorMessages);
 		OutErrorMessages.Append(ErrorMessages);
 		if(bResult)
 		{
 			ParseStatusResults(InPathToGitBinary, InRepositoryRoot, Files.Value, Results, OutStates);
-		}
-		else
-		{
-			bResults = false;
 		}
 	}
 
@@ -918,7 +956,7 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 bool RunLfsCommand(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
 {
 	int32 ReturnCode = -1;
-	
+
 	// First, the git LFS command itself (lfs lock/lfs unlock/lfs locks)
 	FString FullCommand = InCommand;
 

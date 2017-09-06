@@ -80,13 +80,13 @@ FName FGitSourceControlState::GetIconName() const
 	case EWorkingCopyState::Renamed:
 	case EWorkingCopyState::Copied:
 		return FName("Subversion.Branched");
-	case EWorkingCopyState::Deleted:
+	case EWorkingCopyState::Deleted: // Deleted & Missing files does not show in Content Browser
+	case EWorkingCopyState::Missing:
 		return FName("Subversion.MarkedForDelete");
 	case EWorkingCopyState::Conflicted:
 		return FName("Subversion.NotAtHeadRevision");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot");
-	case EWorkingCopyState::Missing: // Missing files does not currently show in Editor (but should probably)
 	case EWorkingCopyState::Unknown:
 	case EWorkingCopyState::Unchanged: // Unchanged is the same as "Pristine" (not checked out) for Perforce, ie no icon
 	case EWorkingCopyState::Ignored:
@@ -117,13 +117,13 @@ FName FGitSourceControlState::GetSmallIconName() const
 	case EWorkingCopyState::Renamed:
 	case EWorkingCopyState::Copied:
 		return FName("Subversion.Branched_Small");
-	case EWorkingCopyState::Deleted:
+	case EWorkingCopyState::Deleted: // Deleted & Missing files can appear in the Submit to Source Control window
+	case EWorkingCopyState::Missing:
 		return FName("Subversion.MarkedForDelete_Small");
 	case EWorkingCopyState::Conflicted:
 		return FName("Subversion.NotAtHeadRevision_Small");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot_Small");
-	case EWorkingCopyState::Missing: // Missing files does not currently show in Editor (but should probably)
 	case EWorkingCopyState::Unknown:
 	case EWorkingCopyState::Unchanged: // Unchanged is the same as "Pristine" (not checked out) for Perforce, ie no icon
 	case EWorkingCopyState::Ignored:
@@ -224,11 +224,7 @@ const FDateTime& FGitSourceControlState::GetTimeStamp() const
 	return TimeStamp;
 }
 
-// TODO : missing ?
-// @todo Test: don't show deleted as they should not appear? 
-//	case EWorkingCopyState::Deleted:
-//	case EWorkingCopyState::Missing:
-// Deleted and Missing assets cannot appear in the Content Browser
+// Deleted and Missing assets cannot appear in the Content Browser, but the do in the Submit files to Source Control window!
 bool FGitSourceControlState::CanCheckIn() const
 {
 	if(bUsingGitLfsLocking)
@@ -239,6 +235,7 @@ bool FGitSourceControlState::CanCheckIn() const
 	{
 		return WorkingCopyState == EWorkingCopyState::Added
 			|| WorkingCopyState == EWorkingCopyState::Deleted
+			|| WorkingCopyState == EWorkingCopyState::Missing
 			|| WorkingCopyState == EWorkingCopyState::Modified
 			|| WorkingCopyState == EWorkingCopyState::Renamed;
 	}
@@ -294,7 +291,7 @@ bool FGitSourceControlState::IsAdded() const
 
 bool FGitSourceControlState::IsDeleted() const
 {
-	return WorkingCopyState == EWorkingCopyState::Deleted;
+	return WorkingCopyState == EWorkingCopyState::Deleted || WorkingCopyState == EWorkingCopyState::Missing;
 }
 
 bool FGitSourceControlState::IsIgnored() const
