@@ -673,6 +673,15 @@ static void RunGetConflictStatus(const FString& InPathToGitBinary, const FString
 	}
 }
 
+/// Convert filename relative to the repository root to absolute path (inplace)
+void AbsoluteFilenames(const FString& InRepositoryRoot, TArray<FString>& InFileNames)
+{
+	for(auto& FileName : InFileNames)
+	{
+		FileName = FPaths::ConvertRelativePathToFull(InRepositoryRoot, FileName);
+	}
+}
+
 /** Run a 'git ls-files' command to get all files tracked by Git recursively in a directory.
  *
  * Called in case of a "directory status" (no file listed in the command) when using the "Submit to Source Control" menu.
@@ -682,7 +691,9 @@ static bool ListFilesInDirectoryRecurse(const FString& InPathToGitBinary, const 
 	TArray<FString> ErrorMessages;
 	TArray<FString> Directory;
 	Directory.Add(InDirectory);
-	return RunCommandInternal(TEXT("ls-files"), InPathToGitBinary, InRepositoryRoot, TArray<FString>(), Directory, OutFiles, ErrorMessages);
+	const bool bResult = RunCommandInternal(TEXT("ls-files"), InPathToGitBinary, InRepositoryRoot, TArray<FString>(), Directory, OutFiles, ErrorMessages);
+	AbsoluteFilenames(InRepositoryRoot, OutFiles);
+	return bResult;
 }
 
 /** Parse the array of strings results of a 'git status' command for a provided list of files all in a common directory
