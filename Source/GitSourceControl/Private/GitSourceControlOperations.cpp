@@ -24,10 +24,15 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	check(InCommand.Operation->GetName() == GetName());
 
+	// Check Git Availability
 	if (0 < InCommand.PathToGitBinary.Len() && GitSourceControlUtils::CheckGitAvailability(InCommand.PathToGitBinary))
 	{
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("status"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
-		if(!InCommand.bCommandSuccessful || InCommand.ErrorMessages.Num() > 0 || InCommand.InfoMessages.Num() == 0)
+		// Now update the status of assets in Content/ directory and also Config files
+		TArray<FString> ProjectDirs;
+		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::GameContentDir()));
+		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::GameConfigDir()));
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, ProjectDirs, InCommand.ErrorMessages, States);
+		if(!InCommand.bCommandSuccessful || InCommand.ErrorMessages.Num() > 0)
 		{
 			StaticCastSharedRef<FConnect>(InCommand.Operation)->SetErrorText(LOCTEXT("NotAGitRepository", "Failed to enable Git source control. You need to initialize the project as a Git repository first."));
 			InCommand.bCommandSuccessful = false;
@@ -44,7 +49,7 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 
 bool FGitConnectWorker::UpdateStates() const
 {
-	return false;
+	return GitSourceControlUtils::UpdateCachedStates(States);
 }
 
 static FText ParseCommitResults(const TArray<FString>& InResults)
