@@ -844,7 +844,7 @@ static void ParseStatusResults(const FString& InPathToGitBinary, const FString& 
 		const bool bResult = ListFilesInDirectoryRecurse(InPathToGitBinary, InRepositoryRoot, Directory, Files);
 		if(bResult)
 		{
-			ParseFileStatusResult(InPathToGitBinary, InRepositoryRoot, InUsingLfsLocking, InFiles, InLockedFiles, InResults, OutStates);
+			ParseFileStatusResult(InPathToGitBinary, InRepositoryRoot, InUsingLfsLocking, Files, InLockedFiles, InResults, OutStates);
 		}
 		// The above cannot detect deleted assets since there is no file left to enumerate (either by the Content Browser or by git ls-files)
 		// => so we also parse the status results to explicitly look for Deleted/Missing assets
