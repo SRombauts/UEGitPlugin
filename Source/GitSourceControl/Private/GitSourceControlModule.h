@@ -48,6 +48,7 @@ Use "TODO LFS" in the code to track things left to do/improve/refactor:
        - see SubversionSourceControl plugin that deals with such flags
        - this would need a rework of the way the "bIsUsingFileLocking" si propagated, since this would no more be a configuration (or not only) but a file state
      - else we should at least revert those read-only flags when going out of "Lock mode"
+4. Optimize usage of "git lfs locks", ie reduce the use of UdpateStatus() in Operations
 
 ### What *cannot* be done presently
 - Branch/Merge are not in the current Editor workflow
