@@ -793,7 +793,7 @@ static void ParseFileStatusResult(const FString& InPathToGitBinary, const FStrin
  *
  * @see #ParseFileStatusResult() above for an example of a 'git status' results
 */
-static void ParseDirectoryStatusResult(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
+static void ParseDirectoryStatusResult(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const bool InUsingLfsLocking, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
 {
 	// Iterate on each line of result of the status command
 	for(const FString& Result : InResults)
@@ -801,7 +801,7 @@ static void ParseDirectoryStatusResult(const FString& InPathToGitBinary, const F
 		const FString RelativeFilename = FilenameFromGitStatus(Result);
 		const FString File = FPaths::ConvertRelativePathToFull(InRepositoryRoot, RelativeFilename);
 
-		FGitSourceControlState FileState(File, false); // TODO bIsUsingGitLfsLocking
+		FGitSourceControlState FileState(File, InUsingLfsLocking);
 		FGitStatusParser StatusParser(Result);
 		if((EWorkingCopyState::Deleted == StatusParser.State) || (EWorkingCopyState::Missing == StatusParser.State) || (EWorkingCopyState::NotControlled == StatusParser.State))
 		{
@@ -840,7 +840,7 @@ static void ParseStatusResults(const FString& InPathToGitBinary, const FString& 
 		}
 		// The above cannot detect deleted assets since there is no file left to enumerate (either by the Content Browser or by git ls-files)
 		// => so we also parse the status results to explicitly look for Deleted/Missing assets
-		ParseDirectoryStatusResult(InPathToGitBinary, InRepositoryRoot, InResults, OutStates);
+		ParseDirectoryStatusResult(InPathToGitBinary, InRepositoryRoot, InUsingLfsLocking, InResults, OutStates);
 	}
 	else
 	{
