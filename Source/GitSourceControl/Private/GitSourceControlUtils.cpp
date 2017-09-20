@@ -746,7 +746,7 @@ static void ParseFileStatusResult(const FString& InPathToGitBinary, const FStrin
 			// File found in status results; only the case for "changed" files
 			FGitStatusParser StatusParser(InResults[IdxResult]);
 			// TODO LFS Debug log
-			UE_LOG(LogSourceControl, Error, TEXT("Status(%s) = '%s' => %d"), *File, *InResults[IdxResult], static_cast<int>(StatusParser.State));
+			UE_LOG(LogSourceControl, Log, TEXT("Status(%s) = '%s' => %d"), *File, *InResults[IdxResult], static_cast<int>(StatusParser.State));
 
 			FileState.WorkingCopyState = StatusParser.State;
 			if(FileState.IsConflicted())
@@ -779,13 +779,13 @@ static void ParseFileStatusResult(const FString& InPathToGitBinary, const FStrin
 			FileState.LockState = ELockState::Locked;
 			FileState.LockUser = InLockedFiles[File];
 			// TODO LFS Debug log
-			UE_LOG(LogSourceControl, Error, TEXT("Status(%s) Locked by '%s'"), *File, *FileState.LockUser);
+			UE_LOG(LogSourceControl, Log, TEXT("Status(%s) Locked by '%s'"), *File, *FileState.LockUser);
 		}
 		else
 		{
 			FileState.LockState = ELockState::NotLocked;
 			// TODO LFS Debug log
-			UE_LOG(LogSourceControl, Error, TEXT("Status(%s) Not Locked"), *File);
+			UE_LOG(LogSourceControl, Log, TEXT("Status(%s) Not Locked"), *File);
 		}
 		FileState.TimeStamp = Now;
 		OutStates.Add(FileState);
@@ -838,7 +838,7 @@ static void ParseStatusResults(const FString& InPathToGitBinary, const FString& 
 		// 1) Special case for "status" of a directory: requires to get the list of files by ourselves.
 		//   (this is triggered by the "Submit to Source Control" menu)
 		// TODO LFS Debug Log
-		UE_LOG(LogSourceControl, Error, TEXT("ParseStatusResults: 1) Special case for status of a directory (%s)"), *InFiles[0]);
+		UE_LOG(LogSourceControl, Log, TEXT("ParseStatusResults: 1) Special case for status of a directory (%s)"), *InFiles[0]);
 		TArray<FString> Files;
 		const FString& Directory = InFiles[0];
 		const bool bResult = ListFilesInDirectoryRecurse(InPathToGitBinary, InRepositoryRoot, Directory, Files);
@@ -854,7 +854,7 @@ static void ParseStatusResults(const FString& InPathToGitBinary, const FString& 
 	{
 		// 2) General case for one or more files in the same directory.
 		// TODO LFS Debug Log
-		UE_LOG(LogSourceControl, Warning, TEXT("ParseStatusResults: 2) General case for one or more files (%s, ...)"), *InFiles[0]);
+		UE_LOG(LogSourceControl, Log, TEXT("ParseStatusResults: 2) General case for one or more files (%s, ...)"), *InFiles[0]);
 		ParseFileStatusResult(InPathToGitBinary, InRepositoryRoot, InUsingLfsLocking, InFiles, InLockedFiles, InResults, OutStates);
 	}
 }
