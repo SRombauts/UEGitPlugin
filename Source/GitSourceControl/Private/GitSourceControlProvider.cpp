@@ -135,6 +135,10 @@ TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvide
 
 FText FGitSourceControlProvider::GetStatusText() const
 {
+	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
+//	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+//	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
+
 	FFormatNamedArguments Args;
 	Args.Add( TEXT("RepositoryName"), FText::FromString(PathToRepositoryRoot) );
 	Args.Add( TEXT("RemoteUrl"), FText::FromString(RemoteUrl) );
@@ -154,7 +158,7 @@ bool FGitSourceControlProvider::IsEnabled() const
 /** Quick check if source control is available for use (useful for server-based providers) */
 bool FGitSourceControlProvider::IsAvailable() const
 {
-	return bGitRepositoryFound;
+	return bGitRepositoryFound; // TODO LFS : AND is connected (!bWorkingOffline)
 }
 
 const FName& FGitSourceControlProvider::GetName(void) const
@@ -176,6 +180,7 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 		Execute(ISourceControlOperation::Create<FUpdateStatus>(), AbsoluteFiles);
 	}
 
+	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
 
@@ -324,6 +329,8 @@ void FGitSourceControlProvider::Tick()
 		{
 			// Remove command from the queue
 			CommandQueue.RemoveAt(CommandIndex);
+
+			// TODO LFS Update bWorkingOffline Disconnect flag
 
 			// let command update the states of any files
 			bStatesUpdated |= Command.Worker->UpdateStates();
