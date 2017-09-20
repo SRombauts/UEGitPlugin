@@ -74,7 +74,14 @@ FName FGitSourceControlState::GetIconName() const
 	switch(WorkingCopyState)
 	{
 	case EWorkingCopyState::Modified:
-		return FName("Subversion.CheckedOut");
+		if(bUsingGitLfsLocking)
+		{
+			return FName("Subversion.NotInDepot");
+		}
+		else
+		{
+			return FName("Subversion.CheckedOut");
+		}
 	case EWorkingCopyState::Added:
 		return FName("Subversion.OpenForAdd");
 	case EWorkingCopyState::Renamed:
@@ -111,7 +118,14 @@ FName FGitSourceControlState::GetSmallIconName() const
 	switch(WorkingCopyState)
 	{
 	case EWorkingCopyState::Modified:
-		return FName("Subversion.CheckedOut_Small");
+		if(bUsingGitLfsLocking)
+		{
+			return FName("Subversion.NotInDepot_Small");
+		}
+		else
+		{
+			return FName("Subversion.CheckedOut_Small");
+		}
 	case EWorkingCopyState::Added:
 		return FName("Subversion.OpenForAdd_Small");
 	case EWorkingCopyState::Renamed:
