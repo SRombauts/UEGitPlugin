@@ -242,7 +242,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 			]
 			// Option to use the Git LFS file Locking workflow (false by default)
 			// Enabled even after init to switch it off in case of no network
-			// TODO turning it off afterwards does not work because all files are readonly !
+			// TODO LFS turning it off afterwards does not work because all files are readonly !
 			+SVerticalBox::Slot()
 			.AutoHeight()
 			.Padding(2.0f)

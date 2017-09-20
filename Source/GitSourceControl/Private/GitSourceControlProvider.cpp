@@ -274,6 +274,7 @@ void FGitSourceControlProvider::CancelOperation( const TSharedRef<ISourceControl
 
 bool FGitSourceControlProvider::UsesLocalReadOnlyState() const
 {
+	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	return GitSourceControl.AccessSettings().IsUsingGitLfsLocking(); // Git LFS Lock uses read-only state
 }
@@ -285,7 +286,9 @@ bool FGitSourceControlProvider::UsesChangelists() const
 
 bool FGitSourceControlProvider::UsesCheckout() const
 {
-	return false;
+	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
+	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	return GitSourceControl.AccessSettings().IsUsingGitLfsLocking(); // Git LFS Lock uses read-only state
 }
 
 TSharedPtr<IGitSourceControlWorker, ESPMode::ThreadSafe> FGitSourceControlProvider::CreateWorker(const FName& InOperationName) const
