@@ -63,6 +63,9 @@ public:
 	/**If true, the source control command succeeded*/
 	bool bCommandSuccessful;
 
+	/** TODO LFS If true, the source control connection was dropped while this command was being executed*/
+	bool bConnectionDropped;
+
 	/** If true, this command will be automatically cleaned up in Tick() */
 	bool bAutoDelete;
 

@@ -14,6 +14,7 @@ FGitSourceControlCommand::FGitSourceControlCommand(const TSharedRef<class ISourc
 	, OperationCompleteDelegate(InOperationCompleteDelegate)
 	, bExecuteProcessed(0)
 	, bCommandSuccessful(false)
+	, bConnectionDropped(false)
 	, bAutoDelete(true)
 	, Concurrency(EConcurrency::Synchronous)
 {

@@ -149,7 +149,7 @@ bool FGitSourceControlProvider::IsEnabled() const
 /** Quick check if source control is available for use (useful for server-based providers) */
 bool FGitSourceControlProvider::IsAvailable() const
 {
-	return bGitRepositoryFound;
+	return bGitRepositoryFound; // TODO LFS : AND is connected (!bWorkingOffline)
 }
 
 const FName& FGitSourceControlProvider::GetName(void) const
@@ -323,6 +323,8 @@ void FGitSourceControlProvider::Tick()
 		{
 			// Remove command from the queue
 			CommandQueue.RemoveAt(CommandIndex);
+
+			// TODO LFS Update bWorkingOffline Disconnect flag
 
 			// let command update the states of any files
 			bStatesUpdated |= Command.Worker->UpdateStates();
