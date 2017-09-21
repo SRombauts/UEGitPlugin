@@ -9,10 +9,10 @@ UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine.
 Developped and contributted by Sébastien Rombauts 2014-2017 (sebastien.rombauts@gmail.com)
 <a href="https://www.paypal.me/SRombauts" title="Pay Me a Beer! Donate with PayPal :)"><img src="https://www.paypalobjects.com/webstatic/paypalme/images/pp_logo_small.png" width="118"></a>
 
-**It has been integrated by default in UE4.7 in "beta version".**
+**First version of the plugin has been integrated by default in UE4.7 in "beta version".**
 
-This is a developement fork to be able to develop a "v2" of the plugin alongside the existing git plugin inside currents version of the engine.
-For now, you need to install it into your Project Plugins folder, and it will overwrite (replace) the default "Git (beta version)" Source Control Provider with the "Git (dev)" plugin.
+This is a developement fork to develop a "Git LFS v2" of the plugin alongside the existing git plugin inside currents version of the engine.
+For now, you need to install it into your Project Plugins folder, and it will overwrite (replace) the default "Git (beta version)" Source Control Provider with the "Git (LFS 2)" plugin.
 
 Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.com/Git_source_control_%28Tutorial%29).
 
@@ -47,10 +47,10 @@ Merge conflict of a Blueprint:
 - Configure remote origin URL ('git remote add origin url')
 - Sync to Pull (rebase) the current branch if there is no local modified files
 - Git LFS (Github, Gitlab, Bitbucket), git-annex, git-fat and git-media are working with Git 2.10+
+- Git LFS 2: File Locks in progress ([add-git-lfs2-file-lock-support branch](https://github.com/SRombauts/UE4GitPlugin/tree/add-git-lfs2-file-lock-support))
 - Windows, Mac and Linux
 
 ### What *cannot* be done presently
-- Git LFS 2 File Locks in progress ([add-git-lfs2-file-lock-support branch](https://github.com/SRombauts/UE4GitPlugin/tree/add-git-lfs2-file-lock-support))
 - Push is not in the current Editor workflow _(will come with Git LFS 2 where CheckIn=Commit+Push+Unlock)_
 - Branch/Merge are not in the current Editor workflow
 - Amend a commit is not in the current Editor workflow
@@ -59,6 +59,8 @@ Merge conflict of a Blueprint:
 - Authentication is not managed if needed for Sync (Pull)
 
 ### Known issues
+- Git LFS 2: False error logs after a successful push : "To https://github.com/SRombauts/UE4GitLfs2FileLocks.git   ee44ff5..59da15e HEAD -> master"
+
 - Rebase/cherry-pick conflicts not working (only merge-conflicts)
 - the Editor does not show deleted files (only when deleted externaly?)
 - the Editor does not show missing files

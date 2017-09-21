@@ -37,6 +37,11 @@ Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
 
 ### TODO LFS 2.x File Locking
 
+Known issues:
+0. False error logs after a successful push:
+To https://github.com/SRombauts/UE4GitLfs2FileLocks.git
+   ee44ff5..59da15e HEAD -> master
+
 Use "TODO LFS" in the code to track things left to do/improve/refactor:
 1. IsUsingGitLfsLocking() should be cached in the Provider to avoid calling AccessSettings() too frequently
    it can not change without re-initializing (at least re-connect) the Provider!
