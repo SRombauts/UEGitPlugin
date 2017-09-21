@@ -268,7 +268,7 @@ bool FGitUpdateStatusWorker::UpdateStates() const
 {
 	bool bUpdated = GitSourceControlUtils::UpdateCachedStates(States);
 
-	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
+	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
 	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 
 	// add history, if any

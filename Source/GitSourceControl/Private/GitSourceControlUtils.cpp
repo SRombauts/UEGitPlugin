@@ -870,7 +870,7 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	int32 ReturnCode = -1;
 	FString FullCommand;
 
-	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	const FGitVersion& GitVersion = GitSourceControl.GetProvider().GetGitVersion();
 
 	if(!InRepositoryRoot.IsEmpty())
@@ -1267,7 +1267,7 @@ TArray<FString> RelativeFilenames(const TArray<FString>& InFileNames, const FStr
 
 bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 {
-	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
+	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
 	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 //	const FDateTime Now = FDateTime::Now();
 
