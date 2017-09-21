@@ -25,15 +25,6 @@ static FName ProviderName("Git (dev)");
 
 void FGitSourceControlProvider::Init(bool bForceConnection)
 {
-	if(bForceConnection)
-	{
-		UE_LOG(LogSourceControl, Error, TEXT("FGitSourceControlProvider::Init(bForceConnection=%d)"), bForceConnection);
-	}
-	else
-	{
-		UE_LOG(LogSourceControl, Log, TEXT("FGitSourceControlProvider::Init(bForceConnection=%d)"), bForceConnection);
-	}
-
 	// Init() is called multiple times at startup: do not check git each time
 	if(!bGitAvailable)
 	{
@@ -45,7 +36,6 @@ void FGitSourceControlProvider::Init(bool bForceConnection)
 
 		CheckGitAvailability();
 	}
-
 	// bForceConnection: not used anymore
 }
 

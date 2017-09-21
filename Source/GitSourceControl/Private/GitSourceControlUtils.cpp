@@ -874,7 +874,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		{
 			FGitLfsLocksParser LockFile(InRepositoryRoot, Result);
 			// TODO LFS Debug log
-			UE_LOG(LogSourceControl, Error, TEXT("LockedFile(%s, %s)"), *LockFile.LocalFilename, *LockFile.LockUser);
+			UE_LOG(LogSourceControl, Log, TEXT("LockedFile(%s, %s)"), *LockFile.LocalFilename, *LockFile.LockUser);
 			LockedFiles.Add(MoveTemp(LockFile.LocalFilename), MoveTemp(LockFile.LockUser));
 		}
 	}
