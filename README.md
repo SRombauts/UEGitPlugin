@@ -50,7 +50,8 @@ Merge conflict of a Blueprint:
 - Windows, Mac and Linux
 
 ### What *cannot* be done presently
-- Push is not in the current Editor workflow
+- Git LFS 2 File Locks in progress ([add-git-lfs2-file-lock-support branch](https://github.com/SRombauts/UE4GitPlugin/tree/add-git-lfs2-file-lock-support))
+- Push is not in the current Editor workflow _(will come with Git LFS 2 where CheckIn=Commit+Push+Unlock)_
 - Branch/Merge are not in the current Editor workflow
 - Amend a commit is not in the current Editor workflow
 - Revert All (using either "Stash" or "reset --hard")
