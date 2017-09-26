@@ -59,7 +59,11 @@ Merge conflict of a Blueprint:
 - Authentication is not managed if needed for Sync (Pull)
 
 ### Known issues
-- Git LFS 2: False error logs after a successful push : "To https://github.com/SRombauts/UE4GitLfs2FileLocks.git   ee44ff5..59da15e HEAD -> master"
+- #34 "outside repository" fatal error
+- #37 Rebase workflow: conflicts not detected!
+- #46 Merge Conflicts - Accept Target - causes engine to crash bug
+- #47 Git LFS conflict resolution not working
+- #49 Git LFS 2: False error in logs after a successful push #49
 
 - Rebase/cherry-pick conflicts not working (only merge-conflicts)
 - the Editor does not show deleted files (only when deleted externaly?)
