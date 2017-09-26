@@ -11,7 +11,7 @@ Developped and contributted by Sébastien Rombauts 2014-2017 (sebastien.rombauts
 
 **First version of the plugin has been integrated by default in UE4.7 in "beta version".**
 
-This is a developement fork to develop a "Git LFS v2" of the plugin alongside the existing git plugin inside currents version of the engine.
+This is a developement fork to develop a "Git LFS 2 with File Locks" of the plugin alongside the existing git plugin inside currents version of the engine.
 For now, you need to install it into your Project Plugins folder, and it will overwrite (replace) the default "Git (beta version)" Source Control Provider with the "Git (LFS 2)" plugin.
 
 Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.com/Git_source_control_%28Tutorial%29).
@@ -34,6 +34,7 @@ Merge conflict of a Blueprint:
 - initialize a new Git local repository ('git init') to manage your UE4 Game Project
   - can also create an appropriate .gitignore file as part of initialization
   - can also create a .gitattributes file to enable Git LFS (Large File System) as part of initialization
+  - can also enable Git LFS 2.x File Locks as part of initialization
   - can also make the initial commit, with custom multi-line message
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
@@ -47,7 +48,7 @@ Merge conflict of a Blueprint:
 - Configure remote origin URL ('git remote add origin url')
 - Sync to Pull (rebase) the current branch if there is no local modified files
 - Git LFS (Github, Gitlab, Bitbucket), git-annex, git-fat and git-media are working with Git 2.10+
-- Git LFS 2: File Locks in progress ([add-git-lfs2-file-lock-support branch](https://github.com/SRombauts/UE4GitPlugin/tree/add-git-lfs2-file-lock-support))
+- Git LFS 2 File Locks
 - Windows, Mac and Linux
 
 ### What *cannot* be done presently
@@ -61,13 +62,16 @@ Merge conflict of a Blueprint:
 ### Known issues
 - #34 "outside repository" fatal error
 - #37 Rebase workflow: conflicts not detected!
+- #41 UE-44637: Deleting an asset is unsuccessful if the asset is marked for add (since UE4.13)
 - #46 Merge Conflicts - Accept Target - causes engine to crash bug
 - #47 Git LFS conflict resolution not working
-- #49 Git LFS 2: False error in logs after a successful push #49
+- #49 Git LFS 2: False error in logs after a successful push
+- #50 Git LFS not working on Mac
+- #51 Git LFS 2: cannot revert a modified/unchecked-out asset
+- #52 Git LFS 2: detect disconnection
+- #53 Git LFS 2: document the configuration and workflow
+- #54 Poor performances of 'lfs locks' on Windows command line
 
-- Rebase/cherry-pick conflicts not working (only merge-conflicts)
-- the Editor does not show deleted files (only when deleted externaly?)
-- the Editor does not show missing files
 - missing localisation for git specific messages
 - displaying states of 'Engine' assets (also needs management of 'out of tree' files)
 - renaming a Blueprint in Editor leaves a redirector file, AND modify too much the asset to enable git to track its history through renaming
@@ -141,9 +145,10 @@ It display Git status icons on top of assets in the Asset Browser:
 
 TODO:
 - display corresponding icons
-- rename and redirectors
+- specifics or rename and redirectors, and "Fix Up Redirector in Folder" command
 - history / visual diff
-- Checkin = Commit
+- CheckIn = Commit
+- CheckOut = Commit+Push+unlock (when using LFS 2)
 
 See also the [Source Control official Documentation](https://docs.unrealengine.com/latest/INT/Engine/UI/SourceControl/index.html)
 
