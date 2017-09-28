@@ -235,6 +235,36 @@ bool FGitDeleteWorker::UpdateStates() const
 	return GitSourceControlUtils::UpdateCachedStates(States);
 }
 
+
+// Get lists of Missing files (ie "deleted"), Existing files, and "other than Added" Existing files
+void GetMissingVsExistingFiles(const TArray<FString>& InFiles, TArray<FString>& OutMissingFiles, TArray<FString>& OutAllExistingFiles, TArray<FString>& OutOtherThanAddedExistingFiles)
+{
+	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+
+	TArray<TSharedRef<ISourceControlState, ESPMode::ThreadSafe>> LocalStates;
+	Provider.GetState(InFiles, LocalStates, EStateCacheUsage::Use);
+	for(const auto& State : LocalStates)
+	{
+		if(FPaths::FileExists(State->GetFilename()))
+		{
+			if(State->IsAdded())
+			{
+				OutAllExistingFiles.Add(State->GetFilename());
+			}
+			else
+			{
+				OutOtherThanAddedExistingFiles.Add(State->GetFilename());
+				OutAllExistingFiles.Add(State->GetFilename());
+			}
+		}
+		else
+		{
+			OutMissingFiles.Add(State->GetFilename());
+		}
+	}
+}
+
 FName FGitRevertWorker::GetName() const
 {
 	return "Revert";
@@ -242,17 +272,38 @@ FName FGitRevertWorker::GetName() const
 
 bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 {
-	// reset any changes already added in index
-	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("reset"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+	// Filter files by status to use the right "revert" commands on them
+	TArray<FString> MissingFiles;
+	TArray<FString> AllExistingFiles;
+	TArray<FString> OtherThanAddedExistingFiles;
+	GetMissingVsExistingFiles(InCommand.Files, MissingFiles, AllExistingFiles, OtherThanAddedExistingFiles);
 
-	// revert any changes in working copy
-	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("checkout"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), InCommand.Files, InCommand.InfoMessages, InCommand.ErrorMessages);
+	if(MissingFiles.Num() > 0)
+	{
+		// "Added" files that have been deleted needs to be removed from source control
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("rm"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), MissingFiles, InCommand.InfoMessages, InCommand.ErrorMessages);
+	}
+	if(AllExistingFiles.Num() > 0)
+	{
+		// reset any changes already added to the index
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("reset"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), AllExistingFiles, InCommand.InfoMessages, InCommand.ErrorMessages);
+	}
+	if(OtherThanAddedExistingFiles.Num() > 0)
+	{
+		// revert any changes in working copy (this would fails if the asset was in "Added" state, since after "reset" it is now "untracked")
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("checkout"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), OtherThanAddedExistingFiles, InCommand.InfoMessages, InCommand.ErrorMessages);
+	}
 
 	if(InCommand.bUsingGitLfsLocking)
 	{
 		// unlock files: execute the LFS command on relative filenames
-		const TArray<FString> RelativeFiles = GitSourceControlUtils::RelativeFilenames(InCommand.Files, InCommand.PathToRepositoryRoot);
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunLfsCommand(TEXT("lfs unlock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, RelativeFiles, InCommand.InfoMessages, InCommand.ErrorMessages);
+		// (unlock only locked files, that is, not Added files)
+		const TArray<FString> LockedFiles = GetLockedFiles(InCommand.Files);
+		if(LockedFiles.Num() > 0)
+		{
+			const TArray<FString> RelativeFiles = GitSourceControlUtils::RelativeFilenames(LockedFiles, InCommand.PathToRepositoryRoot);
+			GitSourceControlUtils::RunLfsCommand(TEXT("lfs unlock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, RelativeFiles, InCommand.InfoMessages, InCommand.ErrorMessages);
+		}
 	}
 
 	// now update the status of our files
