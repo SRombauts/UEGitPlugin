@@ -85,7 +85,6 @@ public:
 	{
 		return GitSourceControlSettings;
 	}
-	/** Access the Git source control settings (const) */
 	const FGitSourceControlSettings& AccessSettings() const
 	{
 		return GitSourceControlSettings;
@@ -99,8 +98,6 @@ public:
 	{
 		return GitSourceControlProvider;
 	}
-
-	/** Access the Git source control provider (const) */
 	const FGitSourceControlProvider& GetProvider() const
 	{
 		return GitSourceControlProvider;

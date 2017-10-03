@@ -70,7 +70,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 			]
 			// Root of the local repository
 			+SVerticalBox::Slot()
-			.FillHeight(1.0f)
+			.AutoHeight()
 			.Padding(2.0f)
 			.VAlign(VAlign_Center)
 			[
@@ -93,7 +93,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 			]
 			// User Name
 			+SVerticalBox::Slot()
-			.FillHeight(1.0f)
+			.AutoHeight()
 			.Padding(2.0f)
 			.VAlign(VAlign_Center)
 			[
