@@ -103,6 +103,7 @@ void FGitSourceControlProvider::Close()
 
 	bGitAvailable = false;
 	bGitRepositoryFound = false;
+	bServerAvailable = false;
 	UserName.Empty();
 	UserEmail.Empty();
 }
@@ -143,13 +144,13 @@ FText FGitSourceControlProvider::GetStatusText() const
 /** Quick check if source control is enabled */
 bool FGitSourceControlProvider::IsEnabled() const
 {
-	return bGitRepositoryFound;
+	return bGitRepositoryFound; // TODO LFS : bGitRepositoryFound
 }
 
 /** Quick check if source control is available for use (useful for server-based providers) */
 bool FGitSourceControlProvider::IsAvailable() const
 {
-	return bGitRepositoryFound; // TODO LFS : AND is connected (!bWorkingOffline)
+	return bGitRepositoryFound; // TODO LFS : AND/OR bServerAvailable (only with LFS 2)
 }
 
 const FName& FGitSourceControlProvider::GetName(void) const
@@ -171,7 +172,7 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 		Execute(ISourceControlOperation::Create<FUpdateStatus>(), AbsoluteFiles);
 	}
 
-	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
+	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoid doing this here so frequently
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
 
@@ -250,7 +251,7 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 		Command->bAutoDelete = true;
 
 		UE_LOG(LogSourceControl, Log, TEXT("IssueAsynchronousCommand(%s)"), *InOperation->GetName().ToString());
-		return IssueCommand(*Command);
+		return IssueCommand(*Command, false);
 	}
 }
 
@@ -265,7 +266,7 @@ void FGitSourceControlProvider::CancelOperation( const TSharedRef<ISourceControl
 
 bool FGitSourceControlProvider::UsesLocalReadOnlyState() const
 {
-	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
+	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoid doing this here so frequently
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	return GitSourceControl.AccessSettings().IsUsingGitLfsLocking(); // Git LFS Lock uses read-only state
 }
@@ -277,7 +278,7 @@ bool FGitSourceControlProvider::UsesChangelists() const
 
 bool FGitSourceControlProvider::UsesCheckout() const
 {
-	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
+	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoid doing this here so frequently
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	return GitSourceControl.AccessSettings().IsUsingGitLfsLocking(); // Git LFS Lock uses read-only state
 }
@@ -324,7 +325,8 @@ void FGitSourceControlProvider::Tick()
 			// Remove command from the queue
 			CommandQueue.RemoveAt(CommandIndex);
 
-			// TODO LFS Update bWorkingOffline Disconnect flag
+			// update connection state
+			bServerAvailable = !Command.bConnectionDropped;
 
 			// let command update the states of any files
 			bStatesUpdated |= Command.Worker->UpdateStates();
@@ -342,7 +344,7 @@ void FGitSourceControlProvider::Tick()
 				// Only delete commands that are not running 'synchronously'
 				delete &Command;
 			}
-			
+
 			// only do one command per tick loop, as we dont want concurrent modification 
 			// of the command queue (which can happen in the completion delegate)
 			break;
@@ -359,6 +361,9 @@ TArray< TSharedRef<ISourceControlLabel> > FGitSourceControlProvider::GetLabels( 
 {
 	TArray< TSharedRef<ISourceControlLabel> > Tags;
 
+	// NOTE list labels. Called by CrashDebugHelper() (to remote debug Engine crash)
+	//					 and by SourceControlHelpers::AnnotateFile() (to add source file to report)
+	// Reserved for internal use by Epic Games with Perforce only
 	return Tags;
 }
 
@@ -378,9 +383,9 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 		FScopedSourceControlProgress Progress(Task);
 
 		// Issue the command asynchronously...
-		IssueCommand( InCommand );
+		IssueCommand( InCommand, false );
 
-		// ... then wait for its completion (thus making it synchrounous)
+		// ... then wait for its completion (thus making it synchronous)
 		while(!InCommand.bExecuteProcessed)
 		{
 			// Tick the command queue and update progress.
@@ -399,6 +404,13 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 		{
 			Result = ECommandResult::Succeeded;
 		}
+		else
+		{
+			// TODO LFS If the command failed, inform the user that they need to try again (see Perforce)
+			//FMessageDialog::Open( EAppMsgType::Ok, LOCTEXT("Git_ServerUnresponsive", "Git LFS server is unresponsive. Please check your connection and try again.") );
+
+			UE_LOG(LogSourceControl, Error, TEXT("Command '%s' Failed!"), *InCommand.Operation->GetName().ToString());
+		}
 	}
 
 	// Delete the command now (asynchronous commands are deleted in the Tick() method)
@@ -414,9 +426,9 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 	return Result;
 }
 
-ECommandResult::Type FGitSourceControlProvider::IssueCommand(FGitSourceControlCommand& InCommand)
+ECommandResult::Type FGitSourceControlProvider::IssueCommand(FGitSourceControlCommand& InCommand, const bool bSynchronous)
 {
-	if(GThreadPool != nullptr)
+	if ( !bSynchronous && GThreadPool != nullptr )
 	{
 		// Queue this to our worker thread(s) for resolving
 		GThreadPool->AddQueuedWork(&InCommand);
@@ -425,7 +437,18 @@ ECommandResult::Type FGitSourceControlProvider::IssueCommand(FGitSourceControlCo
 	}
 	else
 	{
-		return ECommandResult::Failed;
+		InCommand.bCommandSuccessful = InCommand.DoWork();
+
+		InCommand.Worker->UpdateStates();
+
+		OutputCommandMessages(InCommand);
+
+		// Callback now if present. When asynchronous, this callback gets called from Tick().
+		ECommandResult::Type Result = InCommand.bCommandSuccessful ? ECommandResult::Succeeded : ECommandResult::Failed;
+		InCommand.OperationCompleteDelegate.ExecuteIfBound(InCommand.Operation, Result);
+
+		return Result;
 	}
 }
+
 #undef LOCTEXT_NAMESPACE

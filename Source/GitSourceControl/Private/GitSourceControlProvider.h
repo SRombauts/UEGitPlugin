@@ -53,7 +53,7 @@ public:
 	FGitSourceControlProvider() 
 		: bGitAvailable(false)
 		, bGitRepositoryFound(false)
-		, bWorkingOffline(true)
+		, bServerAvailable(false)
 	{
 	}
 
@@ -66,14 +66,14 @@ public:
 	virtual const FName& GetName(void) const override;
 	virtual ECommandResult::Type GetState( const TArray<FString>& InFiles, TArray< TSharedRef<ISourceControlState, ESPMode::ThreadSafe> >& OutState, EStateCacheUsage::Type InStateCacheUsage ) override;
 	virtual TArray<FSourceControlStateRef> GetCachedStateByPredicate(TFunctionRef<bool(const FSourceControlStateRef&)> Predicate) const override;
-	virtual FDelegateHandle RegisterSourceControlStateChanged_Handle(const FSourceControlStateChanged::FDelegate& SourceControlStateChanged) override;
-	virtual void UnregisterSourceControlStateChanged_Handle(FDelegateHandle Handle) override;
-	virtual ECommandResult::Type Execute(const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation, const TArray<FString>& InFiles, EConcurrency::Type InConcurrency = EConcurrency::Synchronous, const FSourceControlOperationComplete& InOperationCompleteDelegate = FSourceControlOperationComplete()) override;
+	virtual FDelegateHandle RegisterSourceControlStateChanged_Handle( const FSourceControlStateChanged::FDelegate& SourceControlStateChanged ) override;
+	virtual void UnregisterSourceControlStateChanged_Handle( FDelegateHandle Handle ) override;
+	virtual ECommandResult::Type Execute( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation, const TArray<FString>& InFiles, EConcurrency::Type InConcurrency = EConcurrency::Synchronous, const FSourceControlOperationComplete& InOperationCompleteDelegate = FSourceControlOperationComplete() ) override;
 	virtual bool CanCancelOperation( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation ) const override;
 	virtual void CancelOperation( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation ) override;
 	virtual bool UsesLocalReadOnlyState() const override;
 	virtual bool UsesChangelists() const override;
-	virtual bool UsesCheckout() const /* override for UE4.17 */;
+	virtual bool UsesCheckout() const override;
 	virtual void Tick() override;
 	virtual TArray< TSharedRef<class ISourceControlLabel> > GetLabels( const FString& InMatchingSpec ) const override;
 #if SOURCE_CONTROL_WITH_SLATE
@@ -146,8 +146,8 @@ private:
 	/** Is git repository found. */
 	bool bGitRepositoryFound;
 
-	/** Flag for working offline - i.e. we haven't been able to connect to a server yet (for Git LFS Lock only) */
-	bool bWorkingOffline;
+	/** Indicates if Git LFS 2 File Locks server is available */
+	bool bServerAvailable;
 
 	/** Helper function for Execute() */
 	TSharedPtr<class IGitSourceControlWorker, ESPMode::ThreadSafe> CreateWorker(const FName& InOperationName) const;
@@ -155,7 +155,7 @@ private:
 	/** Helper function for running command synchronously. */
 	ECommandResult::Type ExecuteSynchronousCommand(class FGitSourceControlCommand& InCommand, const FText& Task);
 	/** Issue a command asynchronously if possible. */
-	ECommandResult::Type IssueCommand(class FGitSourceControlCommand& InCommand);
+	ECommandResult::Type IssueCommand(class FGitSourceControlCommand& InCommand, const bool bSynchronous);
 
 	/** Output any messages this command holds */
 	void OutputCommandMessages(const class FGitSourceControlCommand& InCommand) const;
@@ -175,6 +175,9 @@ private:
 	/** URL of the "origin" defaut remote server */
 	FString RemoteUrl;
 
+	/** Git version for feature checking */
+	FGitVersion GitVersion;
+
 	/** State cache */
 	TMap<FString, TSharedRef<class FGitSourceControlState, ESPMode::ThreadSafe> > StateCache;
 
@@ -186,7 +189,4 @@ private:
 
 	/** For notifying when the source control states in the cache have changed */
 	FSourceControlStateChanged OnSourceControlStateChanged;
-
-	/** Git version for feature checking */
-	FGitVersion GitVersion;
 };
