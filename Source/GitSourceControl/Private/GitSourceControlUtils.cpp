@@ -529,7 +529,8 @@ public:
 		InStatus.ParseIntoArray(Informations, TEXT("\t"), true);
 		if(3 <= Informations.Num())
 		{
-			LocalFilename = FPaths::ConvertRelativePathToFull(InRepositoryRoot, Informations[0].TrimTrailing());
+			Informations[0].TrimEndInline();
+			LocalFilename = FPaths::ConvertRelativePathToFull(InRepositoryRoot, Informations[0]);
 			LockUser = MoveTemp(Informations[1]);
 		}
 	}
