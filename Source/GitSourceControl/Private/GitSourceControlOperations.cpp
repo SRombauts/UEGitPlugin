@@ -30,8 +30,8 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 	{
 		// Now update the status of assets in Content/ directory and also Config files
 		TArray<FString> ProjectDirs;
-		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::GameContentDir()));
-		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::GameConfigDir()));
+		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()));
+		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::ProjectConfigDir()));
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, ProjectDirs, InCommand.ErrorMessages, States);
 		if(!InCommand.bCommandSuccessful || InCommand.ErrorMessages.Num() > 0)
 		{
@@ -383,7 +383,7 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 		if(Operation->ShouldGetOpenedOnly())
 		{
 			TArray<FString> Files;
-			Files.Add(FPaths::ConvertRelativePathToFull(FPaths::GameDir()));
+			Files.Add(FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()));
 			InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, Files, InCommand.ErrorMessages, States);
 		}
 	}
