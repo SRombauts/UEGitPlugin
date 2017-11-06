@@ -52,6 +52,13 @@ private:
 	void OnCheckedCreateGitIgnore(ECheckBoxState NewCheckedState);
 	bool bAutoCreateGitIgnore;
 
+	void OnCheckedCreateReadme(ECheckBoxState NewCheckedState);
+	bool GetAutoCreateReadme() const;
+	bool bAutoCreateReadme;
+	void OnReadmeContentCommited(const FText& InText, ETextCommit::Type InCommitType);
+	FText GetReadmeContent() const;
+	FText ReadmeContent;
+
 	void OnCheckedCreateGitAttributes(ECheckBoxState NewCheckedState);
 	bool bAutoCreateGitAttributes;
 

@@ -32,10 +32,12 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 	const FSlateFontInfo Font = FEditorStyle::GetFontStyle(TEXT("SourceControl.LoginWindow.Font"));
 
 	bAutoCreateGitIgnore = true;
+	bAutoCreateReadme = false;
 	bAutoCreateGitAttributes = false;
 	bAutoInitialCommit = true;
 
 	InitialCommitMessage = LOCTEXT("InitialCommitMessage", "Initial commit");
+	ReadmeContent = FText::FromString(FString(TEXT("# ")) + FApp::GetProjectName() + "\n\nDevelopped with Unreal Engine 4\n");
 
 	ChildSlot
 	[
@@ -214,6 +216,42 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 					.Font(Font)
 				]
 			]
+			// Option to add a README.md file with custom content
+			+SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(2.0f)
+			.VAlign(VAlign_Center)
+			[
+				SNew(SHorizontalBox)
+				.Visibility(this, &SGitSourceControlSettings::MustInitializeGitRepository)
+				.ToolTipText(LOCTEXT("CreateReadme_Tooltip", "Add a README.md file"))
+				+SHorizontalBox::Slot()
+				.FillWidth(0.1f)
+				[
+					SNew(SCheckBox)
+					.IsChecked(ECheckBoxState::Checked)
+					.OnCheckStateChanged(this, &SGitSourceControlSettings::OnCheckedCreateReadme)
+				]
+				+SHorizontalBox::Slot()
+				.FillWidth(0.9f)
+				.VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("CreateReadme", "Add a basic README.md file"))
+					.Font(Font)
+				]
+				+SHorizontalBox::Slot()
+				.FillWidth(2.0f)
+				.Padding(2.0f)
+				[
+					SNew(SMultiLineEditableTextBox)
+					.Text(this, &SGitSourceControlSettings::GetReadmeContent)
+					.OnTextCommitted(this, &SGitSourceControlSettings::OnReadmeContentCommited)
+					.IsEnabled(this, &SGitSourceControlSettings::GetAutoCreateReadme)
+					.SelectAllTextWhenFocused(true)
+					.Font(Font)
+				]
+			]
 			// Option to add a proper .gitattributes file for Git LFS (false by default)
 			+SVerticalBox::Slot()
 			.AutoHeight()
@@ -300,7 +338,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				.VAlign(VAlign_Center)
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("InitialGitCommit", "Make the initial Git Commit"))
+					.Text(LOCTEXT("InitialGitCommit", "Make the initial Git commit"))
 					.Font(Font)
 				]
 				+SHorizontalBox::Slot()
@@ -462,12 +500,21 @@ FReply SGitSourceControlSettings::OnClickedInitializeGitRepository()
 				ProjectFiles.Add(GitIgnoreFilename);
 			}
 		}
+		if(bAutoCreateReadme)
+		{
+			// 2.a. Create a "README.md" file with a custom description
+			const FString ReadmeFilename = FPaths::Combine(FPaths::ProjectDir(), TEXT("README.md"));
+			if (FFileHelper::SaveStringToFile(ReadmeContent.ToString(), *ReadmeFilename, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+			{
+				ProjectFiles.Add(ReadmeFilename);
+			}
+		}
 		if(bAutoCreateGitAttributes)
 		{
-			// 2.b. Synchronous (very quick) "lfs install" operation: needs only to be run once by user
+			// 2.c. Synchronous (very quick) "lfs install" operation: needs only to be run once by user
 			GitSourceControlUtils::RunCommand(TEXT("lfs install"), PathToGitBinary, PathToProjectDir, TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
 
-			// 2.c. Create a ".gitattributes" file to enable Git LFS (Large File System) for the whole "Content/" subdir
+			// 2.d. Create a ".gitattributes" file to enable Git LFS (Large File System) for the whole "Content/" subdir
 			const FString GitAttributesFilename = FPaths::Combine(FPaths::ProjectDir(), TEXT(".gitattributes"));
 			FString GitAttributesContent;
 			if(GitSourceControl.AccessSettings().IsUsingGitLfsLocking())
@@ -595,6 +642,26 @@ void SGitSourceControlSettings::DisplayFailureNotification(const FSourceControlO
 void SGitSourceControlSettings::OnCheckedCreateGitIgnore(ECheckBoxState NewCheckedState)
 {
 	bAutoCreateGitIgnore = (NewCheckedState == ECheckBoxState::Checked);
+}
+
+void SGitSourceControlSettings::OnCheckedCreateReadme(ECheckBoxState NewCheckedState)
+{
+	bAutoCreateReadme = (NewCheckedState == ECheckBoxState::Checked);
+}
+
+bool SGitSourceControlSettings::GetAutoCreateReadme() const
+{
+	return bAutoCreateReadme;
+}
+
+void SGitSourceControlSettings::OnReadmeContentCommited(const FText& InText, ETextCommit::Type InCommitType)
+{
+	ReadmeContent = InText;
+}
+
+FText SGitSourceControlSettings::GetReadmeContent() const
+{
+	return ReadmeContent;
 }
 
 void SGitSourceControlSettings::OnCheckedCreateGitAttributes(ECheckBoxState NewCheckedState)
