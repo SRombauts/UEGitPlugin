@@ -347,8 +347,8 @@ bool FGitSourceControlState::IsModified() const
 		|| WorkingCopyState == EWorkingCopyState::Modified
 		|| WorkingCopyState == EWorkingCopyState::Renamed
 		|| WorkingCopyState == EWorkingCopyState::Copied
-		|| WorkingCopyState == EWorkingCopyState::Conflicted
-		|| WorkingCopyState == EWorkingCopyState::Missing;
+		|| WorkingCopyState == EWorkingCopyState::Missing
+		|| WorkingCopyState == EWorkingCopyState::Conflicted;
 }
 
 
@@ -360,6 +360,11 @@ bool FGitSourceControlState::CanAdd() const
 bool FGitSourceControlState::IsConflicted() const
 {
 	return WorkingCopyState == EWorkingCopyState::Conflicted;
+}
+
+bool FGitSourceControlState::CanRevert() const
+{
+	return IsModified();
 }
 
 #undef LOCTEXT_NAMESPACE

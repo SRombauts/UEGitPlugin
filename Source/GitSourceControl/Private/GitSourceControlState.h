@@ -78,6 +78,7 @@ public:
 	virtual bool IsModified() const override;
 	virtual bool CanAdd() const override;
 	virtual bool IsConflicted() const override;
+	virtual bool CanRevert() const; // override; TODO UE 4.19 only - commented for backward compatibility
 
 public:
 	/** History of the item, if any */
