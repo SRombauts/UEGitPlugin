@@ -32,7 +32,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 	const FSlateFontInfo Font = FEditorStyle::GetFontStyle(TEXT("SourceControl.LoginWindow.Font"));
 
 	bAutoCreateGitIgnore = true;
-	bAutoCreateReadme = false;
+	bAutoCreateReadme = true;
 	bAutoCreateGitAttributes = false;
 	bAutoInitialCommit = true;
 

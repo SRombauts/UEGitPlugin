@@ -1,8 +1,8 @@
 {
 	"FileVersion" : 3,
-	"Version" : 23,
-	"VersionName" : "2.3",
-	"FriendlyName" : "Git (dev)",
+	"Version" : 24,
+	"VersionName" : "2.4",
+	"FriendlyName" : "Git LFS 2",
 	"Description" : "Git source control management (dev)",
 	"Category" : "Source Control",
 	"CreatedBy" : "SRombauts",

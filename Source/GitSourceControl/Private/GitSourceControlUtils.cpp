@@ -112,7 +112,7 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 
 //#if UE_BUILD_DEBUG
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutResults);
-	if(ReturnCode != 0)
+	if(ReturnCode != 0 || OutErrors.Len() > 0)
 	{
 		UE_LOG(LogSourceControl, Warning, TEXT("RunCommand(%s) ReturnCode=%d:\n%s"), *InCommand, ReturnCode, *OutErrors);
 	}
