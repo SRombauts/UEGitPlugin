@@ -4,15 +4,15 @@ Unreal Engine 4 Git Source Control Plugin
 [![release](https://img.shields.io/github/release/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/releases)
 [![Git Plugin issues](https://img.shields.io/github/issues/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/issues)
 [![Join the chat at https://gitter.im/SRombauts/UE4GitPlugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SRombauts/UE4GitPlugin)
-UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine 4.18.
+UE4GitPlugin is a simple Git Source Control Plugin for **Unreal Engine 4.18**.
 
 Developped and contributted by Sébastien Rombauts 2014-2017 (sebastien.rombauts@gmail.com)
 <a href="https://www.paypal.me/SRombauts" title="Pay Me a Beer! Donate with PayPal :)"><img src="https://www.paypalobjects.com/webstatic/paypalme/images/pp_logo_small.png" width="118"></a>
 
-**First version of the plugin has been integrated by default in UE4.7 in "beta version".**
+- First version of the plugin has been **integrated by default in UE4.7 in "beta version"**.
+- This is a developement fork named "**Git LFS 2**" adding File Locks supported by Github.
 
-This is a developement fork to develop a "Git LFS 2 with File Locks" of the plugin alongside the existing git plugin inside currents version of the engine.
-For now, you need to install it into your Project Plugins folder, and it will overwrite (replace) the default "Git (beta version)" Source Control Provider with the "Git LFS 2" plugin.
+You need to install it into your Project **Plugins/** folder, and it will overwrite (replace) the default "Git (beta version)" Source Control Provider with the "Git LFS 2" plugin.
 
 Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.com/Git_source_control_%28Tutorial%29).
 
