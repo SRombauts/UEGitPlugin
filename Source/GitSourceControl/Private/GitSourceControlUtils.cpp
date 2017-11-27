@@ -79,11 +79,9 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 		}
 
 		// Specify the working copy (the root) of the git repository (before the command itself)
-		FullCommand  = TEXT("--work-tree=\"");
+		FullCommand  = TEXT("-C \"");
 		FullCommand += RepositoryRoot;
-		// and the ".git" subdirectory in it (before the command itself)
-		FullCommand += TEXT("\" --git-dir=\"");
-		FullCommand += FPaths::Combine(*RepositoryRoot, TEXT(".git\" "));
+		FullCommand += TEXT("\" ");
 	}
 	// then the git command itself ("status", "log", "commit"...)
 	LogableCommand += InCommand;
@@ -956,11 +954,9 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	if(!InRepositoryRoot.IsEmpty())
 	{
 		// Specify the working copy (the root) of the git repository (before the command itself)
-		FullCommand  = TEXT("--work-tree=\"");
+		FullCommand  = TEXT("-C \"");
 		FullCommand += InRepositoryRoot;
-		// and the ".git" subdirectory in it (before the command itself)
-		FullCommand += TEXT("\" --git-dir=\"");
-		FullCommand += FPaths::Combine(*InRepositoryRoot, TEXT(".git\" "));
+		FullCommand += TEXT("\" ");
 	}
 
 	// then the git command itself
