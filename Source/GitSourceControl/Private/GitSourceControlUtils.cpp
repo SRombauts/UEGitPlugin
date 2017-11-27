@@ -1048,8 +1048,13 @@ bool RunLfsCommand(const FString& InCommand, const FString& InPathToGitBinary, c
 {
 	int32 ReturnCode = -1;
 
-	// First, the git LFS command itself (lfs lock/lfs unlock/lfs locks)
-	FString FullCommand = InCommand;
+	// First, explicitly specify the path to the git directory
+	FString FullCommand = TEXT("-C \"");
+	FullCommand += InRepositoryRoot;
+	FullCommand += TEXT("\" ");
+
+	// Then add the git LFS command itself (lfs lock/lfs unlock/lfs locks)
+	FullCommand += InCommand;
 
 	// Append to the command all the files
 	for(const auto& File : InFiles)
