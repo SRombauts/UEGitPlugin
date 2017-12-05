@@ -76,7 +76,7 @@ bool FGitCheckOutWorker::Execute(FGitSourceControlCommand& InCommand)
 		{
 			TArray<FString> OneFile;
 			OneFile.Add(RelativeFile);
-			InCommand.bCommandSuccessful = GitSourceControlUtils::RunLfsCommand(TEXT("lfs lock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, OneFile, InCommand.InfoMessages, InCommand.ErrorMessages);
+			InCommand.bCommandSuccessful &= GitSourceControlUtils::RunCommand(TEXT("lfs lock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), OneFile, InCommand.InfoMessages, InCommand.ErrorMessages);
 		}
 
 		// now update the status of our files
@@ -183,7 +183,7 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 						{
 							TArray<FString> OneFile;
 							OneFile.Add(RelativeFile);
-							GitSourceControlUtils::RunLfsCommand(TEXT("lfs unlock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, OneFile, InCommand.InfoMessages, InCommand.ErrorMessages);
+							GitSourceControlUtils::RunCommand(TEXT("lfs unlock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), OneFile, InCommand.InfoMessages, InCommand.ErrorMessages);
 						}
 					}
 				}
@@ -317,7 +317,7 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 			{
 				TArray<FString> OneFile;
 				OneFile.Add(RelativeFile);
-				GitSourceControlUtils::RunLfsCommand(TEXT("lfs unlock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, OneFile, InCommand.InfoMessages, InCommand.ErrorMessages);
+				GitSourceControlUtils::RunCommand(TEXT("lfs unlock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), OneFile, InCommand.InfoMessages, InCommand.ErrorMessages);
 			}
 		}
 	}

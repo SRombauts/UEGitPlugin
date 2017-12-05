@@ -305,7 +305,7 @@ void FindGitLfsCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVe
 	{
 		OutVersion->bHasGitLfs = true;
 
-		if(0 <= InfoMessages.Compare(TEXT("git-lfs/2.0.0")))
+		if(InfoMessages.Compare(TEXT("git-lfs/2.0.0")) > 0)
 		{
 			OutVersion->bHasGitLfsLocking = true; // Git LFS File Locking workflow introduced in "git-lfs/2.0.0"
 		}
@@ -525,7 +525,7 @@ public:
 	{
 		TArray<FString> Informations;
 		InStatus.ParseIntoArray(Informations, TEXT("\t"), true);
-		if(3 <= Informations.Num())
+		if(Informations.Num() >= 3)
 		{
 			Informations[0].TrimEndInline();
 			LocalFilename = FPaths::ConvertRelativePathToFull(InRepositoryRoot, Informations[0]);
@@ -843,7 +843,7 @@ static void ParseDirectoryStatusResult(const FString& InPathToGitBinary, const F
  */
 static void ParseStatusResults(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const bool InUsingLfsLocking, const TArray<FString>& InFiles, const TMap<FString, FString>& InLockedFiles, const TArray<FString>& InResults, TArray<FGitSourceControlState>& OutStates)
 {
-	if(1 == InFiles.Num() && FPaths::DirectoryExists(InFiles[0]))
+	if((InFiles.Num() == 1) && FPaths::DirectoryExists(InFiles[0]))
 	{
 		// 1) Special case for "status" of a directory: requires to get the list of files by ourselves.
 		//   (this is triggered by the "Submit to Source Control" menu)
@@ -922,7 +922,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		TArray<FString> OnePath;
 		// Only one file: optim very useful for the .uproject file at the root to avoid parsing the whole repository
 		// (works only if the file exists)
-		if((1 == Files.Value.Num()) && (FPaths::FileExists(Files.Value[0])))
+		if((Files.Value.Num() == 1) && (FPaths::FileExists(Files.Value[0])))
 		{
 			OnePath.Add(Files.Value[0]);
 		}
@@ -1031,76 +1031,6 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 	else
 	{
 		UE_LOG(LogSourceControl, Error, TEXT("Failed to launch 'git cat-file'"));
-	}
-
-	FPlatformProcess::ClosePipe(PipeRead, PipeWrite);
-
-	return (ReturnCode == 0);
-}
-
-
-// Run a Git LFS command in the RepositoryRoot (required by Git LFS, vs the standard RunCommand for normal git commands).
-bool RunLfsCommand(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InFiles, TArray<FString>& OutResults, TArray<FString>& OutErrorMessages)
-{
-	int32 ReturnCode = -1;
-
-	// First, explicitly specify the path to the git directory
-	FString FullCommand = TEXT("-C \"");
-	FullCommand += InRepositoryRoot;
-	FullCommand += TEXT("\" ");
-
-	// Then add the git LFS command itself (lfs lock/lfs unlock/lfs locks)
-	FullCommand += InCommand;
-
-	// Append to the command all the files
-	for(const auto& File : InFiles)
-	{
-		FullCommand += TEXT(" \"");
-		FullCommand += File;
-		FullCommand += TEXT("\"");
-	}
-
-	const bool bLaunchDetached = false;
-	const bool bLaunchHidden = true;
-	const bool bLaunchReallyHidden = bLaunchHidden;
-
-	void* PipeRead = nullptr;
-	void* PipeWrite = nullptr;
-
-	verify(FPlatformProcess::CreatePipe(PipeRead, PipeWrite));
-
-//#if UE_BUILD_DEBUG
-	UE_LOG(LogSourceControl, Log, TEXT("RunLfsCommand: 'git %s'"), *FullCommand);
-//#endif
-
-	// Execute Git LFS command relative to the RepositoryRoot
-	FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*InPathToGitBinary, *FullCommand, bLaunchDetached, bLaunchHidden, bLaunchReallyHidden, nullptr, 0, *InRepositoryRoot, PipeWrite);
-	if(ProcessHandle.IsValid())
-	{
-		FPlatformProcess::WaitForProc(ProcessHandle);
-		FPlatformProcess::GetProcReturnCode(ProcessHandle, &ReturnCode);
-		if(ReturnCode == 0)
-		{
-			const FString StdOut = FPlatformProcess::ReadPipe(PipeRead);
-			StdOut.ParseIntoArray(OutResults, TEXT("\n"), true);
-//#if UE_BUILD_DEBUG
-			UE_LOG(LogSourceControl, Log, TEXT("RunLfsCommand(%s) success:\n%s"), *InCommand, *StdOut);
-//#endif
-		}
-		else
-		{
-			const FString StdOut = FPlatformProcess::ReadPipe(PipeRead);
-			StdOut.ParseIntoArray(OutErrorMessages, TEXT("\n"), true);
-//#if UE_BUILD_DEBUG
-			UE_LOG(LogSourceControl, Warning, TEXT("RunLfsCommand(%s) ReturnCode=%d:\n%s"), *InCommand, ReturnCode, *StdOut);
-//#endif
-		}
-
-		FPlatformProcess::CloseProc(ProcessHandle);
-	}
-	else
-	{
-		UE_LOG(LogSourceControl, Error, TEXT("RunLfsCommand(%s): Failed to launch 'git'"), *InCommand);
 	}
 
 	FPlatformProcess::ClosePipe(PipeRead, PipeWrite);
