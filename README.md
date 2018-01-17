@@ -18,11 +18,14 @@ Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.c
 
 Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
 
-Source Control Login screen to create a new workspace/a new repository:
-<img src="Screenshots/SourceControlLogin_Init.png" width="720">
+Source Control Login window to create a new workspace/a new repository:
+![Source Control Login window - create a new repository](Screenshots/SourceControlLogin_Init.png)
 
-History menu entry to look a the changelog of an asset:
-<img src="Screenshots/FileHistory.png" width="720">
+Submit Files to Source Control window, to commit assets:
+![Submit Files to Source Control](Screenshots/SubmitFiles.png)
+
+File History window, to see the changelog of an asset:
+![History of a file](Screenshots/FileHistory.png)
 
 Visual Diffing of two revisions of a Blueprint:
 <img src="https://cdn2.unrealengine.com/blog/DiffTool-1009x542-719850393.png" width="720">
