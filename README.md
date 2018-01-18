@@ -36,6 +36,14 @@ Visual Diffing of two revisions of a Blueprint:
 Merge conflict of a Blueprint:
 <img src="https://docs.unrealengine.com/latest/images/Support/Builds/ReleaseNotes/2015/4_7/BPmergeTool.jpg" width="720">
 
+Status Icons:
+
+![New/Unsaved/Untracked](Screenshots/Icons/New.png)
+![Added](Screenshots/Icons/Added.png)
+![Unchanged](Screenshots/Icons/Unchanged.png)
+![Modified](Screenshots/Icons/Modified.png)
+![Moved/Renamed](Screenshots/Icons/Renamed.png)
+
 ### Supported features
 - initialize a new Git local repository ('git init') to manage your UE4 Game Project
   - can also create an appropriate .gitignore file as part of initialization
