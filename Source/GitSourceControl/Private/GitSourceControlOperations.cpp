@@ -297,7 +297,7 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 	if(AllExistingFiles.Num() > 0)
 	{
 		// reset any changes already added to the index
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("reset"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), AllExistingFiles, InCommand.InfoMessages, InCommand.ErrorMessages);
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("reset"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>({ TEXT("HEAD") }), AllExistingFiles, InCommand.InfoMessages, InCommand.ErrorMessages);
 	}
 	if(OtherThanAddedExistingFiles.Num() > 0)
 	{
