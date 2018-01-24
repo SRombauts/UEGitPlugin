@@ -15,6 +15,17 @@
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"
 
+FName FGitPush::GetName() const
+{
+	return "Push";
+}
+
+FText FGitPush::GetInProgressString() const
+{
+	return LOCTEXT("SourceControl_Push", "Push local commits to remote origin...");
+}
+
+
 FName FGitConnectWorker::GetName() const
 {
 	return "Connect";
@@ -342,11 +353,9 @@ bool FGitSyncWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	// pull the branch to get remote changes by rebasing any local commits (not merging them to avoid complex graphs)
 	// (this cannot work if any local files are modified but not commited)
-	{
-		TArray<FString> Parameters;
-		Parameters.Add(TEXT("--rebase"));
-		InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("pull"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
-	}
+	TArray<FString> Parameters;
+	Parameters.Add(TEXT("--rebase"));
+	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("pull"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 
 	// now update the status of our files
 	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, InCommand.Files, InCommand.ErrorMessages, States);
@@ -357,6 +366,31 @@ bool FGitSyncWorker::Execute(FGitSourceControlCommand& InCommand)
 bool FGitSyncWorker::UpdateStates() const
 {
 	return GitSourceControlUtils::UpdateCachedStates(States);
+}
+
+
+FName FGitPushWorker::GetName() const
+{
+	return "Push";
+}
+
+bool FGitPushWorker::Execute(FGitSourceControlCommand& InCommand)
+{
+	// push the branch to its default remote
+	// (works only if the default remote "origin" is set and does not require authentication)
+	TArray<FString> Parameters;
+	Parameters.Add(TEXT("origin"));
+	Parameters.Add(TEXT("HEAD"));
+	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+
+	// NOTE: no need to update status of our files
+
+	return InCommand.bCommandSuccessful;
+}
+
+bool FGitPushWorker::UpdateStates() const
+{
+	return false;
 }
 
 FName FGitUpdateStatusWorker::GetName() const
@@ -451,7 +485,7 @@ bool FGitCopyWorker::Execute(FGitSourceControlCommand& InCommand)
 
 bool FGitCopyWorker::UpdateStates() const
 {
-	return GitSourceControlUtils::UpdateCachedStates(OutStates);
+	return GitSourceControlUtils::UpdateCachedStates(States);
 }
 
 FName FGitResolveWorker::GetName() const
