@@ -6,7 +6,7 @@ Unreal Engine 4 Git Source Control Plugin
 [![Join the chat at https://gitter.im/SRombauts/UE4GitPlugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SRombauts/UE4GitPlugin)
 UE4GitPlugin is a simple Git Source Control Plugin for **Unreal Engine 4.18**.
 
-Developped and contributted by Sébastien Rombauts 2014-2017 (sebastien.rombauts@gmail.com)
+Developped and contributted by Sébastien Rombauts 2014-2018 (sebastien.rombauts@gmail.com)
 <a href="https://www.paypal.me/SRombauts" title="Pay Me a Beer! Donate with PayPal :)"><img src="https://www.paypalobjects.com/webstatic/paypalme/images/pp_logo_small.png" width="118"></a>
 
 - First version of the plugin has been **integrated by default in UE4.7 in "beta version"**.
@@ -168,7 +168,7 @@ See also the [Source Control official Documentation](https://docs.unrealengine.c
 
 ### License
 
-Copyright (c) 2014-2017 Sébastien Rombauts (sebastien.rombauts@gmail.com)
+Copyright (c) 2014-2018 Sébastien Rombauts (sebastien.rombauts@gmail.com)
 
 Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 or copy at http://opensource.org/licenses/MIT)
