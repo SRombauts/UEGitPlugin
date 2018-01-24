@@ -21,17 +21,18 @@ Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
   - can also create an appropriate .gitignore file as part of initialization
   - can also create a .gitattributes file to enable Git LFS (Large File System) as part of initialization
   - can also make the initial commit, with custom multi-line message
+  - can also configure the default remote origin URL
 - display status icons to show modified/added/deleted/untracked files
 - show history of a file
 - visual diff of a blueprint against depot or between previous versions of a file
-- revert modifications of a file (works best with UE4.15 "Content Hot-Reload" experimental option)
+- revert modifications of a file
 - add, delete, rename a file
 - checkin/commit a file (cannot handle atomically more than 50 files)
 - migrate an asset between two projects if both are using Git
 - solve a merge conflict on a blueprint
 - show current branch name in status text
-- Sync to Pull (rebase) the current branch if there is no local modified files
-- Git LFS (Github, Gitlab, Bitbucket), git-annex, git-fat and git-media are working with Git 2.10+
+- Sync to Pull (rebase) the current branch if there is no localy modified files
+- Git LFS (Github, Gitlab, Bitbucket) is working with Git 2.10+ under Windows
 - Git LFS 2 File Locking is working with Git 2.10+ and Git LFS 2.0.0
 - Windows, Mac and Linux
 
@@ -62,7 +63,6 @@ Use "TODO LFS" in the code to track things left to do/improve/refactor:
 - Amend a commit is not in the current Editor workflow
 - Revert All (using either "Stash" or "reset --hard")
 - Configure user name & email ('git config user.name' & git config user.email')
-- Configure remote origin URL ('git remote add origin url')
 
 ### Known issues
 - the Editor does not show deleted files (only when deleted externaly?)

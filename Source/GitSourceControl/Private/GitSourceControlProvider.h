@@ -102,7 +102,7 @@ public:
 		return GitVersion;
 	}
 
-	/** Get the path to the root of the Git repository: can be the GameDir itself, or any parent directory */
+	/** Get the path to the root of the Git repository: can be the ProjectDir itself, or any parent directory */
 	inline const FString& GetPathToRepositoryRoot() const
 	{
 		return PathToRepositoryRoot;
@@ -160,7 +160,7 @@ private:
 	/** Output any messages this command holds */
 	void OutputCommandMessages(const class FGitSourceControlCommand& InCommand) const;
 
-	/** Path to the root of the Git repository: can be the GameDir itself, or any parent directory (found by the "Connect" operation) */
+	/** Path to the root of the Git repository: can be the ProjectDir itself, or any parent directory (found by the "Connect" operation) */
 	FString PathToRepositoryRoot;
 
 	/** Git config user.name (from local repository, else globally) */

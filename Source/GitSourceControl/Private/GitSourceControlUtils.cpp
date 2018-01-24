@@ -305,7 +305,7 @@ void FindGitLfsCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVe
 	{
 		OutVersion->bHasGitLfs = true;
 
-		if(InfoMessages.Compare(TEXT("git-lfs/2.0.0")) > 0)
+		if(InfoMessages.Compare(TEXT("git-lfs/2.0.0")) >= 0)
 		{
 			OutVersion->bHasGitLfsLocking = true; // Git LFS File Locking workflow introduced in "git-lfs/2.0.0"
 		}
