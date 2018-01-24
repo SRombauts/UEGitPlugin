@@ -24,6 +24,9 @@ Source Control Login window to create a new workspace/a new repository:
 Source Control status tooltip, when hovering the Source Control icon in toolbar:
 ![Source Control Status Tooltip](Screenshots/SourceControlStatusTooltip.png)
 
+Source Control top Menu, extended whith specific Git commands:
+![Source Control Status Tooltip](Screenshots/SourceControlMenu.png)
+
 Submit Files to Source Control window, to commit assets:
 ![Submit Files to Source Control](Screenshots/SubmitFiles.png)
 
