@@ -11,6 +11,7 @@
 #include "ISourceControlProvider.h"
 #include "IGitSourceControlWorker.h"
 #include "GitSourceControlState.h"
+#include "GitSourceControlMenu.h"
 
 class FGitSourceControlCommand;
 
@@ -189,4 +190,7 @@ private:
 
 	/** Git version for feature checking */
 	FGitVersion GitVersion;
+
+	/** Source Control Menu Extension */
+	FGitSourceControlMenu GitSourceControlMenu;
 };

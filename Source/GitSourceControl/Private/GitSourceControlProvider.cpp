@@ -76,6 +76,8 @@ void FGitSourceControlProvider::CheckRepositoryStatus(const FString& InPathToGit
 	bGitRepositoryFound = GitSourceControlUtils::FindRootDirectory(PathToProjectDir, PathToRepositoryRoot);
 	if(bGitRepositoryFound)
 	{
+		GitSourceControlMenu.Register();
+
 		// Get branch name
 		bGitRepositoryFound = GitSourceControlUtils::GetBranchName(InPathToGitBinary, PathToRepositoryRoot, BranchName);
 		if(bGitRepositoryFound)
@@ -100,6 +102,8 @@ void FGitSourceControlProvider::Close()
 {
 	// clear the cache
 	StateCache.Empty();
+	// Remove all extensions to the "Source Control" menu in the Editor Toolbar
+	GitSourceControlMenu.Unregister();
 
 	bGitAvailable = false;
 	bGitRepositoryFound = false;
@@ -342,7 +346,7 @@ void FGitSourceControlProvider::Tick()
 				// Only delete commands that are not running 'synchronously'
 				delete &Command;
 			}
-			
+
 			// only do one command per tick loop, as we dont want concurrent modification 
 			// of the command queue (which can happen in the completion delegate)
 			break;

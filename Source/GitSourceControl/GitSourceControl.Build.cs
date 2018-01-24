@@ -12,11 +12,14 @@ public class GitSourceControl : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
 				"Core",
+				"CoreUObject",
 				"Slate",
 				"SlateCore",
-				"EditorStyle",
-				"SourceControl",
 				"InputCore",
+				"EditorStyle",
+				"UnrealEd",
+				"LevelEditor",
+				"SourceControl",
 				"Projects",
 			}
 		);
