@@ -11,7 +11,6 @@
 
 #include "ISourceControlOperation.h"
 
-
 /**
  * Internal operation used to push local commits to configured remote origin
 */
@@ -23,6 +22,7 @@ public:
 
 	virtual FText GetInProgressString() const override;
 };
+
 /** Called when first activated on a project, and then at project load time.
  *  Look for the root directory of the git repository (where the ".git/" subdirectory is located). */
 class FGitConnectWorker : public IGitSourceControlWorker

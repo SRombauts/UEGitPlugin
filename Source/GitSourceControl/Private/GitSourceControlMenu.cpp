@@ -1,4 +1,7 @@
 // Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+//
+// Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
+// or copy at http://opensource.org/licenses/MIT)
 
 #include "GitSourceControlPrivatePCH.h"
 
@@ -48,10 +51,11 @@ void FGitSourceControlMenu::Unregister()
 	}
 }
 
-bool FGitSourceControlMenu::IsSourceControlConnected() const
+bool FGitSourceControlMenu::HaveRemoteUrl() const
 {
-	const ISourceControlProvider& Provider = ISourceControlModule::Get().GetProvider();
-	return Provider.IsEnabled() && Provider.IsAvailable();
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+	return !Provider.GetRemoteUrl().IsEmpty();
 }
 
 void FGitSourceControlMenu::UnlinkSyncAndReloadPackages()
@@ -109,7 +113,7 @@ void FGitSourceControlMenu::UnlinkSyncAndReloadPackages()
 		// Execute a Source Control "Sync" synchronously, displaying an ongoing notification during the whole operation
 		TSharedRef<FSync, ESPMode::ThreadSafe> SyncOperation = ISourceControlOperation::Create<FSync>();
 		DisplayInProgressNotification(SyncOperation->GetInProgressString());
-		const ECommandResult::Type Result = Provider.Execute(SyncOperation, TArray<FString>(), EConcurrency::Asynchronous);
+		const ECommandResult::Type Result = Provider.Execute(SyncOperation, TArray<FString>(), EConcurrency::Synchronous);
 		OnSourceControlOperationComplete(SyncOperation, Result);
 
 		// Reload all packages
@@ -328,7 +332,7 @@ void FGitSourceControlMenu::AddMenuExtension(FMenuBuilder& Builder)
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "SourceControl.Actions.Submit"),
 		FUIAction(
 			FExecuteAction::CreateRaw(this, &FGitSourceControlMenu::PushClicked),
-			FCanExecuteAction() // TODO if origin configured
+			FCanExecuteAction::CreateRaw(this, &FGitSourceControlMenu::HaveRemoteUrl)
 		)
 	);
 
@@ -338,7 +342,7 @@ void FGitSourceControlMenu::AddMenuExtension(FMenuBuilder& Builder)
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "SourceControl.Actions.Sync"),
 		FUIAction(
 			FExecuteAction::CreateRaw(this, &FGitSourceControlMenu::SyncClicked),
-			FCanExecuteAction() // TODO if origin configured
+			FCanExecuteAction::CreateRaw(this, &FGitSourceControlMenu::HaveRemoteUrl)
 		)
 	);
 

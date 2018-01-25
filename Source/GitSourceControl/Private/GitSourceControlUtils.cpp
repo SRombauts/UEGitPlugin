@@ -116,6 +116,13 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 	}
 //#endif
 
+	// Move push/pull progress information from the error stream to the info stream
+	if(ReturnCode == 0 && OutErrors.Len() > 0)
+	{
+		OutResults.Append(OutErrors);
+		OutErrors.Empty();
+	}
+
 	return ReturnCode == 0;
 }
 

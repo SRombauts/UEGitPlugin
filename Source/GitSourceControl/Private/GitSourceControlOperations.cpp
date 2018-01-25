@@ -22,7 +22,7 @@ FName FGitPush::GetName() const
 
 FText FGitPush::GetInProgressString() const
 {
-	return LOCTEXT("SourceControl_Push", "Push local commits to remote origin...");
+	return LOCTEXT("SourceControl_Push", "Pushing local commits to remote origin...");
 }
 
 
@@ -355,6 +355,8 @@ bool FGitSyncWorker::Execute(FGitSourceControlCommand& InCommand)
 	// (this cannot work if any local files are modified but not commited)
 	TArray<FString> Parameters;
 	Parameters.Add(TEXT("--rebase"));
+	Parameters.Add(TEXT("origin"));
+	Parameters.Add(TEXT("HEAD"));
 	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("pull"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 
 	// now update the status of our files
@@ -379,6 +381,7 @@ bool FGitPushWorker::Execute(FGitSourceControlCommand& InCommand)
 	// push the branch to its default remote
 	// (works only if the default remote "origin" is set and does not require authentication)
 	TArray<FString> Parameters;
+	Parameters.Add(TEXT("--set-upstream"));
 	Parameters.Add(TEXT("origin"));
 	Parameters.Add(TEXT("HEAD"));
 	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);

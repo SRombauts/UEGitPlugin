@@ -1,4 +1,7 @@
 // Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+//
+// Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
+// or copy at http://opensource.org/licenses/MIT)
 
 #pragma once
 
@@ -21,7 +24,7 @@ public:
 	void RefreshClicked();
 
 private:
-	bool IsSourceControlConnected() const;
+	bool HaveRemoteUrl() const;
 
 	void				UnlinkSyncAndReloadPackages();
 	TArray<UPackage*>	UnlinkPackages(const TArray<FString>& InPackageNames);
