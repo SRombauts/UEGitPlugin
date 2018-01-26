@@ -18,6 +18,7 @@
 #include "LevelEditor.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Framework/Notifications/NotificationManager.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "EditorStyleSet.h"
 
 #include "PackageTools.h"
@@ -104,7 +105,7 @@ void FGitSourceControlMenu::UnlinkSyncAndReloadPackages()
 			}
 			else
 			{
-				FMessageLog("GitSourceControl").Error(FText::FromString(FailureReason));
+				FMessageLog("SourceControl").Error(FText::FromString(FailureReason));
 			}
 		}
 
@@ -122,9 +123,9 @@ void FGitSourceControlMenu::UnlinkSyncAndReloadPackages()
 	}
 	else
 	{
-		FMessageLog ErrorMessage("GitSourceControl");
-		ErrorMessage.Warning(LOCTEXT("SourceControlMenu_Sync_Unsaved", "Save All Assets before attempting to Sync!"));
-		ErrorMessage.Notify();
+		FMessageLog SourceControlLog("SourceControl");
+		SourceControlLog.Warning(LOCTEXT("SourceControlMenu_Sync_Unsaved", "Save All Assets before attempting to Sync!"));
+		SourceControlLog.Notify();
 	}
 
 }
@@ -192,9 +193,9 @@ void FGitSourceControlMenu::SyncClicked()
 	}
 	else
 	{
-		FMessageLog LogSourceControl("LogSourceControl");
-		LogSourceControl.Warning(LOCTEXT("SourceControlMenu_InProgress", "Source control operation already in progress"));
-		LogSourceControl.Notify();
+		FMessageLog SourceControlLog("SourceControl");
+		SourceControlLog.Warning(LOCTEXT("SourceControlMenu_InProgress", "Source control operation already in progress"));
+		SourceControlLog.Notify();
 	}
 }
 
@@ -220,9 +221,9 @@ void FGitSourceControlMenu::PushClicked()
 	}
 	else
 	{
-		FMessageLog LogSourceControl("LogSourceControl");
-		LogSourceControl.Warning(LOCTEXT("SourceControlMenu_InProgress", "Source control operation already in progress"));
-		LogSourceControl.Notify();
+		FMessageLog SourceControlLog("SourceControl");
+		SourceControlLog.Warning(LOCTEXT("SourceControlMenu_InProgress", "Source control operation already in progress"));
+		SourceControlLog.Notify();
 	}
 }
 
@@ -250,9 +251,9 @@ void FGitSourceControlMenu::RefreshClicked()
 	}
 	else
 	{
-		FMessageLog LogSourceControl("LogSourceControl");
-		LogSourceControl.Warning(LOCTEXT("SourceControlMenu_InProgress", "Source control operation already in progress"));
-		LogSourceControl.Notify();
+		FMessageLog SourceControlLog("SourceControl");
+		SourceControlLog.Warning(LOCTEXT("SourceControlMenu_InProgress", "Source control operation already in progress"));
+		SourceControlLog.Notify();
 	}
 }
 
@@ -294,7 +295,7 @@ void FGitSourceControlMenu::DisplaySucessNotification(const FName& InOperationNa
 	Info.bUseSuccessFailIcons = true;
 	Info.Image = FEditorStyle::GetBrush(TEXT("NotificationList.SuccessImage"));
 	FSlateNotificationManager::Get().AddNotification(Info);
-	FMessageLog("LogSourceControl").Info(NotificationText);
+	UE_LOG(LogSourceControl, Log, TEXT("%s"), *NotificationText.ToString());
 }
 
 // Display a temporary failure notification at the end of the operation
@@ -307,7 +308,7 @@ void FGitSourceControlMenu::DisplayFailureNotification(const FName& InOperationN
 	FNotificationInfo Info(NotificationText);
 	Info.ExpireDuration = 8.0f;
 	FSlateNotificationManager::Get().AddNotification(Info);
-	FMessageLog("LogSourceControl").Info(NotificationText);
+	UE_LOG(LogSourceControl, Error, TEXT("%s"), *NotificationText.ToString());
 }
 
 void FGitSourceControlMenu::OnSourceControlOperationComplete(const FSourceControlOperationRef& InOperation, ECommandResult::Type InResult)
