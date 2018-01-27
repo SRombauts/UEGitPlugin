@@ -64,12 +64,12 @@ Status Icons:
 - show current branch name in status text
 - Configure remote origin URL ('git remote add origin url')
 - Sync to Pull (rebase) the current branch if there is no local modified files
+- Push the current branch
 - Git LFS (Github, Gitlab, Bitbucket), git-annex, git-fat and git-media are working with Git 2.10+
 - Git LFS 2 File Locks
 - Windows, Mac and Linux
 
 ### What *cannot* be done presently
-- Push is not in the current Editor workflow _(will come with Git LFS 2 where CheckIn=Commit+Push+Unlock)_
 - Branch/Merge are not in the current Editor workflow
 - Amend a commit is not in the current Editor workflow
 - Revert All (using either "Stash" or "reset --hard")
@@ -92,7 +92,6 @@ Status Icons:
 - missing localisation for git specific messages
 - displaying states of 'Engine' assets (also needs management of 'out of tree' files)
 - renaming a Blueprint in Editor leaves a redirector file, AND modify too much the asset to enable git to track its history through renaming
-- standard Editor commit dialog asks if user wants to "Keep Files Checked Out" => no use for Git or Mercurial CanCheckOut()==false
 
 ### Getting started
 
