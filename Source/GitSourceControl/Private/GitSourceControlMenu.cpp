@@ -60,85 +60,67 @@ bool FGitSourceControlMenu::HaveRemoteUrl() const
 	return !Provider.GetRemoteUrl().IsEmpty();
 }
 
-void FGitSourceControlMenu::UnlinkSyncAndReloadPackages()
+/// Find all packages in Content directory
+TArray<FString> FGitSourceControlMenu::ListAllPackages()
 {
-	// Prompt to save or discard all packages
-	bool bOkToExit = false;
-	bool bHadPackagesToSave = false;
+	TArray<FString> PackageRelativePaths;
+	FPackageName::FindPackagesInDirectory(PackageRelativePaths, *FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()));
+
+	TArray<FString> PackageNames;
+	PackageNames.Reserve(PackageRelativePaths.Num());
+	for (const FString& Path : PackageRelativePaths)
 	{
-		const bool bPromptUserToSave = true;
-		const bool bSaveMapPackages = true;
-		const bool bSaveContentPackages = true;
-		const bool bFastSave = false;
-		const bool bNotifyNoPackagesSaved = false;
-		const bool bCanBeDeclined = true; // If the user clicks "don't save" this will continue and lose their changes
-		bOkToExit = FEditorFileUtils::SaveDirtyPackages(bPromptUserToSave, bSaveMapPackages, bSaveContentPackages, bFastSave, bNotifyNoPackagesSaved, bCanBeDeclined, &bHadPackagesToSave);
+		FString PackageName;
+		FString FailureReason;
+		if (FPackageName::TryConvertFilenameToLongPackageName(Path, PackageName, &FailureReason))
+		{
+			PackageNames.Add(PackageName);
+		}
+		else
+		{
+			FMessageLog("SourceControl").Error(FText::FromString(FailureReason));
+		}
 	}
 
-	// bOkToExit can be true if the user selects to not save an asset by unchecking it and clicking "save"
-	if (bOkToExit)
+	return PackageNames;
+}
+
+/// Prompt to save or discard all packages
+bool FGitSourceControlMenu::SaveDirtyPackages()
+{
+	const bool bPromptUserToSave = true;
+	const bool bSaveMapPackages = true;
+	const bool bSaveContentPackages = true;
+	const bool bFastSave = false;
+	const bool bNotifyNoPackagesSaved = false;
+	const bool bCanBeDeclined = true; // If the user clicks "don't save" this will continue and lose their changes
+	bool bHadPackagesToSave = false;
+
+	bool bSaved = FEditorFileUtils::SaveDirtyPackages(bPromptUserToSave, bSaveMapPackages, bSaveContentPackages, bFastSave, bNotifyNoPackagesSaved, bCanBeDeclined, &bHadPackagesToSave);
+
+	// bSaved can be true if the user selects to not save an asset by unchecking it and clicking "save"
+	if (bSaved)
 	{
 		TArray<UPackage*> DirtyPackages;
 		FEditorFileUtils::GetDirtyWorldPackages(DirtyPackages);
 		FEditorFileUtils::GetDirtyContentPackages(DirtyPackages);
-		bOkToExit = DirtyPackages.Num() == 0;
+		bSaved = DirtyPackages.Num() == 0;
 	}
 
-	if (bOkToExit)
-	{
-		FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
-		FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
-
-		// Unload all packages in Content directory
-		TArray<FString> PackageRelativePaths;
-		FPackageName::FindPackagesInDirectory(PackageRelativePaths, *FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()));
-
-		TArray<FString> PackageNames;
-		PackageNames.Reserve(PackageRelativePaths.Num());
-		for(const FString& Path : PackageRelativePaths)
-		{
-			FString PackageName;
-			FString FailureReason;
-			if (FPackageName::TryConvertFilenameToLongPackageName(Path, PackageName, &FailureReason))
-			{
-				PackageNames.Add(PackageName);
-			}
-			else
-			{
-				FMessageLog("SourceControl").Error(FText::FromString(FailureReason));
-			}
-		}
-
-		// Inspired from ContentBrowserUtils.cpp ContentBrowserUtils::SyncPathsFromSourceControl()
-		TArray<UPackage*> LoadedPackages = UnlinkPackages(PackageNames);
-
-		// Execute a Source Control "Sync" synchronously, displaying an ongoing notification during the whole operation
-		TSharedRef<FSync, ESPMode::ThreadSafe> SyncOperation = ISourceControlOperation::Create<FSync>();
-		DisplayInProgressNotification(SyncOperation->GetInProgressString());
-		const ECommandResult::Type Result = Provider.Execute(SyncOperation, TArray<FString>(), EConcurrency::Synchronous);
-		OnSourceControlOperationComplete(SyncOperation, Result);
-
-		// Reload all packages
-		ReloadPackages(LoadedPackages);
-	}
-	else
-	{
-		FMessageLog SourceControlLog("SourceControl");
-		SourceControlLog.Warning(LOCTEXT("SourceControlMenu_Sync_Unsaved", "Save All Assets before attempting to Sync!"));
-		SourceControlLog.Notify();
-	}
-
+	return bSaved;
 }
 
+/// Unkink all loaded packages to allow to update them
 TArray<UPackage*> FGitSourceControlMenu::UnlinkPackages(const TArray<FString>& InPackageNames)
 {
 	TArray<UPackage*> LoadedPackages;
 
+	// Inspired from ContentBrowserUtils::SyncPathsFromSourceControl()
 	if (InPackageNames.Num() > 0)
 	{
 		// Form a list of loaded packages to reload...
 		LoadedPackages.Reserve(InPackageNames.Num());
-		for(const FString& PackageName : InPackageNames)
+		for (const FString& PackageName : InPackageNames)
 		{
 			UPackage* Package = FindPackage(nullptr, *PackageName);
 			if (Package)
@@ -189,7 +171,35 @@ void FGitSourceControlMenu::SyncClicked()
 {
 	if (!OperationInProgressNotification.IsValid())
 	{
-		UnlinkSyncAndReloadPackages();
+		const bool bSaved = SaveDirtyPackages();
+		if (bSaved)
+		{
+			// Find and Unlink all packages in Content directory to allow to update them
+			LoadedPackages = UnlinkPackages(ListAllPackages());
+
+			// Launch a "Sync" operation
+			FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+			FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+			TSharedRef<FSync, ESPMode::ThreadSafe> SyncOperation = ISourceControlOperation::Create<FSync>();
+			const ECommandResult::Type Result = Provider.Execute(SyncOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+			if (Result == ECommandResult::Succeeded)
+			{
+				// Display an ongoing notification during the whole operation (packages will be reloaded at the completion of the operation)
+				DisplayInProgressNotification(SyncOperation->GetInProgressString());
+			}
+			else
+			{
+				// Report failure with a notification and Reload all packages
+				DisplayFailureNotification(SyncOperation->GetName());
+				ReloadPackages(LoadedPackages);
+			}
+		}
+		else
+		{
+			FMessageLog SourceControlLog("SourceControl");
+			SourceControlLog.Warning(LOCTEXT("SourceControlMenu_Sync_Unsaved", "Save All Assets before attempting to Sync!"));
+			SourceControlLog.Notify();
+		}
 	}
 	else
 	{
@@ -207,7 +217,7 @@ void FGitSourceControlMenu::PushClicked()
 		FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
 		FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 		TSharedRef<FGitPush, ESPMode::ThreadSafe> PushOperation = ISourceControlOperation::Create<FGitPush>();
-		ECommandResult::Type Result = Provider.Execute(PushOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+		const ECommandResult::Type Result = Provider.Execute(PushOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
 		if (Result == ECommandResult::Succeeded)
 		{
 			// Display an ongoing notification during the whole operation
@@ -237,7 +247,7 @@ void FGitSourceControlMenu::RefreshClicked()
 		TSharedRef<FUpdateStatus, ESPMode::ThreadSafe> RefreshOperation = ISourceControlOperation::Create<FUpdateStatus>();
 		RefreshOperation->SetCheckingAllFiles(true);
 		RefreshOperation->SetGetOpenedOnly(true);
-		ECommandResult::Type Result = Provider.Execute(RefreshOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+		const ECommandResult::Type Result = Provider.Execute(RefreshOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
 		if (Result == ECommandResult::Succeeded)
 		{
 			// Display an ongoing notification during the whole operation
@@ -314,6 +324,12 @@ void FGitSourceControlMenu::DisplayFailureNotification(const FName& InOperationN
 void FGitSourceControlMenu::OnSourceControlOperationComplete(const FSourceControlOperationRef& InOperation, ECommandResult::Type InResult)
 {
 	RemoveInProgressNotification();
+
+	if (InOperation->GetName() == "Sync")
+	{
+		// Reload packages that where unlinked at the beginning of the Sync operation
+		ReloadPackages(LoadedPackages);
+	}
 
 	// Report result with a notification
 	if (InResult == ECommandResult::Succeeded)
