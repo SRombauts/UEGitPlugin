@@ -264,8 +264,10 @@ void GetMissingVsExistingFiles(const TArray<FString>& InFiles, TArray<FString>& 
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 
+	const TArray<FString> Files = (InFiles.Num() > 0) ? (InFiles) : (Provider.GetFilesInCache());
+
 	TArray<TSharedRef<ISourceControlState, ESPMode::ThreadSafe>> LocalStates;
-	Provider.GetState(InFiles, LocalStates, EStateCacheUsage::Use);
+	Provider.GetState(Files, LocalStates, EStateCacheUsage::Use);
 	for(const auto& State : LocalStates)
 	{
 		if(FPaths::FileExists(State->GetFilename()))
@@ -274,7 +276,7 @@ void GetMissingVsExistingFiles(const TArray<FString>& InFiles, TArray<FString>& 
 			{
 				OutAllExistingFiles.Add(State->GetFilename());
 			}
-			else
+			else if(State->IsModified())
 			{
 				OutOtherThanAddedExistingFiles.Add(State->GetFilename());
 				OutAllExistingFiles.Add(State->GetFilename());
@@ -320,7 +322,7 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 	{
 		// unlock files: execute the LFS command on relative filenames
 		// (unlock only locked files, that is, not Added files)
-		const TArray<FString> LockedFiles = GetLockedFiles(InCommand.Files);
+		const TArray<FString> LockedFiles = GetLockedFiles(OtherThanAddedExistingFiles);
 		if(LockedFiles.Num() > 0)
 		{
 			const TArray<FString> RelativeFiles = GitSourceControlUtils::RelativeFilenames(LockedFiles, InCommand.PathToRepositoryRoot);
@@ -334,7 +336,7 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 	}
 
 	// now update the status of our files
-	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, InCommand.Files, InCommand.ErrorMessages, States);
+	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, AllExistingFiles, InCommand.ErrorMessages, States);
 
 	return InCommand.bCommandSuccessful;
 }
@@ -432,13 +434,11 @@ bool FGitUpdateStatusWorker::Execute(FGitSourceControlCommand& InCommand)
 	}
 	else
 	{
-		// Perforce "opened files" are those that have been modified (or added/deleted): that is what we get with a simple Git status from the root
-		if(Operation->ShouldGetOpenedOnly())
-		{
-			TArray<FString> Files;
-			Files.Add(FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()));
-			InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, Files, InCommand.ErrorMessages, States);
-		}
+		// no path provided: only update the status of assets in Content/ directory and also Config files
+		TArray<FString> ProjectDirs;
+		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()));
+		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::ProjectConfigDir()));
+		InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, ProjectDirs, InCommand.ErrorMessages, States);
 	}
 
 	// don't use the ShouldUpdateModifiedState() hint here as it is specific to Perforce: the above normal Git status has already told us this information (like Git and Mercurial)

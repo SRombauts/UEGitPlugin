@@ -139,6 +139,9 @@ public:
 	/** Remove a named file from the state cache */
 	bool RemoveFileFromCache(const FString& Filename);
 
+	/** Get files in cache */
+	TArray<FString> GetFilesInCache();
+
 private:
 
 	/** Is git binary found and working. */

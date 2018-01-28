@@ -19,6 +19,7 @@
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Misc/MessageDialog.h"
 #include "EditorStyleSet.h"
 
 #include "PackageTools.h"
@@ -60,31 +61,6 @@ bool FGitSourceControlMenu::HaveRemoteUrl() const
 	return !Provider.GetRemoteUrl().IsEmpty();
 }
 
-/// Find all packages in Content directory
-TArray<FString> FGitSourceControlMenu::ListAllPackages()
-{
-	TArray<FString> PackageRelativePaths;
-	FPackageName::FindPackagesInDirectory(PackageRelativePaths, *FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()));
-
-	TArray<FString> PackageNames;
-	PackageNames.Reserve(PackageRelativePaths.Num());
-	for (const FString& Path : PackageRelativePaths)
-	{
-		FString PackageName;
-		FString FailureReason;
-		if (FPackageName::TryConvertFilenameToLongPackageName(Path, PackageName, &FailureReason))
-		{
-			PackageNames.Add(PackageName);
-		}
-		else
-		{
-			FMessageLog("SourceControl").Error(FText::FromString(FailureReason));
-		}
-	}
-
-	return PackageNames;
-}
-
 /// Prompt to save or discard all packages
 bool FGitSourceControlMenu::SaveDirtyPackages()
 {
@@ -108,6 +84,31 @@ bool FGitSourceControlMenu::SaveDirtyPackages()
 	}
 
 	return bSaved;
+}
+
+/// Find all packages in Content directory
+TArray<FString> FGitSourceControlMenu::ListAllPackages()
+{
+	TArray<FString> PackageRelativePaths;
+	FPackageName::FindPackagesInDirectory(PackageRelativePaths, *FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()));
+
+	TArray<FString> PackageNames;
+	PackageNames.Reserve(PackageRelativePaths.Num());
+	for (const FString& Path : PackageRelativePaths)
+	{
+		FString PackageName;
+		FString FailureReason;
+		if (FPackageName::TryConvertFilenameToLongPackageName(Path, PackageName, &FailureReason))
+		{
+			PackageNames.Add(PackageName);
+		}
+		else
+		{
+			FMessageLog("SourceControl").Error(FText::FromString(FailureReason));
+		}
+	}
+
+	return PackageNames;
 }
 
 /// Unkink all loaded packages to allow to update them
@@ -142,13 +143,13 @@ TArray<UPackage*> FGitSourceControlMenu::UnlinkPackages(const TArray<FString>& I
 	return LoadedPackages;
 }
 
-void FGitSourceControlMenu::ReloadPackages(TArray<UPackage*>& InLoadedPackages)
+void FGitSourceControlMenu::ReloadPackages(TArray<UPackage*>& InPackagesToReload)
 {
-	UE_LOG(LogSourceControl, Log, TEXT("Reloading %d Packages..."), InLoadedPackages.Num());
+	UE_LOG(LogSourceControl, Log, TEXT("Reloading %d Packages..."), InPackagesToReload.Num());
 
 	// Syncing may have deleted some packages, so we need to unload those rather than re-load them...
 	TArray<UPackage*> PackagesToUnload;
-	InLoadedPackages.RemoveAll([&](UPackage* InPackage) -> bool
+	InPackagesToReload.RemoveAll([&](UPackage* InPackage) -> bool
 	{
 		const FString PackageExtension = InPackage->ContainsMap() ? FPackageName::GetMapPackageExtension() : FPackageName::GetAssetPackageExtension();
 		const FString PackageFilename = FPackageName::LongPackageNameToFilename(InPackage->GetName(), PackageExtension);
@@ -161,7 +162,7 @@ void FGitSourceControlMenu::ReloadPackages(TArray<UPackage*>& InLoadedPackages)
 	});
 
 	// Hot-reload the new packages...
-	PackageTools::ReloadPackages(InLoadedPackages);
+	PackageTools::ReloadPackages(InPackagesToReload);
 
 	// Unload any deleted packages...
 	PackageTools::UnloadPackages(PackagesToUnload);
@@ -175,7 +176,7 @@ void FGitSourceControlMenu::SyncClicked()
 		if (bSaved)
 		{
 			// Find and Unlink all packages in Content directory to allow to update them
-			LoadedPackages = UnlinkPackages(ListAllPackages());
+			PackagesToReload = UnlinkPackages(ListAllPackages());
 
 			// Launch a "Sync" operation
 			FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
@@ -191,7 +192,7 @@ void FGitSourceControlMenu::SyncClicked()
 			{
 				// Report failure with a notification and Reload all packages
 				DisplayFailureNotification(SyncOperation->GetName());
-				ReloadPackages(LoadedPackages);
+				ReloadPackages(PackagesToReload);
 			}
 		}
 		else
@@ -237,6 +238,54 @@ void FGitSourceControlMenu::PushClicked()
 	}
 }
 
+void FGitSourceControlMenu::RevertClicked()
+{
+	if (!OperationInProgressNotification.IsValid())
+	{
+		// Ask the user before reverting all!
+		const FText DialogText(LOCTEXT("SourceControlMenu_AskRevertAll", "Revert all modifications into the workspace?"));
+		const EAppReturnType::Type Choice = FMessageDialog::Open(EAppMsgType::OkCancel, DialogText);
+		if (Choice == EAppReturnType::Ok)
+		{
+			const bool bSaved = SaveDirtyPackages();
+			if (bSaved)
+			{
+				// Find and Unlink all packages in Content directory to allow to update them
+				PackagesToReload = UnlinkPackages(ListAllPackages());
+
+				// Launch a "Revert" Operation
+				FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+				FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+				TSharedRef<FRevert, ESPMode::ThreadSafe> RevertOperation = ISourceControlOperation::Create<FRevert>();
+				const ECommandResult::Type Result = Provider.Execute(RevertOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+				if (Result == ECommandResult::Succeeded)
+				{
+					// Display an ongoing notification during the whole operation
+					DisplayInProgressNotification(RevertOperation->GetInProgressString());
+				}
+				else
+				{
+					// Report failure with a notification and Reload all packages
+					DisplayFailureNotification(RevertOperation->GetName());
+					ReloadPackages(PackagesToReload);
+				}
+			}
+			else
+			{
+				FMessageLog SourceControlLog("SourceControl");
+				SourceControlLog.Warning(LOCTEXT("SourceControlMenu_Sync_Unsaved", "Save All Assets before attempting to Sync!"));
+				SourceControlLog.Notify();
+			}
+		}
+	}
+	else
+	{
+		FMessageLog SourceControlLog("SourceControl");
+		SourceControlLog.Warning(LOCTEXT("SourceControlMenu_InProgress", "Source control operation already in progress"));
+		SourceControlLog.Notify();
+	}
+}
+
 void FGitSourceControlMenu::RefreshClicked()
 {
 	if (!OperationInProgressNotification.IsValid())
@@ -246,7 +295,6 @@ void FGitSourceControlMenu::RefreshClicked()
 		FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 		TSharedRef<FUpdateStatus, ESPMode::ThreadSafe> RefreshOperation = ISourceControlOperation::Create<FUpdateStatus>();
 		RefreshOperation->SetCheckingAllFiles(true);
-		RefreshOperation->SetGetOpenedOnly(true);
 		const ECommandResult::Type Result = Provider.Execute(RefreshOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
 		if (Result == ECommandResult::Succeeded)
 		{
@@ -325,10 +373,10 @@ void FGitSourceControlMenu::OnSourceControlOperationComplete(const FSourceContro
 {
 	RemoveInProgressNotification();
 
-	if (InOperation->GetName() == "Sync")
+	if ((InOperation->GetName() == "Sync") || (InOperation->GetName() == "Revert"))
 	{
 		// Reload packages that where unlinked at the beginning of the Sync operation
-		ReloadPackages(LoadedPackages);
+		ReloadPackages(PackagesToReload);
 	}
 
 	// Report result with a notification
@@ -361,6 +409,16 @@ void FGitSourceControlMenu::AddMenuExtension(FMenuBuilder& Builder)
 		FUIAction(
 			FExecuteAction::CreateRaw(this, &FGitSourceControlMenu::SyncClicked),
 			FCanExecuteAction::CreateRaw(this, &FGitSourceControlMenu::HaveRemoteUrl)
+		)
+	);
+
+	Builder.AddMenuEntry(
+		LOCTEXT("GitRevert",			"Revert"),
+		LOCTEXT("GitRevertTooltip",		"Revert all files in the repository to their unchanged state."),
+		FSlateIcon(FEditorStyle::GetStyleSetName(), "SourceControl.Actions.Revert"),
+		FUIAction(
+			FExecuteAction::CreateRaw(this, &FGitSourceControlMenu::RevertClicked),
+			FCanExecuteAction()
 		)
 	);
 

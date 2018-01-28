@@ -206,6 +206,17 @@ bool FGitSourceControlProvider::RemoveFileFromCache(const FString& Filename)
 	return StateCache.Remove(Filename) > 0;
 }
 
+/** Get files in cache */
+TArray<FString> FGitSourceControlProvider::GetFilesInCache()
+{
+	TArray<FString> Files;
+	for (const auto& State : StateCache)
+	{
+		Files.Add(State.Key);
+	}
+	return Files;
+}
+
 FDelegateHandle FGitSourceControlProvider::RegisterSourceControlStateChanged_Handle( const FSourceControlStateChanged::FDelegate& SourceControlStateChanged )
 {
 	return OnSourceControlStateChanged.Add( SourceControlStateChanged );

@@ -21,15 +21,16 @@ public:
 	/** This functions will be bound to appropriate Command. */
 	void PushClicked();
 	void SyncClicked();
+	void RevertClicked();
 	void RefreshClicked();
 
 private:
 	bool HaveRemoteUrl() const;
 
-	TArray<FString>		ListAllPackages();
 	bool				SaveDirtyPackages();
+	TArray<FString>		ListAllPackages();
 	TArray<UPackage*>	UnlinkPackages(const TArray<FString>& InPackageNames);
-	void				ReloadPackages(TArray<UPackage*>& InLoadedPackages);
+	void				ReloadPackages(TArray<UPackage*>& InPackagesToReload);
 
 	void AddMenuExtension(FMenuBuilder& Builder);
 
@@ -44,7 +45,7 @@ private:
 	FDelegateHandle ViewMenuExtenderHandle;
 
 	/** Loaded packages to reload after a Sync or Revert operation */
-	TArray<UPackage*> LoadedPackages;
+	TArray<UPackage*> PackagesToReload;
 
 	/** Current source control operation from extended menu if any */
 	TWeakPtr<class SNotificationItem> OperationInProgressNotification;
