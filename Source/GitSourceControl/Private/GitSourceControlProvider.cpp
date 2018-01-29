@@ -105,6 +105,7 @@ void FGitSourceControlProvider::Close()
 	// Remove all extensions to the "Source Control" menu in the Editor Toolbar
 	GitSourceControlMenu.Unregister();
 
+	bServerAvailable = false;
 	bGitAvailable = false;
 	bGitRepositoryFound = false;
 	UserName.Empty();
@@ -130,18 +131,20 @@ TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvide
 
 FText FGitSourceControlProvider::GetStatusText() const
 {
-	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
+	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoid doing this here so frequently
 //	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 //	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
 
 	FFormatNamedArguments Args;
 	Args.Add( TEXT("RepositoryName"), FText::FromString(PathToRepositoryRoot) );
 	Args.Add( TEXT("RemoteUrl"), FText::FromString(RemoteUrl) );
-	Args.Add( TEXT("BranchName"), FText::FromString(BranchName) );
 	Args.Add( TEXT("UserName"), FText::FromString(UserName) );
 	Args.Add( TEXT("UserEmail"), FText::FromString(UserEmail) );
+	Args.Add( TEXT("BranchName"), FText::FromString(BranchName) );
+	Args.Add( TEXT("CommitId"), FText::FromString(CommitId.Left(8)) );
+	Args.Add( TEXT("CommitSummary"), FText::FromString(CommitSummary) );
 
-	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Local repository: {RepositoryName}\nRemote origin: {RemoteUrl}\nBranch: {BranchName}\nUser: {UserName}\nE-mail: {UserEmail}"), Args );
+	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Local repository: {RepositoryName}\nRemote origin: {RemoteUrl}\nUser: {UserName}\nE-mail: {UserEmail}\n[{BranchName} {CommitId}] {CommitSummary}"), Args );
 }
 
 /** Quick check if source control is enabled */
@@ -153,7 +156,7 @@ bool FGitSourceControlProvider::IsEnabled() const
 /** Quick check if source control is available for use (useful for server-based providers) */
 bool FGitSourceControlProvider::IsAvailable() const
 {
-	return bGitRepositoryFound; // TODO LFS : AND is connected (!bWorkingOffline)
+	return bServerAvailable;
 }
 
 const FName& FGitSourceControlProvider::GetName(void) const
@@ -175,7 +178,7 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 		Execute(ISourceControlOperation::Create<FUpdateStatus>(), AbsoluteFiles);
 	}
 
-	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
+	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoid doing this here so frequently
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
 
@@ -328,6 +331,27 @@ void FGitSourceControlProvider::OutputCommandMessages(const FGitSourceControlCom
 	}
 }
 
+void FGitSourceControlProvider::UpdateRepositoryStatus(const class FGitSourceControlCommand& InCommand)
+{
+	if (InCommand.Operation->GetName() == "Connect")
+	{
+		// Is connection successful?
+		bServerAvailable = InCommand.bCommandSuccessful;
+	}
+	else if (InCommand.bConnectionDropped)
+	{
+		// connection failed on UpdateStatus
+		bServerAvailable = false;
+	}
+
+	// And for all operations running UpdateStatus, get Commit informations:
+	if (!InCommand.CommitId.IsEmpty())
+	{
+		CommitId = InCommand.CommitId;
+		CommitSummary = InCommand.CommitSummary;
+	}
+}
+
 void FGitSourceControlProvider::Tick()
 {	
 	bool bStatesUpdated = false;
@@ -339,7 +363,8 @@ void FGitSourceControlProvider::Tick()
 			// Remove command from the queue
 			CommandQueue.RemoveAt(CommandIndex);
 
-			// TODO LFS Update bWorkingOffline Disconnect flag
+			// Update respository status and connection state on Connect and UpdateStatus operations
+			UpdateRepositoryStatus(Command);
 
 			// let command update the states of any files
 			bStatesUpdated |= Command.Worker->UpdateStates();
@@ -443,4 +468,5 @@ ECommandResult::Type FGitSourceControlProvider::IssueCommand(FGitSourceControlCo
 		return ECommandResult::Failed;
 	}
 }
+
 #undef LOCTEXT_NAMESPACE

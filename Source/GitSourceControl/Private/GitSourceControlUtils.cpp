@@ -422,6 +422,24 @@ bool GetBranchName(const FString& InPathToGitBinary, const FString& InRepository
 	return bResults;
 }
 
+bool GetCommitInfo(const FString& InPathToGitBinary, const FString& InRepositoryRoot, FString& OutCommitId, FString& OutCommitSummary)
+{
+	bool bResults;
+	TArray<FString> InfoMessages;
+	TArray<FString> ErrorMessages;
+	TArray<FString> Parameters;
+	Parameters.Add(TEXT("-1"));
+	Parameters.Add(TEXT("--format=\"%H %s\""));
+	bResults = RunCommandInternal(TEXT("log"), InPathToGitBinary, InRepositoryRoot, Parameters, TArray<FString>(), InfoMessages, ErrorMessages);
+	if(bResults && InfoMessages.Num() > 0)
+	{
+		OutCommitId = InfoMessages[0].Left(40);
+		OutCommitSummary = InfoMessages[0].RightChop(41);
+	}
+
+	return bResults;
+}
+
 bool GetRemoteUrl(const FString& InPathToGitBinary, const FString& InRepositoryRoot, FString& OutRemoteUrl)
 {
 	TArray<FString> InfoMessages;

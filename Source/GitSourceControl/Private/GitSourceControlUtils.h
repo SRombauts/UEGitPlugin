@@ -98,6 +98,17 @@ void GetUserConfig(const FString& InPathToGitBinary, const FString& InRepository
 bool GetBranchName(const FString& InPathToGitBinary, const FString& InRepositoryRoot, FString& OutBranchName);
 
 /**
+ * Get Git current commit details
+ * @param	InPathToGitBinary	The path to the Git binary
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory
+ * @param	OutCommitId			Current Commit full SHA1
+ * @param	OutCommitSummary	Current Commit description's Summary
+ * @returns true if the command succeeded and returned no errors
+ */
+bool GetCommitInfo(const FString& InPathToGitBinary, const FString& InRepositoryRoot, FString& OutCommitId, FString& OutCommitSummary);
+
+
+/**
  * Get the URL of the "origin" defaut remote server
  * @param	InPathToGitBinary	The path to the Git binary
  * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory

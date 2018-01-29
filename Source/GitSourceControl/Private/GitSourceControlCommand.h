@@ -66,6 +66,12 @@ public:
 	/** TODO LFS If true, the source control connection was dropped while this command was being executed*/
 	bool bConnectionDropped;
 
+	/** Current Commit full SHA1 */
+	FString CommitId;
+
+	/** Current Commit description's Summary */
+	FString CommitSummary;
+
 	/** If true, this command will be automatically cleaned up in Tick() */
 	bool bAutoDelete;
 
@@ -73,11 +79,11 @@ public:
 	EConcurrency::Type Concurrency;
 
 	/** Files to perform this operation on */
-	TArray< FString > Files;
+	TArray<FString> Files;
 
-	/**Info and/or warning message message storage*/
-	TArray< FString > InfoMessages;
+	/**Info and/or warning message storage*/
+	TArray<FString> InfoMessages;
 
 	/**Potential error message storage*/
-	TArray< FString > ErrorMessages;
+	TArray<FString> ErrorMessages;
 };

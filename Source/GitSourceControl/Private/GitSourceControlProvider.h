@@ -54,7 +54,7 @@ public:
 	FGitSourceControlProvider() 
 		: bGitAvailable(false)
 		, bGitRepositoryFound(false)
-		, bWorkingOffline(true)
+		, bServerAvailable(false)
 	{
 	}
 
@@ -150,8 +150,8 @@ private:
 	/** Is git repository found. */
 	bool bGitRepositoryFound;
 
-	/** Flag for working offline - i.e. we haven't been able to connect to a server yet (for Git LFS Lock only) */
-	bool bWorkingOffline;
+	/** Flag for working online - i.e. we have been able to connect to a server (for Git LFS Lock only) */
+	bool bServerAvailable;
 
 	/** Helper function for Execute() */
 	TSharedPtr<class IGitSourceControlWorker, ESPMode::ThreadSafe> CreateWorker(const FName& InOperationName) const;
@@ -163,6 +163,9 @@ private:
 
 	/** Output any messages this command holds */
 	void OutputCommandMessages(const class FGitSourceControlCommand& InCommand) const;
+
+	/** Update repository status on Connect and UpdateStatus operations */
+	void UpdateRepositoryStatus(const class FGitSourceControlCommand& InCommand);
 
 	/** Path to the root of the Git repository: can be the ProjectDir itself, or any parent directory (found by the "Connect" operation) */
 	FString PathToRepositoryRoot;
@@ -178,6 +181,12 @@ private:
 
 	/** URL of the "origin" defaut remote server */
 	FString RemoteUrl;
+
+	/** Current Commit full SHA1 */
+	FString CommitId;
+
+	/** Current Commit description's Summary */
+	FString CommitSummary;
 
 	/** State cache */
 	TMap<FString, TSharedRef<class FGitSourceControlState, ESPMode::ThreadSafe> > StateCache;
