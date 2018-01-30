@@ -59,9 +59,8 @@ Use "TODO LFS" in the code to track things left to do/improve/refactor:
 
 ### What *cannot* be done presently
 - Branch/Merge are not in the current Editor workflow
-- Fetch/Push are not in the current Editor workflow
+- Fetch is not in the current Editor workflow
 - Amend a commit is not in the current Editor workflow
-- Revert All (using either "Stash" or "reset --hard")
 - Configure user name & email ('git config user.name' & git config user.email')
 
 ### Known issues

@@ -179,7 +179,7 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 	}
 
 	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoid doing this here so frequently
-	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
 
 	for(const auto& AbsoluteFile : AbsoluteFiles)
@@ -284,7 +284,7 @@ void FGitSourceControlProvider::CancelOperation( const TSharedRef<ISourceControl
 bool FGitSourceControlProvider::UsesLocalReadOnlyState() const
 {
 	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
-	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	return GitSourceControl.AccessSettings().IsUsingGitLfsLocking(); // Git LFS Lock uses read-only state
 }
 
@@ -296,7 +296,7 @@ bool FGitSourceControlProvider::UsesChangelists() const
 bool FGitSourceControlProvider::UsesCheckout() const
 {
 	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
-	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	return GitSourceControl.AccessSettings().IsUsingGitLfsLocking(); // Git LFS Lock uses read-only state
 }
 

@@ -20,7 +20,7 @@ FGitSourceControlCommand::FGitSourceControlCommand(const TSharedRef<class ISourc
 {
 	// grab the providers settings here, so we don't access them once the worker thread is launched
 	check(IsInGameThread());
-	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
+	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
 	PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
 	bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
 	PathToRepositoryRoot = GitSourceControl.GetProvider().GetPathToRepositoryRoot();

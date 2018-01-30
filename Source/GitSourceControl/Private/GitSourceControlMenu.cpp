@@ -56,8 +56,8 @@ void FGitSourceControlMenu::Unregister()
 
 bool FGitSourceControlMenu::HaveRemoteUrl() const
 {
-	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
-	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+	const FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 	return !Provider.GetRemoteUrl().IsEmpty();
 }
 

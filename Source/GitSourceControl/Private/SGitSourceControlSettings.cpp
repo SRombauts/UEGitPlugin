@@ -451,7 +451,7 @@ bool SGitSourceControlSettings::CanInitializeGitLfs() const
 
 bool SGitSourceControlSettings::CanUseGitLfsLocking() const
 {
-	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	const bool bGitLfsLockingAvailable = GitSourceControl.GetProvider().GetGitVersion().bHasGitLfsLocking;
 	// TODO LFS SRombauts : check if .gitattributes file is present and if Content/ is already tracked!
 	const bool bGitAttributesCreated = true;
