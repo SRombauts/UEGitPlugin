@@ -243,38 +243,30 @@ void FGitSourceControlMenu::RevertClicked()
 	if (!OperationInProgressNotification.IsValid())
 	{
 		// Ask the user before reverting all!
-		const FText DialogText(LOCTEXT("SourceControlMenu_AskRevertAll", "Revert all modifications into the workspace?"));
+		const FText DialogText(LOCTEXT("SourceControlMenu_Revert_Ask", "Revert all modifications of the working tree?"));
 		const EAppReturnType::Type Choice = FMessageDialog::Open(EAppMsgType::OkCancel, DialogText);
 		if (Choice == EAppReturnType::Ok)
 		{
-			const bool bSaved = SaveDirtyPackages();
-			if (bSaved)
-			{
-				// Find and Unlink all packages in Content directory to allow to update them
-				PackagesToReload = UnlinkPackages(ListAllPackages());
+			// NOTE No need to force the user to SaveDirtyPackages(); since he will be presented with a choice by the Editor
 
-				// Launch a "Revert" Operation
-				FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
-				FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
-				TSharedRef<FRevert, ESPMode::ThreadSafe> RevertOperation = ISourceControlOperation::Create<FRevert>();
-				const ECommandResult::Type Result = Provider.Execute(RevertOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
-				if (Result == ECommandResult::Succeeded)
-				{
-					// Display an ongoing notification during the whole operation
-					DisplayInProgressNotification(RevertOperation->GetInProgressString());
-				}
-				else
-				{
-					// Report failure with a notification and Reload all packages
-					DisplayFailureNotification(RevertOperation->GetName());
-					ReloadPackages(PackagesToReload);
-				}
+			// Find and Unlink all packages in Content directory to allow to update them
+			PackagesToReload = UnlinkPackages(ListAllPackages());
+
+			// Launch a "Revert" Operation
+			FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+			FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+			TSharedRef<FRevert, ESPMode::ThreadSafe> RevertOperation = ISourceControlOperation::Create<FRevert>();
+			const ECommandResult::Type Result = Provider.Execute(RevertOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+			if (Result == ECommandResult::Succeeded)
+			{
+				// Display an ongoing notification during the whole operation
+				DisplayInProgressNotification(RevertOperation->GetInProgressString());
 			}
 			else
 			{
-				FMessageLog SourceControlLog("SourceControl");
-				SourceControlLog.Warning(LOCTEXT("SourceControlMenu_Sync_Unsaved", "Save All Assets before attempting to Sync!"));
-				SourceControlLog.Notify();
+				// Report failure with a notification and Reload all packages
+				DisplayFailureNotification(RevertOperation->GetName());
+				ReloadPackages(PackagesToReload);
 			}
 		}
 	}
