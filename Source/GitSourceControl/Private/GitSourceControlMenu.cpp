@@ -10,6 +10,7 @@
 #include "GitSourceControlModule.h"
 #include "GitSourceControlProvider.h"
 #include "GitSourceControlOperations.h"
+#include "GitSourceControlUtils.h"
 
 #include "ISourceControlModule.h"
 #include "ISourceControlOperation.h"
@@ -168,31 +169,104 @@ void FGitSourceControlMenu::ReloadPackages(TArray<UPackage*>& InPackagesToReload
 	PackageTools::UnloadPackages(PackagesToUnload);
 }
 
+// Ask the user if he wants to stash any modification and try to unstash them afterward, which could lead to conflicts
+bool FGitSourceControlMenu::StashAwayAnyModifications()
+{
+	bool bStashOk = true;
+
+	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+	const FString& PathToRespositoryRoot = Provider.GetPathToRepositoryRoot();
+	const FString& PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
+	const TArray<FString> ParametersStatus{"--porcelain --untracked-files=no"};
+	TArray<FString> InfoMessages;
+	TArray<FString> ErrorMessages;
+	// Check if there is any modification to the working tree
+	const bool bStatusOk = GitSourceControlUtils::RunCommand(TEXT("status"), PathToGitBinary, PathToRespositoryRoot, ParametersStatus, TArray<FString>(), InfoMessages, ErrorMessages);
+	if ((bStatusOk) && (InfoMessages.Num() > 0))
+	{
+		// Ask the user before stashing
+		const FText DialogText(LOCTEXT("SourceControlMenu_Stash_Ask", "Stash (save) all modifications of the working tree? Required to Sync/Pull!"));
+		const EAppReturnType::Type Choice = FMessageDialog::Open(EAppMsgType::OkCancel, DialogText);
+		if (Choice == EAppReturnType::Ok)
+		{
+			const TArray<FString> ParametersStash{ "save \"Stashed by Unreal Engine Git Plugin\"" };
+			bStashMadeBeforeSync = GitSourceControlUtils::RunCommand(TEXT("stash"), PathToGitBinary, PathToRespositoryRoot, ParametersStash, TArray<FString>(), InfoMessages, ErrorMessages);
+			if (!bStashMadeBeforeSync)
+			{
+				FMessageLog SourceControlLog("SourceControl");
+				SourceControlLog.Warning(LOCTEXT("SourceControlMenu_StashFailed", "Stashing away modifications failed!"));
+				SourceControlLog.Notify();
+			}
+		}
+		else
+		{
+			bStashOk = false;
+		}
+	}
+
+	return bStashOk;
+}
+
+// Unstash any modifications if a stash was made at the beginning of the Sync operation
+void FGitSourceControlMenu::ReApplyStashedModifications()
+{
+	if (bStashMadeBeforeSync)
+	{
+		FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+		FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+		const FString& PathToRespositoryRoot = Provider.GetPathToRepositoryRoot();
+		const FString& PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
+		const TArray<FString> ParametersStash{ "pop" };
+		TArray<FString> InfoMessages;
+		TArray<FString> ErrorMessages;
+		const bool bUnstashOk = GitSourceControlUtils::RunCommand(TEXT("stash"), PathToGitBinary, PathToRespositoryRoot, ParametersStash, TArray<FString>(), InfoMessages, ErrorMessages);
+		if (!bUnstashOk)
+		{
+			FMessageLog SourceControlLog("SourceControl");
+			SourceControlLog.Warning(LOCTEXT("SourceControlMenu_UnstashFailed", "Unstashing previously saved modifications failed!"));
+			SourceControlLog.Notify();
+		}
+	}
+}
+
 void FGitSourceControlMenu::SyncClicked()
 {
 	if (!OperationInProgressNotification.IsValid())
 	{
+		// Ask the user to save any dirty assets opened in Editor
 		const bool bSaved = SaveDirtyPackages();
 		if (bSaved)
 		{
 			// Find and Unlink all packages in Content directory to allow to update them
 			PackagesToReload = UnlinkPackages(ListAllPackages());
 
-			// Launch a "Sync" operation
-			FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
-			FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
-			TSharedRef<FSync, ESPMode::ThreadSafe> SyncOperation = ISourceControlOperation::Create<FSync>();
-			const ECommandResult::Type Result = Provider.Execute(SyncOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
-			if (Result == ECommandResult::Succeeded)
+			// Ask the user if he wants to stash any modification and try to unstash them afterward, which could lead to conflicts
+			const bool bStashed = StashAwayAnyModifications();
+			if (bStashed)
 			{
-				// Display an ongoing notification during the whole operation (packages will be reloaded at the completion of the operation)
-				DisplayInProgressNotification(SyncOperation->GetInProgressString());
+				// Launch a "Sync" operation
+				FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+				FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+				TSharedRef<FSync, ESPMode::ThreadSafe> SyncOperation = ISourceControlOperation::Create<FSync>();
+				const ECommandResult::Type Result = Provider.Execute(SyncOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+				if (Result == ECommandResult::Succeeded)
+				{
+					// Display an ongoing notification during the whole operation (packages will be reloaded at the completion of the operation)
+					DisplayInProgressNotification(SyncOperation->GetInProgressString());
+				}
+				else
+				{
+					// Report failure with a notification and Reload all packages
+					DisplayFailureNotification(SyncOperation->GetName());
+					ReloadPackages(PackagesToReload);
+				}
 			}
 			else
 			{
-				// Report failure with a notification and Reload all packages
-				DisplayFailureNotification(SyncOperation->GetName());
-				ReloadPackages(PackagesToReload);
+				FMessageLog SourceControlLog("SourceControl");
+				SourceControlLog.Warning(LOCTEXT("SourceControlMenu_Sync_Unsaved", "Stash away all modifications before attempting to Sync!"));
+				SourceControlLog.Notify();
 			}
 		}
 		else
@@ -367,7 +441,9 @@ void FGitSourceControlMenu::OnSourceControlOperationComplete(const FSourceContro
 
 	if ((InOperation->GetName() == "Sync") || (InOperation->GetName() == "Revert"))
 	{
-		// Reload packages that where unlinked at the beginning of the Sync operation
+		// Unstash any modifications if a stash was made at the beginning of the Sync operation
+		ReApplyStashedModifications();
+		// Reload packages that where unlinked at the beginning of the Sync/Revert operation
 		ReloadPackages(PackagesToReload);
 	}
 

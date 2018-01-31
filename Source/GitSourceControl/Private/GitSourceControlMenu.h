@@ -32,6 +32,9 @@ private:
 	TArray<UPackage*>	UnlinkPackages(const TArray<FString>& InPackageNames);
 	void				ReloadPackages(TArray<UPackage*>& InPackagesToReload);
 
+	bool StashAwayAnyModifications();
+	void ReApplyStashedModifications();
+
 	void AddMenuExtension(FMenuBuilder& Builder);
 
 	TSharedRef<class FExtender> OnExtendLevelEditorViewMenu(const TSharedRef<class FUICommandList> CommandList);
@@ -43,6 +46,9 @@ private:
 
 private:
 	FDelegateHandle ViewMenuExtenderHandle;
+
+	/** Was there a need to stash away modifications before Sync? */
+	bool bStashMadeBeforeSync;
 
 	/** Loaded packages to reload after a Sync or Revert operation */
 	TArray<UPackage*> PackagesToReload;
