@@ -6,7 +6,7 @@ Unreal Engine 4 Git Source Control Plugin
 [![Join the chat at https://gitter.im/SRombauts/UE4GitPlugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SRombauts/UE4GitPlugin)
 UE4GitPlugin is a simple Git Source Control Plugin for **Unreal Engine 4.18**.
 
-Developped and contributted by Sébastien Rombauts 2014-2018 (sebastien.rombauts@gmail.com)
+Developed and contributed by Sébastien Rombauts 2014-2018 (sebastien.rombauts@gmail.com)
 <a href="https://www.paypal.me/SRombauts" title="Pay Me a Beer! Donate with PayPal :)"><img src="https://www.paypalobjects.com/webstatic/paypalme/images/pp_logo_small.png" width="118"></a>
 
 - First version of the plugin has been **integrated by default in UE4.7 in "beta version"**.
@@ -24,7 +24,7 @@ Source Control Login window to create a new workspace/a new repository:
 Source Control status tooltip, when hovering the Source Control icon in toolbar:
 ![Source Control Status Tooltip](Screenshots/SourceControlStatusTooltip.png)
 
-Source Control top Menu, extended whith specific Git commands:
+Source Control top Menu, extended with a few commands specific to Git:
 ![Source Control Status Tooltip](Screenshots/SourceControlMenu.png)
 
 Submit Files to Source Control window, to commit assets:
@@ -136,7 +136,7 @@ File->Connect To Source Control... -> Git
 
 ##### Project already managed by Git
 
-If your project is alreay under Git (it contains a ".git" subfolder), just click on "Accept Settings". This connect the Editor to your local Git repository ("Depot").
+If your project is already under Git (it contains a ".git" subfolder), just click on "Accept Settings". This connect the Editor to your local Git repository ("Depot").
 
 ##### Project not already under Git
 
@@ -149,19 +149,18 @@ When everything is done, click on "Accept Settings".
 
 #### Using the Git Source Control Provider in the Unreal Engine Editor
 
-The plugin only interacts with you local Git repository ("Depot"), not with the remote server (usually "origin").
+The plugin mostly interacts with you local Git repository ("Depot"), not much with the remote server (usually "origin").
 
-It display Git status icons on top of assets in the Asset Browser:
+It displays Git status icons on top of assets in the Asset Browser:
 - No icon means that the file is under source control and unchanged since last commit.
-- A red mark is for "modified" assets, that is the one that needs to be commited (so not the same as "Check-out" in Perforce/SVN/Plastic SCM).
-- A red cross is for "added" assets, that also needs to be commited
+- A red mark is for "modified" assets, that is the one that needs to be committed (so not the same as "Check-out" in Perforce/SVN/Plastic SCM).
+- A red cross is for "added" assets, that also needs to be committed
 - A blue lightning means "renamed".
 - A yellow exclamation point is for files in conflict after a merge.
 - A yellow question mark is for files not in source control.
 
 TODO:
-- display corresponding icons
-- specifics or rename and redirectors, and "Fix Up Redirector in Folder" command
+- specifics of rename and redirectors, and "Fix Up Redirector in Folder" command
 - history / visual diff
 - CheckIn = Commit
 - CheckOut = Commit+Push+unlock (when using LFS 2)
