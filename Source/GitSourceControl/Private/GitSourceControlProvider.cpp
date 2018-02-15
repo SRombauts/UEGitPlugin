@@ -105,7 +105,6 @@ void FGitSourceControlProvider::Close()
 	// Remove all extensions to the "Source Control" menu in the Editor Toolbar
 	GitSourceControlMenu.Unregister();
 
-	bServerAvailable = false;
 	bGitAvailable = false;
 	bGitRepositoryFound = false;
 	UserName.Empty();
@@ -156,7 +155,7 @@ bool FGitSourceControlProvider::IsEnabled() const
 /** Quick check if source control is available for use (useful for server-based providers) */
 bool FGitSourceControlProvider::IsAvailable() const
 {
-	return bServerAvailable;
+	return bGitRepositoryFound;
 }
 
 const FName& FGitSourceControlProvider::GetName(void) const
@@ -333,18 +332,7 @@ void FGitSourceControlProvider::OutputCommandMessages(const FGitSourceControlCom
 
 void FGitSourceControlProvider::UpdateRepositoryStatus(const class FGitSourceControlCommand& InCommand)
 {
-	if (InCommand.Operation->GetName() == "Connect")
-	{
-		// Is connection successful?
-		bServerAvailable = InCommand.bCommandSuccessful;
-	}
-	else if (InCommand.bConnectionDropped)
-	{
-		// connection failed on UpdateStatus
-		bServerAvailable = false;
-	}
-
-	// And for all operations running UpdateStatus, get Commit informations:
+	// For all operations running UpdateStatus, get Commit informations:
 	if (!InCommand.CommitId.IsEmpty())
 	{
 		CommitId = InCommand.CommitId;
@@ -363,7 +351,7 @@ void FGitSourceControlProvider::Tick()
 			// Remove command from the queue
 			CommandQueue.RemoveAt(CommandIndex);
 
-			// Update respository status and connection state on Connect and UpdateStatus operations
+			// Update respository status on UpdateStatus operations
 			UpdateRepositoryStatus(Command);
 
 			// let command update the states of any files

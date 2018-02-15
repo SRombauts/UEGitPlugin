@@ -54,7 +54,6 @@ public:
 	FGitSourceControlProvider() 
 		: bGitAvailable(false)
 		, bGitRepositoryFound(false)
-		, bServerAvailable(false)
 	{
 	}
 
@@ -149,9 +148,6 @@ private:
 
 	/** Is git repository found. */
 	bool bGitRepositoryFound;
-
-	/** Flag for working online - i.e. we have been able to connect to a server (for Git LFS Lock only) */
-	bool bServerAvailable;
 
 	/** Helper function for Execute() */
 	TSharedPtr<class IGitSourceControlWorker, ESPMode::ThreadSafe> CreateWorker(const FName& InOperationName) const;
