@@ -552,7 +552,8 @@ public:
 		InStatus.ParseIntoArray(Informations, TEXT("\t"), true);
 		if(Informations.Num() >= 3)
 		{
-			Informations[0].TrimEndInline();
+			Informations[0].TrimEndInline(); // Trim whitespace from the end of the filename
+			Informations[1].TrimEndInline(); // Trim whitespace from the end of the username
 			LocalFilename = FPaths::ConvertRelativePathToFull(InRepositoryRoot, Informations[0]);
 			LockUser = MoveTemp(Informations[1]);
 		}
