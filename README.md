@@ -85,9 +85,9 @@ Status Icons:
 - #49 Git LFS 2: False error in logs after a successful push
 - #50 Git LFS not working on Mac
 - #51 Git LFS 2: cannot revert a modified/unchecked-out asset
-- #52 Git LFS 2: detect disconnection
 - #53 Git LFS 2: document the configuration and workflow
 - #54 Poor performances of 'lfs locks' on Windows command line
+- #55 Git LFS 2: Unlocking a renamed asset
 
 - missing localisation for git specific messages
 - displaying states of 'Engine' assets (also needs management of 'out of tree' files)
