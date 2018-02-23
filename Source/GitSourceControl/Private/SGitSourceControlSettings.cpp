@@ -37,7 +37,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 	bAutoInitialCommit = true;
 
 	InitialCommitMessage = LOCTEXT("InitialCommitMessage", "Initial commit");
-	ReadmeContent = FText::FromString(FString(TEXT("# ")) + FApp::GetProjectName() + "\n\nDevelopped with Unreal Engine 4\n");
+	ReadmeContent = FText::FromString(FString(TEXT("# ")) + FApp::GetProjectName() + "\n\nDeveloped with Unreal Engine 4\n");
 
 	ChildSlot
 	[
