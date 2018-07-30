@@ -17,6 +17,7 @@
 #include "SGitSourceControlSettings.h"
 #include "Logging/MessageLog.h"
 #include "ScopedSourceControlProgress.h"
+#include "SourceControlHelpers.h"
 #include "IPluginManager.h"
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"
