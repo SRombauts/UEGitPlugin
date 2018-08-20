@@ -364,7 +364,7 @@ bool FGitSourceControlState::IsConflicted() const
 
 bool FGitSourceControlState::CanRevert() const
 {
-	return IsModified();
+	return CanCheckIn();
 }
 
 #undef LOCTEXT_NAMESPACE

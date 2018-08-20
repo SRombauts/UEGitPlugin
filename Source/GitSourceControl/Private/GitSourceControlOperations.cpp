@@ -265,7 +265,7 @@ bool FGitDeleteWorker::UpdateStates() const
 }
 
 
-// Get lists of Missing files (ie "deleted"), Existing files, and "other than Added" Existing files
+// Get lists of Missing files (ie "deleted"), Modified files, and "other than Added" Existing files
 void GetMissingVsExistingFiles(const TArray<FString>& InFiles, TArray<FString>& OutMissingFiles, TArray<FString>& OutAllExistingFiles, TArray<FString>& OutOtherThanAddedExistingFiles)
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
@@ -287,6 +287,10 @@ void GetMissingVsExistingFiles(const TArray<FString>& InFiles, TArray<FString>& 
 			{
 				OutOtherThanAddedExistingFiles.Add(State->GetFilename());
 				OutAllExistingFiles.Add(State->GetFilename());
+			}
+			else if(State->CanRevert()) // for locked but unmodified files
+			{
+				OutOtherThanAddedExistingFiles.Add(State->GetFilename());
 			}
 		}
 		else
