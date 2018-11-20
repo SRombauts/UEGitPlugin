@@ -59,8 +59,8 @@ bool CheckGitAvailability(const FString& InPathToGitBinary, FGitVersion* OutVers
 
 /** 
  * Check git for various optional capabilities by various means.
- * @param InPathToGitBinary	The path to the Git binary
- * @param OutGitVersion		If provided, populate with the git version parsed from "version" command
+ * @param InPathToGitBinary		The path to the Git binary
+ * @param OutGitVersion			If provided, populate with the git version parsed from "version" command
  */
 void FindGitCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVersion);
 
@@ -106,7 +106,6 @@ bool GetBranchName(const FString& InPathToGitBinary, const FString& InRepository
  * @returns true if the command succeeded and returned no errors
  */
 bool GetCommitInfo(const FString& InPathToGitBinary, const FString& InRepositoryRoot, FString& OutCommitId, FString& OutCommitSummary);
-
 
 /**
  * Get the URL of the "origin" defaut remote server
