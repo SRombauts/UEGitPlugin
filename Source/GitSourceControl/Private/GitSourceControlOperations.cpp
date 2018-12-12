@@ -295,7 +295,10 @@ void GetMissingVsExistingFiles(const TArray<FString>& InFiles, TArray<FString>& 
 		}
 		else
 		{
-			OutMissingFiles.Add(State->GetFilename());
+			if (State->IsSourceControlled())
+			{
+				OutMissingFiles.Add(State->GetFilename());
+			}
 		}
 	}
 }
@@ -348,7 +351,7 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 	}
 
 	// now update the status of our files
-	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, AllExistingFiles, InCommand.ErrorMessages, States);
+	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, InCommand.Files, InCommand.ErrorMessages, States);
 
 	return InCommand.bCommandSuccessful;
 }
