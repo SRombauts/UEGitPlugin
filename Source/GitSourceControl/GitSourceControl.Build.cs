@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+// Copyright (c) 2014-2019 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 //
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
@@ -27,6 +27,7 @@ public class GitSourceControl : ModuleRules
 				"LevelEditor",
 				"SourceControl",
 				"Projects",
+				"DesktopWidgets",
 			}
 		);
 	}
