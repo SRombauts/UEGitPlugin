@@ -1067,7 +1067,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 			ParseStatusResults(InPathToGitBinary, InRepositoryRoot, InUsingLfsLocking, Files.Value, LockedFiles, Results, OutStates);
 		}
 		
-		// @GFB_CHANGE_BEGIN (Jonas): Using git diff, we can obtain a list of files that were modified between our current origin and HEAD. Assumes that fetch has been run to get accurate info.
+		// Using git diff, we can obtain a list of files that were modified between our current origin and HEAD. Assumes that fetch has been run to get accurate info.
 		
 		// First we get the current branch name, since we need origin of current branch
 		Parameters.Empty();
@@ -1108,7 +1108,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 				}
 			}
 		}
-		// @GFB_CHANGE_END
+		
 	}
 
 	return bResults;

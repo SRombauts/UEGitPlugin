@@ -48,9 +48,8 @@ public:
 		, LockState(ELockState::Unknown)
 		, bUsingGitLfsLocking(InUsingLfsLocking)
 		, TimeStamp(0)
-		// @GFB_CHANGE_BEGIN (Jonas)
 		, bIsOutdated(false)
-		// @GFB_CHANGE_END
+		
 	{
 	}
 
@@ -114,7 +113,7 @@ public:
 	/** The timestamp of the last update */
 	FDateTime TimeStamp;
 	
-	// @GFB_CHANGE_BEGIN (Jonas)
+	// For use with FGitSourceControlState::IsCurrent
 	bool bIsOutdated;
-	// @GFB_CHANGE_END
+	
 };
