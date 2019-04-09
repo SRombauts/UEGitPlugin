@@ -1068,36 +1068,46 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		}
 		
 		// @GFB_CHANGE_BEGIN (Jonas): Using git diff, we can obtain a list of files that were modified between our current origin and HEAD. Assumes that fetch has been run to get accurate info.
+		
+		// First we get the current branch name, since we need origin of current branch
 		Parameters.Empty();
-		const bool bResultDiff = RunCommand(TEXT("diff --name-only origin HEAD"), InPathToGitBinary, InRepositoryRoot, Parameters, OnePath, Results, ErrorMessages);
-		OutErrorMessages.Append(ErrorMessages);
-		if(bResultDiff)
+		TArray<FString> NoPaths;
+		if (RunCommand(TEXT("rev-parse --abbrev-ref HEAD"), InPathToGitBinary, InRepositoryRoot, Parameters, NoPaths, Results, ErrorMessages))
 		{
-			const FDateTime Now = FDateTime::Now();
-			for(const auto& FileName : Results)
-			{
-				const FString AbsoluteFilePath = FPaths::ConvertRelativePathToFull(InRepositoryRoot, FileName);
-				
-				// Check if already exists, and if so, update
-				bool FoundMatch = false;
-				for (INT i = 0; i < OutStates.Num(); i++)
-				{
-					FGitSourceControlState& FileState = OutStates[i];
+			FString GitBranchName = Results[0];
 
-					if (FileState.LocalFilename != AbsoluteFilePath) continue;
-					
+			FString GitCommand = FString::Printf(TEXT("diff --name-only origin/%s HEAD"), *GitBranchName);
+
+			const bool bResultDiff = RunCommand(GitCommand, InPathToGitBinary, InRepositoryRoot, Parameters, OnePath, Results, ErrorMessages);
+			OutErrorMessages.Append(ErrorMessages);
+			if (bResultDiff)
+			{
+				const FDateTime Now = FDateTime::Now();
+				for (const auto& FileName : Results)
+				{
+					const FString AbsoluteFilePath = FPaths::ConvertRelativePathToFull(InRepositoryRoot, FileName);
+
+					// Check if already exists, and if so, update
+					bool FoundMatch = false;
+					for (INT i = 0; i < OutStates.Num(); i++)
+					{
+						FGitSourceControlState& FileState = OutStates[i];
+
+						if (FileState.LocalFilename != AbsoluteFilePath) continue;
+
+						FileState.bIsOutdated = true;
+
+						FoundMatch = true;
+						break;
+					}
+					if (FoundMatch) continue;
+
+					// If no match, add entry
+
+					FGitSourceControlState FileState(FileName, InUsingLfsLocking);
+					FileState.TimeStamp = Now;
 					FileState.bIsOutdated = true;
-					
-					FoundMatch = true;
-					break;
 				}
-				if (FoundMatch) continue;
-				
-				// If no match, add entry
-				
-				FGitSourceControlState FileState(FileName, InUsingLfsLocking);
-				FileState.TimeStamp = Now;
-				FileState.bIsOutdated = true;
 			}
 		}
 		// @GFB_CHANGE_END
