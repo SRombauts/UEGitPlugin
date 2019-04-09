@@ -1071,12 +1071,10 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		
 		// First we get the current branch name, since we need origin of current branch
 		Parameters.Empty();
-		TArray<FString> NoPaths;
-		if (RunCommand(TEXT("rev-parse --abbrev-ref HEAD"), InPathToGitBinary, InRepositoryRoot, Parameters, NoPaths, Results, ErrorMessages))
+		FString BranchName;
+		if (GitSourceControlUtils::GetBranchName(InPathToGitBinary, InRepositoryRoot, BranchName))
 		{
-			FString GitBranchName = Results[0];
-
-			FString GitCommand = FString::Printf(TEXT("diff --name-only origin/%s HEAD"), *GitBranchName);
+			FString GitCommand = FString::Printf(TEXT("diff --name-only origin/%s HEAD"), *BranchName);
 
 			const bool bResultDiff = RunCommand(GitCommand, InPathToGitBinary, InRepositoryRoot, Parameters, OnePath, Results, ErrorMessages);
 			OutErrorMessages.Append(ErrorMessages);
