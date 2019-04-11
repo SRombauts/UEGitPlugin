@@ -62,6 +62,13 @@ TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlS
 // @todo add Slate icons for git specific states (NotAtHead vs Conflicted...)
 FName FGitSourceControlState::GetIconName() const
 {
+	// Icon for not being up-to-date.
+	if (!IsCurrent())
+	{
+		return FName("Subversion.NotAtHeadRevision");
+	}
+	
+
 	if(LockState == ELockState::Locked)
 	{
 		return FName("Subversion.CheckedOut");
@@ -106,6 +113,12 @@ FName FGitSourceControlState::GetIconName() const
 
 FName FGitSourceControlState::GetSmallIconName() const
 {
+	// Icon for not being up-to-date.
+	if (!IsCurrent())
+	{
+		return FName("Subversion.NotAtHeadRevision_Small");
+	}
+	
 	if(LockState == ELockState::Locked)
 	{
 		return FName("Subversion.CheckedOut_Small");
@@ -150,6 +163,13 @@ FName FGitSourceControlState::GetSmallIconName() const
 
 FText FGitSourceControlState::GetDisplayName() const
 {
+	// Let the user know that a newer version is available
+	if (!IsCurrent())
+	{
+		return LOCTEXT("NotCurrent", "Not current");
+	}
+	
+
 	if(LockState == ELockState::Locked)
 	{
 		return LOCTEXT("Locked", "Locked For Editing");
@@ -190,6 +210,13 @@ FText FGitSourceControlState::GetDisplayName() const
 
 FText FGitSourceControlState::GetDisplayTooltip() const
 {
+	// Let the user know that a newer version is available
+	if (!IsCurrent())
+	{
+		return LOCTEXT("NotCurrent_Tooltip", "The file(s) are not at the head revision");
+	}
+	
+
 	if(LockState == ELockState::Locked)
 	{
 		return LOCTEXT("Locked_Tooltip", "Locked for editing by current user");
@@ -259,7 +286,12 @@ bool FGitSourceControlState::CanCheckout() const
 {
 	if(bUsingGitLfsLocking)
 	{
-		return (WorkingCopyState == EWorkingCopyState::Unchanged || WorkingCopyState == EWorkingCopyState::Modified) && LockState == ELockState::NotLocked;
+		return (WorkingCopyState == EWorkingCopyState::Unchanged || WorkingCopyState == EWorkingCopyState::Modified)
+		&& LockState == ELockState::NotLocked
+		// We don't want to allow checkout if the file is out-of-date, as modifying an out-of-date binary file will most likely result in a merge conflict
+		&& IsCurrent()
+		
+		;
 	}
 	else
 	{
@@ -290,7 +322,8 @@ bool FGitSourceControlState::IsCheckedOutOther(FString* Who) const
 
 bool FGitSourceControlState::IsCurrent() const
 {
-	return true; // @todo check the state of the HEAD versus the state of tracked branch on remote
+	return !bIsOutdated;
+	
 }
 
 bool FGitSourceControlState::IsSourceControlled() const

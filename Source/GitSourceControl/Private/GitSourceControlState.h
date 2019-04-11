@@ -48,6 +48,8 @@ public:
 		, LockState(ELockState::Unknown)
 		, bUsingGitLfsLocking(InUsingLfsLocking)
 		, TimeStamp(0)
+		, bIsOutdated(false)
+		
 	{
 	}
 
@@ -110,4 +112,8 @@ public:
 
 	/** The timestamp of the last update */
 	FDateTime TimeStamp;
+	
+	// For use with FGitSourceControlState::IsCurrent
+	bool bIsOutdated;
+	
 };
