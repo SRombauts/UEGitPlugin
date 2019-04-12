@@ -1017,6 +1017,7 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 	}
 
 	TArray<FString> Results;
+	TArray<FString> NoParameters;
 	TArray<FString> Parameters;
 	Parameters.Add(TEXT("--porcelain"));
 	Parameters.Add(TEXT("--ignored"));
@@ -1067,13 +1068,12 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		// Using git diff, we can obtain a list of files that were modified between our current origin and HEAD. Assumes that fetch has been run to get accurate info.
 		
 		// First we get the current branch name, since we need origin of current branch
-		Parameters.Empty();
 		FString BranchName;
 		if (GitSourceControlUtils::GetBranchName(InPathToGitBinary, InRepositoryRoot, BranchName))
 		{
 			FString GitCommand = FString::Printf(TEXT("diff --name-only origin/%s HEAD"), *BranchName);
 
-			const bool bResultDiff = RunCommand(GitCommand, InPathToGitBinary, InRepositoryRoot, Parameters, OnePath, Results, ErrorMessages);
+			const bool bResultDiff = RunCommand(GitCommand, InPathToGitBinary, InRepositoryRoot, NoParameters, OnePath, Results, ErrorMessages);
 			OutErrorMessages.Append(ErrorMessages);
 			if (bResultDiff)
 			{
