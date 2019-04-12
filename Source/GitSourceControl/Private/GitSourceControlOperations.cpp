@@ -350,8 +350,18 @@ bool FGitRevertWorker::Execute(FGitSourceControlCommand& InCommand)
 		}
 	}
 
+	// If no files were specified (full revert), refresh all relevant files instead of the specified files (which is an empty list in full revert)
+	// This is required so that files that were "Marked for add" have their status updated after a full revert.
+	TArray<FString> FilesToUpdate = InCommand.Files;
+	if (InCommand.Files.Num() <= 0)
+	{
+		for (const auto& File : MissingFiles) FilesToUpdate.Add(File);
+		for (const auto& File : AllExistingFiles) FilesToUpdate.Add(File);
+		for (const auto& File : OtherThanAddedExistingFiles) FilesToUpdate.Add(File);
+	}
+
 	// now update the status of our files
-	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, InCommand.Files, InCommand.ErrorMessages, States);
+	GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, FilesToUpdate, InCommand.ErrorMessages, States);
 
 	return InCommand.bCommandSuccessful;
 }
