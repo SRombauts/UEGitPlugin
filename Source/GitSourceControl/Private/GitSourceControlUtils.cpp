@@ -1016,11 +1016,6 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		}
 	}
 
-	TArray<FString> Results;
-	TArray<FString> Parameters;
-	Parameters.Add(TEXT("--porcelain"));
-	Parameters.Add(TEXT("--ignored"));
-
 	// Git status does not show any "untracked files" when called with files from different subdirectories! (issue #3)
 	// 1) So here we group files by path (ie. by subdirectory)
 	TMap<FString, TArray<FString>> GroupOfFiles;
@@ -1040,6 +1035,14 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		}
 	}
 
+	// Get the current branch name, since we need origin of current branch
+	FString BranchName;
+	GitSourceControlUtils::GetBranchName(InPathToGitBinary, InRepositoryRoot, BranchName);
+
+	TArray<FString> Parameters;
+	Parameters.Add(TEXT("--porcelain"));
+	Parameters.Add(TEXT("--ignored"));
+
 	// 2) then we can batch git status operation by subdirectory
 	for(const auto& Files : GroupOfFiles)
 	{
@@ -1056,51 +1059,40 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 		{
 			OnePath.Add(Path);
 		}
-		TArray<FString> ErrorMessages;
-		const bool bResult = RunCommand(TEXT("status"), InPathToGitBinary, InRepositoryRoot, Parameters, OnePath, Results, ErrorMessages);
-		OutErrorMessages.Append(ErrorMessages);
-		if(bResult)
 		{
-			ParseStatusResults(InPathToGitBinary, InRepositoryRoot, InUsingLfsLocking, Files.Value, LockedFiles, Results, OutStates);
+			TArray<FString> Results;
+			TArray<FString> ErrorMessages;
+			const bool bResult = RunCommand(TEXT("status"), InPathToGitBinary, InRepositoryRoot, Parameters, OnePath, Results, ErrorMessages);
+			OutErrorMessages.Append(ErrorMessages);
+			if(bResult)
+			{
+				ParseStatusResults(InPathToGitBinary, InRepositoryRoot, InUsingLfsLocking, Files.Value, LockedFiles, Results, OutStates);
+			}
 		}
 
-		// Using git diff, we can obtain a list of files that were modified between our current origin and HEAD. Assumes that fetch has been run to get accurate info.
-
-		// First we get the current branch name, since we need origin of current branch
-		FString BranchName;
-		if (GitSourceControlUtils::GetBranchName(InPathToGitBinary, InRepositoryRoot, BranchName))
+		if (!BranchName.IsEmpty())
 		{
-			FString GitCommand = FString::Printf(TEXT("diff --name-only origin/%s HEAD"), *BranchName);
-
-			const bool bResultDiff = RunCommand(GitCommand, InPathToGitBinary, InRepositoryRoot, TArray<FString>(), OnePath, Results, ErrorMessages);
+			// Using git diff, we can obtain a list of files that were modified between our current origin and HEAD. Assumes that fetch has been run to get accurate info.
+			// TODO: should do a fetch (at least periodically).
+			TArray<FString> Results;
+			TArray<FString> ErrorMessages;
+			TArray<FString> ParametersDiff;
+			ParametersDiff.Add(TEXT("--name-only"));
+			ParametersDiff.Add(FString::Printf(TEXT("origin/%s "), *BranchName));
+			ParametersDiff.Add(TEXT("HEAD"));
+			const bool bResultDiff = RunCommand(TEXT("diff"), InPathToGitBinary, InRepositoryRoot, ParametersDiff, OnePath, Results, ErrorMessages);
 			OutErrorMessages.Append(ErrorMessages);
 			if (bResultDiff)
 			{
-				const FDateTime Now = FDateTime::Now();
-				for (const auto& FileName : Results)
+				for (const FString& NewerFileName : Results)
 				{
-					const FString AbsoluteFilePath = FPaths::ConvertRelativePathToFull(InRepositoryRoot, FileName);
+					const FString NewerFilePath = FPaths::ConvertRelativePathToFull(InRepositoryRoot, NewerFileName);
 
-					// Check if already exists, and if so, update
-					bool bFoundMatch = false;
-					for (int i = 0; i < OutStates.Num(); i++)
+					// Find existing corresponding file state to update it (not found would mean new file or not in the current path)
+					if (FGitSourceControlState* FileStatePtr = OutStates.FindByPredicate([NewerFilePath](FGitSourceControlState& FileState) { return FileState.LocalFilename == NewerFilePath; }))
 					{
-						FGitSourceControlState& FileState = OutStates[i];
-
-						if (FileState.LocalFilename != AbsoluteFilePath) continue;
-
-						FileState.bNewerVersionOnServer = true;
-
-						bFoundMatch = true;
-						break;
+						FileStatePtr->bNewerVersionOnServer = true;
 					}
-					if (bFoundMatch) continue;
-
-					// If no match, add entry
-
-					FGitSourceControlState FileState(FileName, InUsingLfsLocking);
-					FileState.TimeStamp = Now;
-					FileState.bNewerVersionOnServer = true;
 				}
 			}
 		}
