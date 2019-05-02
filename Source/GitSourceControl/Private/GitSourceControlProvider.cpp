@@ -3,8 +3,8 @@
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
 
-#include "GitSourceControlPrivatePCH.h"
 #include "GitSourceControlProvider.h"
+
 #include "HAL/PlatformProcess.h"
 #include "Misc/Paths.h"
 #include "Misc/QueuedThreadPool.h"

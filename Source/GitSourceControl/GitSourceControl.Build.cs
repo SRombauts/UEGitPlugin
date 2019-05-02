@@ -9,11 +9,11 @@ public class GitSourceControl : ModuleRules
 {
 	public GitSourceControl(ReadOnlyTargetRules Target) : base(Target)
 	{
-		// Do not enforce "Include What You Use" UE4.15 policy
-		// since it does not follow the same rules for In-Engine Plugins as for Game Project Plugins,
-		// and as such prevents us to make a source code compiling as both.
-		bEnforceIWYU = false;
+		// Enable the Include-What-You-Use (IWYU) UE4.15 policy (see https://docs.unrealengine.com/en-us/Programming/UnrealBuildSystem/IWYUReferenceGuide)
+		// "Shared PCHs may be used if an explicit private PCH is not set through PrivatePCHHeaderFile. In either case, none of the source files manually include a module PCH, and should include a matching header instead."
+		bEnforceIWYU = true;
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		PrivatePCHHeaderFile = "Private/GitSourceControlPrivatePCH.h";
 
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
@@ -22,12 +22,12 @@ public class GitSourceControl : ModuleRules
 				"Slate",
 				"SlateCore",
 				"InputCore",
+				"DesktopWidgets",
 				"EditorStyle",
 				"UnrealEd",
-				"LevelEditor",
 				"SourceControl",
+				"LevelEditor",
 				"Projects",
-				"DesktopWidgets",
 			}
 		);
 	}

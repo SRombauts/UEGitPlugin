@@ -3,8 +3,8 @@
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
 
-#include "GitSourceControlPrivatePCH.h"
 #include "SGitSourceControlSettings.h"
+
 #include "Fonts/SlateFontInfo.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
