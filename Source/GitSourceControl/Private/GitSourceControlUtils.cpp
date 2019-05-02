@@ -1082,29 +1082,28 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 					const FString AbsoluteFilePath = FPaths::ConvertRelativePathToFull(InRepositoryRoot, FileName);
 
 					// Check if already exists, and if so, update
-					bool FoundMatch = false;
-					for (INT i = 0; i < OutStates.Num(); i++)
+					bool bFoundMatch = false;
+					for (int i = 0; i < OutStates.Num(); i++)
 					{
 						FGitSourceControlState& FileState = OutStates[i];
 
 						if (FileState.LocalFilename != AbsoluteFilePath) continue;
 
-						FileState.bIsOutdated = true;
+						FileState.bNewerVersionOnServer = true;
 
-						FoundMatch = true;
+						bFoundMatch = true;
 						break;
 					}
-					if (FoundMatch) continue;
+					if (bFoundMatch) continue;
 
 					// If no match, add entry
 
 					FGitSourceControlState FileState(FileName, InUsingLfsLocking);
 					FileState.TimeStamp = Now;
-					FileState.bIsOutdated = true;
+					FileState.bNewerVersionOnServer = true;
 				}
 			}
 		}
-		
 	}
 
 	return bResults;

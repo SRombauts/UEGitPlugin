@@ -53,7 +53,7 @@ Status Icons:
   - can also create a .gitattributes file to enable Git LFS (Large File System) as part of initialization
   - can also enable Git LFS 2.x File Locks as part of initialization
   - can also make the initial commit, with custom multi-line message
-- display status icons to show modified/added/deleted/untracked files
+- display status icons to show modified/added/deleted/untracked files, not at head and conflicted
 - show history of a file
 - visual diff of a blueprint against depot or between previous versions of a file
 - revert modifications of a file (works best with "Content Hot-Reload" experimental option of UE4.15, by default since 4.16)
@@ -152,11 +152,11 @@ When everything is done, click on "Accept Settings".
 The plugin mostly interacts with you local Git repository ("Depot"), not much with the remote server (usually "origin").
 
 It displays Git status icons on top of assets in the Asset Browser:
-- No icon means that the file is under source control and unchanged since last commit.
+- No icon means that the file is under source control and unchanged since last commit, or ignored.
 - A red mark is for "modified" assets, that is the one that needs to be committed (so not the same as "Check-out" in Perforce/SVN/Plastic SCM).
 - A red cross is for "added" assets, that also needs to be committed
 - A blue lightning means "renamed".
-- A yellow exclamation point is for files in conflict after a merge.
+- A yellow exclamation point is for files in conflict after a merge, or is not at head (latest revision on the current remote branch).
 - A yellow question mark is for files not in source control.
 
 TODO:

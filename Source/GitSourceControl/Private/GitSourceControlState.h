@@ -47,9 +47,8 @@ public:
 		, WorkingCopyState(EWorkingCopyState::Unknown)
 		, LockState(ELockState::Unknown)
 		, bUsingGitLfsLocking(InUsingLfsLocking)
+		, bNewerVersionOnServer(false)
 		, TimeStamp(0)
-		, bIsOutdated(false)
-		
 	{
 	}
 
@@ -110,10 +109,9 @@ public:
 	/** Tells if using the Git LFS file Locking workflow */
 	bool bUsingGitLfsLocking;
 
+	/** Whether a newer version exists on the server */
+	bool bNewerVersionOnServer;
+
 	/** The timestamp of the last update */
 	FDateTime TimeStamp;
-	
-	// For use with FGitSourceControlState::IsCurrent
-	bool bIsOutdated;
-	
 };
