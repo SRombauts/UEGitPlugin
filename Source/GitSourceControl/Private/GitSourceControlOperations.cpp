@@ -12,6 +12,8 @@
 #include "GitSourceControlModule.h"
 #include "GitSourceControlCommand.h"
 #include "GitSourceControlUtils.h"
+#include "IPlatformFileProfilerWrapper.h"
+#include "PlatformFilemanager.h"
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"
 
@@ -193,6 +195,7 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 					// unlock files: execute the LFS command on relative filenames
 					// (unlock only locked files, that is, not Added files)
 					const TArray<FString> LockedFiles = GetLockedFiles(InCommand.Files);
+					
 					if(LockedFiles.Num() > 0)
 					{
 						const TArray<FString> RelativeFiles = GitSourceControlUtils::RelativeFilenames(LockedFiles, InCommand.PathToRepositoryRoot);
@@ -200,8 +203,12 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 						{
 							TArray<FString> OneFile;
 							OneFile.Add(RelativeFile);
-							GitSourceControlUtils::RunCommand(TEXT("lfs unlock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), OneFile, InCommand.InfoMessages, InCommand.ErrorMessages);
+							GitSourceControlUtils::RunCommand(TEXT("lfs unlock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), OneFile, InCommand.InfoMessages, InCommand.ErrorMessages);	
 						}
+					}
+					for (const FString& File : LockedFiles)
+					{
+						FPlatformFileManager::Get().GetPlatformFile().SetReadOnly(*File, true);
 					}
 				}
 			}
