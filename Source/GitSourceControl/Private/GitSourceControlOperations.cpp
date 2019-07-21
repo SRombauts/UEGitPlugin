@@ -186,6 +186,11 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 			const FString Message = (InCommand.InfoMessages.Num() > 0) ? InCommand.InfoMessages[0] : TEXT("");
 			UE_LOG(LogSourceControl, Log, TEXT("commit successful: %s"), *Message);
 
+			for (const FString& File : InCommand.Files)
+			{
+				FPlatformFileManager::Get().GetPlatformFile().SetReadOnly(*File, true);
+			}
+
 			// git-lfs: push and unlock files
 			if(InCommand.bUsingGitLfsLocking && InCommand.bCommandSuccessful)
 			{
@@ -205,10 +210,6 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 							OneFile.Add(RelativeFile);
 							GitSourceControlUtils::RunCommand(TEXT("lfs unlock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), OneFile, InCommand.InfoMessages, InCommand.ErrorMessages);	
 						}
-					}
-					for (const FString& File : LockedFiles)
-					{
-						FPlatformFileManager::Get().GetPlatformFile().SetReadOnly(*File, true);
 					}
 				}
 			}
