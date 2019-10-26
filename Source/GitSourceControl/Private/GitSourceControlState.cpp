@@ -94,7 +94,7 @@ FName FGitSourceControlState::GetIconName() const
 	case EWorkingCopyState::Missing:
 		return FName("Subversion.MarkedForDelete");
 	case EWorkingCopyState::Conflicted:
-		return FName("Subversion.NotAtHeadRevision");
+		return FName("Subversion.ModifiedOtherBranch");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot");
 	case EWorkingCopyState::Unknown:
@@ -142,7 +142,7 @@ FName FGitSourceControlState::GetSmallIconName() const
 	case EWorkingCopyState::Missing:
 		return FName("Subversion.MarkedForDelete_Small");
 	case EWorkingCopyState::Conflicted:
-		return FName("Subversion.NotAtHeadRevision_Small");
+		return FName("Subversion.ModifiedOtherBranch_Small");
 	case EWorkingCopyState::NotControlled:
 		return FName("Subversion.NotInDepot_Small");
 	case EWorkingCopyState::Unknown:
