@@ -1076,9 +1076,18 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 			// TODO: should do a fetch (at least periodically).
 			TArray<FString> Results;
 			TArray<FString> ErrorMessages;
+			TArray<FString> ParametersLsRemote;
+			ParametersLsRemote.Add(TEXT("origin"));
+			ParametersLsRemote.Add(BranchName);
+			const bool bResultLsRemote = RunCommand(TEXT("ls-remote"), InPathToGitBinary, InRepositoryRoot, ParametersLsRemote, OnePath, Results, ErrorMessages);
+			// If the command is successful and there is only 1 line on the output the branch exists on remote
+			const bool bDiffAgainstRemote = bResultLsRemote && Results.Num();
+
+			Results.Reset();
+			ErrorMessages.Reset();
 			TArray<FString> ParametersDiff;
 			ParametersDiff.Add(TEXT("--name-only"));
-			ParametersDiff.Add(FString::Printf(TEXT("origin/%s "), *BranchName));
+			ParametersDiff.Add(bDiffAgainstRemote ? FString::Printf(TEXT("origin/%s "), *BranchName) : BranchName);
 			ParametersDiff.Add(TEXT("HEAD"));
 			const bool bResultDiff = RunCommand(TEXT("diff"), InPathToGitBinary, InRepositoryRoot, ParametersDiff, OnePath, Results, ErrorMessages);
 			OutErrorMessages.Append(ErrorMessages);
