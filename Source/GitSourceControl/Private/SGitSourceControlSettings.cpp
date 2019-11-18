@@ -6,8 +6,9 @@
 #include "SGitSourceControlSettings.h"
 
 #include "Fonts/SlateFontInfo.h"
-#include "Misc/Paths.h"
+#include "Misc/App.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
 #include "Styling/SlateTypes.h"
 #include "Widgets/SBoxPanel.h"
