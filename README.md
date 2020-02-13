@@ -83,7 +83,6 @@ Status Icons:
 - #46 Merge Conflicts - Accept Target - causes engine to crash bug
 - #47 Git LFS conflict resolution not working
 - #49 Git LFS 2: False error in logs after a successful push
-- #50 Git LFS not working on Mac
 - #51 Git LFS 2: cannot revert a modified/unchecked-out asset
 - #53 Git LFS 2: document the configuration and workflow
 - #54 Poor performances of 'lfs locks' on Windows command line
