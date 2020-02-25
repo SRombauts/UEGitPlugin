@@ -57,7 +57,7 @@ namespace GitSourceControlUtils
 {
 
 // Launch the Git command line process and extract its results & errors
-static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors)
+static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors, const int32 ExpectedReturnCode = 0)
 {
 	int32 ReturnCode = 0;
 	FString FullCommand;
@@ -134,20 +134,20 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 
 //#if UE_BUILD_DEBUG
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutResults);
-	if(ReturnCode != 0 || OutErrors.Len() > 0)
+	if(ReturnCode != ExpectedReturnCode || OutErrors.Len() > 0)
 	{
 		UE_LOG(LogSourceControl, Warning, TEXT("RunCommand(%s) ReturnCode=%d:\n%s"), *InCommand, ReturnCode, *OutErrors);
 	}
 //#endif
 
 	// Move push/pull progress information from the error stream to the info stream
-	if(ReturnCode == 0 && OutErrors.Len() > 0)
+	if(ReturnCode == ExpectedReturnCode && OutErrors.Len() > 0)
 	{
 		OutResults.Append(OutErrors);
 		OutErrors.Empty();
 	}
 
-	return ReturnCode == 0;
+	return ReturnCode == ExpectedReturnCode;
 }
 
 // Basic parsing or results & errors from the Git command line process
@@ -396,7 +396,7 @@ void FindGitCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVersi
 {
 	FString InfoMessages;
 	FString ErrorMessages;
-	RunCommandInternalRaw(TEXT("cat-file -h"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	RunCommandInternalRaw(TEXT("cat-file -h"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages, 129);
 	if (InfoMessages.Contains("--filters"))
 	{
 		OutVersion->bHasCatFileWithFilters = true;
