@@ -14,7 +14,7 @@ Developed and contributed by Sébastien Rombauts 2014-2019 (sebastien.rombauts@g
 
 You need to install it into your Project **Plugins/** folder, and it will overwrite (replace) the default "Git (beta version)" Source Control Provider with the "Git LFS 2" plugin.
 
-Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.com/Git_source_control_%28Tutorial%29).
+Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.com/Git_source_control_%28Tutorial%29).  ([alternate link](https://michaeljcole.github.io/wiki.unrealengine.com/Git_source_control_%28Tutorial%29/))
 
 Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
 
