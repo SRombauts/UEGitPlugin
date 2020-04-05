@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+// Copyright (c) 2014-2020 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 //
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
@@ -85,7 +85,7 @@ public:
 	virtual bool IsModified() const override;
 	virtual bool CanAdd() const override;
 	virtual bool IsConflicted() const override;
-	virtual bool CanRevert() const; // override; TODO UE 4.19 only - commented for backward compatibility
+	virtual bool CanRevert() const override;
 
 public:
 	/** History of the item, if any */

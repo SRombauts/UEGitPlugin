@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+// Copyright (c) 2014-2020 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 //
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
@@ -57,7 +57,7 @@ bool CheckGitAvailability(const FString& InPathToGitBinary, FGitVersion* OutVers
  */
  void ParseGitVersion(const FString& InVersionString, FGitVersion* OutVersion);
 
-/** 
+/**
  * Check git for various optional capabilities by various means.
  * @param InPathToGitBinary		The path to the Git binary
  * @param OutGitVersion			If provided, populate with the git version parsed from "version" command
@@ -191,7 +191,7 @@ TArray<FString> RelativeFilenames(const TArray<FString>& InFileNames, const FStr
  */
 bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates);
 
-/** 
+/**
  * Remove redundant errors (that contain a particular string) and also
  * update the commands success status if all errors were removed.
  */
