@@ -413,8 +413,8 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 
 			Progress.Tick();
 
-			// Sleep for a bit so we don't busy-wait so much.
-			FPlatformProcess::Sleep(0.01f);
+			// Sleep so we don't busy-wait so much.
+			FPlatformProcess::Sleep(0.0f);
 		}
 
 		// always do one more Tick() to make sure the command queue is cleaned up.
