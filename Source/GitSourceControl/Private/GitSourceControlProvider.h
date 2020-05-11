@@ -130,7 +130,7 @@ public:
 	}
 
 	/** Helper function used to update state cache */
-	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> GetStateInternal(const FString& Filename, const bool bUsingGitLfsLocking);
+	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> GetStateInternal(const FString& Filename);
 
 	/**
 	 * Register a worker with the provider.
@@ -151,6 +151,9 @@ private:
 
 	/** Is git repository found. */
 	bool bGitRepositoryFound;
+
+	/** Is LFS File Locking enabled? */
+	int bUsingGitLfsLocking = false;
 
 	/** Helper function for Execute() */
 	TSharedPtr<class IGitSourceControlWorker, ESPMode::ThreadSafe> CreateWorker(const FName& InOperationName) const;

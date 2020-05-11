@@ -1452,7 +1452,7 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 
 	for(const auto& InState : InStates)
 	{
-		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename, bUsingGitLfsLocking);
+		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename);
 		*State = InState;
 		State->TimeStamp = Now;
 	}
