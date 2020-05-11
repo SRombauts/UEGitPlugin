@@ -102,9 +102,7 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 
 	FullCommand += LogableCommand;
 
-//#if UE_BUILD_DEBUG
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommand: 'git %s'"), *LogableCommand);
-//#endif
 
 	FString PathToGitOrEnvBinary = InPathToGitBinary;
 #if PLATFORM_MAC
@@ -132,13 +130,12 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 #endif
 	FPlatformProcess::ExecProcess(*PathToGitOrEnvBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
 
-//#if UE_BUILD_DEBUG
-	UE_LOG(LogSourceControl, Log, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutResults);
+	// TODO: add a setting to easily enable Verbose logging
+	UE_LOG(LogSourceControl, Verbose, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutResults);
 	if(ReturnCode != ExpectedReturnCode || OutErrors.Len() > 0)
 	{
 		UE_LOG(LogSourceControl, Warning, TEXT("RunCommand(%s) ReturnCode=%d:\n%s"), *InCommand, ReturnCode, *OutErrors);
 	}
-//#endif
 
 	// Move push/pull progress information from the error stream to the info stream
 	if(ReturnCode == ExpectedReturnCode && OutErrors.Len() > 0)
