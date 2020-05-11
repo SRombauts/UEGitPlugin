@@ -22,6 +22,7 @@ FName FGitPush::GetName() const
 
 FText FGitPush::GetInProgressString() const
 {
+	// TODO Configure origin
 	return LOCTEXT("SourceControl_Push", "Pushing local commits to remote origin...");
 }
 
@@ -187,7 +188,11 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 			// git-lfs: push and unlock files
 			if(InCommand.bUsingGitLfsLocking && InCommand.bCommandSuccessful)
 			{
-				InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push origin HEAD"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+				TArray<FString> Parameters2;
+				// TODO Configure origin
+				Parameters2.Add(TEXT("origin"));
+				Parameters2.Add(TEXT("HEAD"));
+				InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters2, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 				if(InCommand.bCommandSuccessful)
 				{
 					// unlock files: execute the LFS command on relative filenames
@@ -379,9 +384,10 @@ FName FGitSyncWorker::GetName() const
 bool FGitSyncWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	// pull the branch to get remote changes by rebasing any local commits (not merging them to avoid complex graphs)
-	// (this cannot work if any local files are modified but not commited)
 	TArray<FString> Parameters;
 	Parameters.Add(TEXT("--rebase"));
+	Parameters.Add(TEXT("--autostash"));
+	// TODO Configure origin
 	Parameters.Add(TEXT("origin"));
 	Parameters.Add(TEXT("HEAD"));
 	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("pull"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
@@ -410,6 +416,7 @@ bool FGitPushWorker::Execute(FGitSourceControlCommand& InCommand)
 	// (works only if the default remote "origin" is set and does not require authentication)
 	TArray<FString> Parameters;
 	Parameters.Add(TEXT("--set-upstream"));
+	// TODO Configure origin
 	Parameters.Add(TEXT("origin"));
 	Parameters.Add(TEXT("HEAD"));
 	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);

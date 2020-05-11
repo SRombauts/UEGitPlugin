@@ -181,6 +181,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				]
 			]
 			// Option to configure the URL of the default remote 'origin'
+			// TODO: option to configure the name of the remote instead of the default origin
 			+SVerticalBox::Slot()
 			.AutoHeight()
 			.Padding(2.0f)
