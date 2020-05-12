@@ -153,7 +153,7 @@ private:
 	bool bGitRepositoryFound;
 
 	/** Is LFS File Locking enabled? */
-	int bUsingGitLfsLocking = false;
+	bool bUsingGitLfsLocking = false;
 
 	/** Helper function for Execute() */
 	TSharedPtr<class IGitSourceControlWorker, ESPMode::ThreadSafe> CreateWorker(const FName& InOperationName) const;
