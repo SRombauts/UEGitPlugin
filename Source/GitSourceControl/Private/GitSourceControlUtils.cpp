@@ -1012,7 +1012,11 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 			LockedFiles.Add(MoveTemp(LockFile.LocalFilename), MoveTemp(LockFile.LockUser));
 		}
 	}
+	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 
+	
+	
+	const FString LfsUserName = GitSourceControl.AccessSettings().GetLfsUserName();
 	// Git status does not show any "untracked files" when called with files from different subdirectories! (issue #3)
 	// 1) So here we group files by path (ie. by subdirectory)
 	TMap<FString, TArray<FString>> GroupOfFiles;
@@ -1029,6 +1033,23 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 			TArray<FString> NewGroup;
 			NewGroup.Add(File);
 			GroupOfFiles.Add(Path, NewGroup);
+		}
+		
+		if (LockedFiles.Contains(File))
+		{
+			TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State= GitSourceControl.GetProvider().GetStateInternal(File, true);
+			
+			State->LockUser = LockedFiles[File];
+			if (LfsUserName == State->LockUser)
+			{
+				State->LockState = ELockState::Locked;
+			}
+			else
+			{
+				State->LockState = ELockState::LockedOther;
+			}
+			// TODO LFS Debug log
+			//UE_LOG(LogSourceControl, Log, TEXT("Status(%s) Locked by '%s'"), *File, *FileState.LockUser);
 		}
 	}
 
