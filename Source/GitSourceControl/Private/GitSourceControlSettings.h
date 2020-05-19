@@ -13,8 +13,14 @@ public:
 	/** Get the Git Binary Path */
 	const FString GetBinaryPath() const;
 
+	/** Get the Git Root Path */
+	const FString GetRepoPath() const;
+
 	/** Set the Git Binary Path */
 	bool SetBinaryPath(const FString& InString);
+
+	/** Set the Git Root Path */
+	bool SetRepoPath(const FString& InString);
 
 	/** Tell if using the Git LFS file Locking workflow */
 	bool IsUsingGitLfsLocking() const;
@@ -40,6 +46,9 @@ private:
 
 	/** Git binary path */
 	FString BinaryPath;
+	
+	/** Git root path */
+	FString RepoPath;
 
 	/** Tells if using the Git LFS file Locking workflow */
 	bool bUsingGitLfsLocking;

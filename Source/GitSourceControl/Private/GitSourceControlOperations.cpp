@@ -45,6 +45,7 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()));
 		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::ProjectConfigDir()));
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, ProjectDirs, InCommand.ErrorMessages, States);
+		/**
 		if(!InCommand.bCommandSuccessful || InCommand.ErrorMessages.Num() > 0)
 		{
 			Operation->SetErrorText(LOCTEXT("NotAGitRepository", "Failed to enable Git source control. You need to initialize the project as a Git repository first."));
@@ -59,6 +60,14 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 				// Check server connection by checking lock status (when using Git LFS file Locking worflow)
 				InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("lfs locks"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 			}
+		}
+		*/
+		GitSourceControlUtils::GetCommitInfo(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.CommitId, InCommand.CommitSummary);
+
+		if (InCommand.bUsingGitLfsLocking)
+		{
+			// Check server connection by checking lock status (when using Git LFS file Locking worflow)
+			InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("lfs locks"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 		}
 	}
 	else
