@@ -188,6 +188,67 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 			if(InCommand.bUsingGitLfsLocking && InCommand.bCommandSuccessful)
 			{
 				InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push origin HEAD"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+				if(!InCommand.bCommandSuccessful)
+				{
+					// if out of date, pull first, then try again
+					bool bWasOutOfDate = false;
+					for (const auto& PushError : InCommand.ErrorMessages)
+					{
+						if (PushError.Contains(TEXT("[rejected]")) && PushError.Contains(TEXT("non-fast-forward")))
+						{
+							// Don't do it during iteration, want to append pull results to InCommand.ErrorMessages
+							bWasOutOfDate = true;
+							break;
+						}
+					}
+					if (bWasOutOfDate)
+					{
+						UE_LOG(LogSourceControl, Log, TEXT("Push failed because we're out of date, pulling automatically to try to resolve"));
+						// Use pull --rebase since that's what the pull command does by default
+						// This requires that we stash if dirty working copy though
+						bool bStashed = false;
+						bool bStashNeeded = false;
+						const TArray<FString> ParametersStatus{"--porcelain --untracked-files=no"};
+						TArray<FString> StatusInfoMessages;
+						TArray<FString> StatusErrorMessages;
+						// Check if there is any modification to the working tree
+						const bool bStatusOk = GitSourceControlUtils::RunCommand(TEXT("status"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, ParametersStatus, TArray<FString>(), StatusInfoMessages, StatusErrorMessages);
+						if ((bStatusOk) && (StatusInfoMessages.Num() > 0))
+						{
+							bStashNeeded = true;
+							const TArray<FString> ParametersStash{ "save \"Stashed by Unreal Engine Git Plugin\"" };
+							bStashed = GitSourceControlUtils::RunCommand(TEXT("stash"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, ParametersStash, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+							if (!bStashed)
+							{
+								FMessageLog SourceControlLog("SourceControl");
+								SourceControlLog.Warning(LOCTEXT("SourceControlMenu_StashFailed", "Stashing away modifications failed!"));
+								SourceControlLog.Notify();
+							}
+						}
+						if (!bStashNeeded || bStashed)
+						{
+							InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("pull --rebase"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+							if (InCommand.bCommandSuccessful)
+							{
+								// Repeat the push
+								InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push origin HEAD"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+							}
+
+							// Succeed or fail, restore the stash
+							if (bStashed)
+							{
+								const TArray<FString> ParametersStashPop{ "pop" };
+								InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("stash"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, ParametersStashPop, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+								if (!InCommand.bCommandSuccessful)
+								{
+									FMessageLog SourceControlLog("SourceControl");
+									SourceControlLog.Warning(LOCTEXT("SourceControlMenu_UnstashFailed", "Unstashing previously saved modifications failed!"));
+									SourceControlLog.Notify();
+								}
+							}
+						}
+					}
+				}
 				if(InCommand.bCommandSuccessful)
 				{
 					// unlock files: execute the LFS command on relative filenames
