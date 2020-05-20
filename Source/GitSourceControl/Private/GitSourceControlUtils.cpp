@@ -1082,11 +1082,11 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 
 			Results.Reset();
 			ErrorMessages.Reset();
-			TArray<FString> ParametersDiff;
-			ParametersDiff.Add(TEXT("--name-only"));
-			ParametersDiff.Add(bDiffAgainstRemote ? FString::Printf(TEXT("origin/%s "), *BranchName) : BranchName);
-			ParametersDiff.Add(TEXT("HEAD"));
-			const bool bResultDiff = RunCommand(TEXT("diff"), InPathToGitBinary, InRepositoryRoot, ParametersDiff, OnePath, Results, ErrorMessages);
+			TArray<FString> ParametersLog;
+			ParametersLog.Add(TEXT("--pretty=")); // this omits the commit lines, just gets us files
+			ParametersLog.Add(TEXT("--name-only"));
+			ParametersLog.Add(bDiffAgainstRemote ? TEXT("HEAD..HEAD@{upstream}") : BranchName);
+			const bool bResultDiff = RunCommand(TEXT("log"), InPathToGitBinary, InRepositoryRoot, ParametersLog, OnePath, Results, ErrorMessages);
 			OutErrorMessages.Append(ErrorMessages);
 			if (bResultDiff)
 			{
