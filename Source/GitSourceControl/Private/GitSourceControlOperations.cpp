@@ -12,6 +12,7 @@
 #include "GitSourceControlModule.h"
 #include "GitSourceControlCommand.h"
 #include "GitSourceControlUtils.h"
+#include "Logging/MessageLog.h"
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"
 
@@ -187,7 +188,11 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 			// git-lfs: push and unlock files
 			if(InCommand.bUsingGitLfsLocking && InCommand.bCommandSuccessful)
 			{
-				InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push origin HEAD"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
+                TArray<FString> Parameters2;
+                // TODO Configure origin
+                Parameters2.Add(TEXT("origin"));
+                Parameters2.Add(TEXT("HEAD"));
+				InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters2, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 				if(!InCommand.bCommandSuccessful)
 				{
 					// if out of date, pull first, then try again
