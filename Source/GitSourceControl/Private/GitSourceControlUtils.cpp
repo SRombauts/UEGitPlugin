@@ -646,7 +646,7 @@ Content\ThirdPersonBP\Blueprints\ThirdPersonGameMode.uasset     SRombauts       
 class FGitLfsLocksParser
 {
 public:
-	FGitLfsLocksParser(const FString& InRepositoryRoot, const FString& InStatus)
+	FGitLfsLocksParser(const FString& InRepositoryRoot, const FString& InStatus, const bool bAbsolutePaths = true)
 	{
 		TArray<FString> Informations;
 		InStatus.ParseIntoArray(Informations, TEXT("\t"), true);
@@ -654,7 +654,10 @@ public:
 		{
 			Informations[0].TrimEndInline(); // Trim whitespace from the end of the filename
 			Informations[1].TrimEndInline(); // Trim whitespace from the end of the username
-			LocalFilename = FPaths::ConvertRelativePathToFull(InRepositoryRoot, Informations[0]);
+			if (bAbsolutePaths)
+				LocalFilename = FPaths::ConvertRelativePathToFull(InRepositoryRoot, Informations[0]);
+			else
+				LocalFilename = Informations[0];
 			LockUser = MoveTemp(Informations[1]);
 		}
 	}
@@ -995,6 +998,22 @@ static void ParseStatusResults(const FString& InPathToGitBinary, const FString& 
 	}
 }
 
+bool GetAllLocks(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const bool bAbsolutePaths, TArray<FString>& OutErrorMessages, TMap<FString, FString>& OutLocks)
+{
+	TArray<FString> Results;
+	TArray<FString> ErrorMessages;
+	const bool bResult = RunCommand(TEXT("lfs locks"), InPathToGitBinary, InRepositoryRoot, TArray<FString>(), TArray<FString>(), Results, ErrorMessages);
+	for(const FString& Result : Results)
+	{
+		FGitLfsLocksParser LockFile(InRepositoryRoot, Result, bAbsolutePaths);
+		// TODO LFS Debug log
+		UE_LOG(LogSourceControl, Log, TEXT("LockedFile(%s, %s)"), *LockFile.LocalFilename, *LockFile.LockUser);
+		OutLocks.Add(MoveTemp(LockFile.LocalFilename), MoveTemp(LockFile.LockUser));
+	}
+
+	return bResult;
+}
+
 // Run a batch of Git "status" command to update status of given files and/or directories.
 bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const bool InUsingLfsLocking, const TArray<FString>& InFiles, TArray<FString>& OutErrorMessages, TArray<FGitSourceControlState>& OutStates)
 {
@@ -1004,16 +1023,8 @@ bool RunUpdateStatus(const FString& InPathToGitBinary, const FString& InReposito
 	// 0) Issue a "git lfs locks" command at the root of the repository
 	if(InUsingLfsLocking)
 	{
-		TArray<FString> Results;
 		TArray<FString> ErrorMessages;
-		bool bResult = RunCommand(TEXT("lfs locks"), InPathToGitBinary, InRepositoryRoot, TArray<FString>(), TArray<FString>(), Results, ErrorMessages);
-		for(const FString& Result : Results)
-		{
-			FGitLfsLocksParser LockFile(InRepositoryRoot, Result);
-			// TODO LFS Debug log
-			UE_LOG(LogSourceControl, Log, TEXT("LockedFile(%s, %s)"), *LockFile.LocalFilename, *LockFile.LockUser);
-			LockedFiles.Add(MoveTemp(LockFile.LocalFilename), MoveTemp(LockFile.LockUser));
-		}
+		GetAllLocks(InPathToGitBinary, InRepositoryRoot, true, ErrorMessages, LockedFiles);
 	}
 
 	// Git status does not show any "untracked files" when called with files from different subdirectories! (issue #3)
@@ -1442,6 +1453,18 @@ TArray<FString> RelativeFilenames(const TArray<FString>& InFileNames, const FStr
 	}
 
 	return RelativeFiles;
+}
+
+TArray<FString> AbsoluteFilenames(const TArray<FString>& InFileNames, const FString& InRelativeTo)
+{
+	TArray<FString> AbsFiles;
+
+	for(FString FileName : InFileNames) // string copy to be able to convert it inplace
+	{
+		AbsFiles.Add(FPaths::Combine(InRelativeTo, FileName));
+	}
+
+	return AbsFiles;
 }
 
 bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)

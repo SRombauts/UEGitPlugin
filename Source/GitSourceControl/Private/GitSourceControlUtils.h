@@ -186,6 +186,14 @@ bool RunGetHistory(const FString& InPathToGitBinary, const FString& InRepository
 TArray<FString> RelativeFilenames(const TArray<FString>& InFileNames, const FString& InRelativeTo);
 
 /**
+ * Helper function to convert a filename array to absolute paths.
+ * @param	InFileNames		The filename array (relative paths)
+ * @param	InRelativeTo	Path to the WorkspaceRoot
+ * @return an array of filenames, transformed into absolute paths
+ */
+TArray<FString> AbsoluteFilenames(const TArray<FString>& InFileNames, const FString& InRelativeTo);
+
+/**
  * Helper function for various commands to update cached states.
  * @returns true if any states were updated
  */
@@ -196,5 +204,17 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates);
  * update the commands success status if all errors were removed.
  */
 void RemoveRedundantErrors(FGitSourceControlCommand& InCommand, const FString& InFilter);
+
+/**
+ * Run 'git lfs locks" to extract all lock information for all files in the repository
+ *
+ * @param	InPathToGitBinary	The path to the Git binary
+ * @param	InRepositoryRoot	The Git repository from where to run the command - usually the Game directory
+ * @param   bAbsolutePaths      Whether to report absolute filenames, false for repo-relative
+ * @param	OutErrorMessages    Any errors (from StdErr) as an array per-line
+ * @param	OutLocks		    The lock results (file, username)
+ * @returns true if the command succeeded and returned no errors
+ */
+bool GetAllLocks(const FString& InPathToGitBinary, const FString& InRepositoryRoot, const bool bAbsolutePaths, TArray<FString>& OutErrorMessages, TMap<FString, FString>& OutLocks);
 
 }

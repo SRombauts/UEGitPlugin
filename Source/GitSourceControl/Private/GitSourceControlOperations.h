@@ -138,6 +138,10 @@ public:
 	virtual FName GetName() const override;
 	virtual bool Execute(class FGitSourceControlCommand& InCommand) override;
 	virtual bool UpdateStates() const override;
+
+public:
+	/** Temporary states for results */
+	TArray<FGitSourceControlState> States;
 };
 
 /** Get source control status of files on local working copy. */
