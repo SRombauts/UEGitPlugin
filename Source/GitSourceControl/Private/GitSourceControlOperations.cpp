@@ -474,6 +474,56 @@ FName FGitPushWorker::GetName() const
 
 bool FGitPushWorker::Execute(FGitSourceControlCommand& InCommand)
 {
+
+	// If we have any locked files, check if we should unlock them
+	TArray<FString> FilesToUnlock;
+	if (InCommand.bUsingGitLfsLocking)
+	{
+		TMap<FString, FString> Locks;
+		// Get locks as relative paths
+		GitSourceControlUtils::GetAllLocks(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, false, InCommand.ErrorMessages, Locks);
+		if(Locks.Num() > 0)
+		{		
+			// test to see what lfs files we would push, and compare to locked files, unlock after if push OK
+			FString BranchName;
+			GitSourceControlUtils::GetBranchName(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, BranchName);
+			
+			TArray<FString> LfsPushParameters;
+			LfsPushParameters.Add(TEXT("push"));
+			LfsPushParameters.Add(TEXT("--dry-run"));
+			LfsPushParameters.Add(TEXT("origin"));
+			LfsPushParameters.Add(BranchName);
+			TArray<FString> LfsPushInfoMessages;
+			TArray<FString> LfsPushErrMessages;
+			InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("lfs"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, LfsPushParameters, TArray<FString>(), LfsPushInfoMessages, LfsPushErrMessages);
+
+			if(InCommand.bCommandSuccessful)
+			{
+				// Result format is of the form
+				// push f4ee401c063058a78842bb3ed98088e983c32aa447f346db54fa76f844a7e85e => Path/To/Asset.uasset
+				// With some potential informationals we can ignore
+				for (auto& Line : LfsPushInfoMessages)
+				{
+					if (Line.StartsWith(TEXT("push")))
+					{
+						FString Prefix, Filename;
+						if (Line.Split(TEXT("=>"), &Prefix, &Filename))
+						{
+							Filename = Filename.TrimStartAndEnd();
+							if (Locks.Contains(Filename))
+							{
+								// We do not need to check user or if the file has local modifications before attempting unlocking, git-lfs will reject the unlock if so
+								// No point duplicating effort here
+								FilesToUnlock.Add(Filename);
+								UE_LOG(LogSourceControl, Log, TEXT("Post-push will try to unlock: %s"), *Filename);
+							}
+						}
+					}
+				}
+			}
+		}		
+		
+	}
 	// push the branch to its default remote
 	// (works only if the default remote "origin" is set and does not require authentication)
 	TArray<FString> Parameters;
@@ -483,14 +533,34 @@ bool FGitPushWorker::Execute(FGitSourceControlCommand& InCommand)
 	Parameters.Add(TEXT("HEAD"));
 	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 
-	// NOTE: no need to update status of our files
+	if(InCommand.bCommandSuccessful && InCommand.bUsingGitLfsLocking && FilesToUnlock.Num() > 0)
+	{
+		// unlock files: execute the LFS command on relative filenames
+		for(const auto& FileToUnlock : FilesToUnlock)
+		{
+			TArray<FString> OneFile;
+			OneFile.Add(FileToUnlock);
+			bool bUnlocked = GitSourceControlUtils::RunCommand(TEXT("lfs unlock"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), OneFile, InCommand.InfoMessages, InCommand.ErrorMessages);
+			if (!bUnlocked)
+			{
+				// Report but don't fail, it's not essential
+				UE_LOG(LogSourceControl, Log, TEXT("Unlock failed for %s"), *FileToUnlock);	
+			}
+		}
+		
+		// We need to update status if we unlock
+		// This command needs absolute filenames
+		TArray<FString> AbsFilesToUnlock = GitSourceControlUtils::AbsoluteFilenames(FilesToUnlock, InCommand.PathToRepositoryRoot);
+		GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, AbsFilesToUnlock, InCommand.ErrorMessages, States);
+		
+	}
 
 	return InCommand.bCommandSuccessful;
 }
 
 bool FGitPushWorker::UpdateStates() const
 {
-	return false;
+	return GitSourceControlUtils::UpdateCachedStates(States);
 }
 
 FName FGitUpdateStatusWorker::GetName() const
