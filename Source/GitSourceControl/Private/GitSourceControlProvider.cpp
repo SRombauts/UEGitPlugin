@@ -49,6 +49,8 @@ void FGitSourceControlProvider::CheckGitAvailability()
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	FString PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
+	FString PathToGitRepo = GitSourceControl.AccessSettings().GetRepoPath();
+
 	if(PathToGitBinary.IsEmpty())
 	{
 		// Try to find Git binary, and update settings accordingly
@@ -105,9 +107,26 @@ bool FGitSourceControlProvider::CheckIfValidRepository(const FString& InPathToGi
 
 void FGitSourceControlProvider::CheckRepositoryStatus(const FString& InPathToGitBinary)
 {
-	// Find the path to the root Git directory (if any, else uses the ProjectDir)
-	const FString PathToProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
-	bGitRepositoryFound = GitSourceControlUtils::FindRootDirectory(PathToProjectDir, PathToRepositoryRoot);
+	// Get the root Git directory from loaded settings
+	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	FString PathToGitRepo = GitSourceControl.AccessSettings().GetRepoPath();
+	
+	FString SearchedGitRepo;
+	
+	if (PathToGitRepo.IsEmpty())
+	{ 
+		// Find the path to the root Git directory (if any, else uses the ProjectDir)
+		const FString PathToProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+		bGitRepositoryFound = GitSourceControlUtils::FindRootDirectory(PathToProjectDir, PathToRepositoryRoot);
+		SearchedGitRepo = PathToProjectDir;
+	}
+	else
+	{
+		// make sure the saved root Git directory is still valid and copy the path
+		bGitRepositoryFound = GitSourceControlUtils::FindRootDirectory(PathToGitRepo, PathToRepositoryRoot);
+		SearchedGitRepo = PathToGitRepo;
+	}
+	
 	if(bGitRepositoryFound)
 	{
 		GitSourceControlMenu.Register();
@@ -125,7 +144,7 @@ void FGitSourceControlProvider::CheckRepositoryStatus(const FString& InPathToGit
 	}
 	else
 	{
-		UE_LOG(LogSourceControl, Warning, TEXT("'%s' is not part of a Git repository"), *FPaths::ProjectDir());
+		UE_LOG(LogSourceControl, Warning, TEXT("'%s' is not part of a Git repository"), *SearchedGitRepo);
 	}
 
 	// Get user name & email (of the repository, else from the global Git config)
