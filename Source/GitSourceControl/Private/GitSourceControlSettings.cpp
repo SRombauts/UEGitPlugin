@@ -26,6 +26,12 @@ const FString FGitSourceControlSettings::GetBinaryPath() const
 	return BinaryPath; // Return a copy to be thread-safe
 }
 
+const FString FGitSourceControlSettings::GetRepoPath() const
+{
+	FScopeLock ScopeLock(&CriticalSection);
+	return RepoPath; // Return a copy to be thread-safe
+}
+
 bool FGitSourceControlSettings::SetBinaryPath(const FString& InString)
 {
 	FScopeLock ScopeLock(&CriticalSection);
@@ -33,6 +39,17 @@ bool FGitSourceControlSettings::SetBinaryPath(const FString& InString)
 	if(bChanged)
 	{
 		BinaryPath = InString;
+	}
+	return bChanged;
+}
+
+bool FGitSourceControlSettings::SetRepoPath(const FString& InString)
+{
+	FScopeLock ScopeLock(&CriticalSection);
+	const bool bChanged = (RepoPath != InString);
+	if (bChanged)
+	{
+		RepoPath = InString;
 	}
 	return bChanged;
 }
@@ -76,6 +93,7 @@ void FGitSourceControlSettings::LoadSettings()
 	FScopeLock ScopeLock(&CriticalSection);
 	const FString& IniFile = SourceControlHelpers::GetSettingsIni();
 	GConfig->GetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), BinaryPath, IniFile);
+	GConfig->GetString(*GitSettingsConstants::SettingsSection, TEXT("RepoRootPath"), RepoPath, IniFile);
 	GConfig->GetBool(*GitSettingsConstants::SettingsSection, TEXT("UsingGitLfsLocking"), bUsingGitLfsLocking, IniFile);
 	GConfig->GetString(*GitSettingsConstants::SettingsSection, TEXT("LfsUserName"), LfsUserName, IniFile);
 }
@@ -85,6 +103,7 @@ void FGitSourceControlSettings::SaveSettings() const
 	FScopeLock ScopeLock(&CriticalSection);
 	const FString& IniFile = SourceControlHelpers::GetSettingsIni();
 	GConfig->SetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), *BinaryPath, IniFile);
+	GConfig->SetString(*GitSettingsConstants::SettingsSection, TEXT("RepoRootPath"), *RepoPath, IniFile);
 	GConfig->SetBool(*GitSettingsConstants::SettingsSection, TEXT("UsingGitLfsLocking"), bUsingGitLfsLocking, IniFile);
 	GConfig->SetString(*GitSettingsConstants::SettingsSection, TEXT("LfsUserName"), *LfsUserName, IniFile);
 }

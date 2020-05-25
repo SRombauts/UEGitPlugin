@@ -93,6 +93,11 @@ public:
 	 */
 	void CheckRepositoryStatus(const FString& InPathToGitBinary);
 
+	/**
+	 * Check if a git repository can be found in the given path.
+	 */
+	bool CheckIfValidRepository(const FString& InPathToGitBinary, const FString& InPathToGitRepo);
+
 	/** Is git binary found and working. */
 	inline bool IsGitAvailable() const
 	{

@@ -35,9 +35,13 @@ private:
 	/** Delegates to get Git binary path from/to settings */
 	FString GetBinaryPathString() const;
 	void OnBinaryPathPicked(const FString & PickedPath) const;
-
-	/** Delegate to get repository root, user name and email from provider */
-	FText GetPathToRepositoryRoot() const;
+	
+	/** Delegates to get Git root path from/to settings */
+	FString GetRepoPathString() const;
+	void OnRepoPathPicked(const FString & PickedPath) const;
+	
+		/** Delegate to get repository root, user name and email from provider */
+	FString GetPathToRepositoryRoot();
 	FText GetUserName() const;
 	FText GetUserEmail() const;
 

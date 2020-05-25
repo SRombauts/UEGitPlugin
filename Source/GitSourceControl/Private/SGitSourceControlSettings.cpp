@@ -17,6 +17,7 @@
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Input/SFilePathPicker.h"
+#include "Widgets/Input/SDirectoryPicker.h"
 #include "Widgets/Input/SMultiLineEditableTextBox.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SSeparator.h"
@@ -103,10 +104,17 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				+SHorizontalBox::Slot()
 				.FillWidth(2.0f)
 				[
+					SNew(SDirectoryPicker)
+					.Directory(SGitSourceControlSettings::GetPathToRepositoryRoot())
+					.OnDirectoryChanged(this, &SGitSourceControlSettings::OnRepoPathPicked)
+				]
+				/**
+				[
 					SNew(STextBlock)
 					.Text(this, &SGitSourceControlSettings::GetPathToRepositoryRoot)
 					.Font(Font)
 				]
+				*/
 			]
 			// User Name
 			+SVerticalBox::Slot()
@@ -404,6 +412,13 @@ FString SGitSourceControlSettings::GetBinaryPathString() const
 	return GitSourceControl.AccessSettings().GetBinaryPath();
 }
 
+FString SGitSourceControlSettings::GetRepoPathString() const
+{
+	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	return GitSourceControl.AccessSettings().GetRepoPath();
+}
+
+
 void SGitSourceControlSettings::OnBinaryPathPicked( const FString& PickedPath ) const
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
@@ -420,10 +435,32 @@ void SGitSourceControlSettings::OnBinaryPathPicked( const FString& PickedPath ) 
 	}
 }
 
-FText SGitSourceControlSettings::GetPathToRepositoryRoot() const
+void SGitSourceControlSettings::OnRepoPathPicked(const FString& PickedPath) const
+{
+	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	FString PickedFullPath = FPaths::ConvertRelativePathToFull(PickedPath);
+	FString PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
+	bool RepoFound = GitSourceControl.GetProvider().CheckIfValidRepository(PathToGitBinary, PickedFullPath);
+	bool bChanged = false;
+	if (RepoFound)
+	{
+		bChanged = GitSourceControl.AccessSettings().SetRepoPath(PickedFullPath);
+	}
+	if (bChanged)
+	{
+		// Re-Check provided git binary path for each change
+		GitSourceControl.GetProvider().CheckGitAvailability();
+		if (GitSourceControl.GetProvider().IsGitAvailable())
+		{
+			GitSourceControl.SaveSettings();
+		}
+	}
+}
+
+FString SGitSourceControlSettings::GetPathToRepositoryRoot()
 {
 	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
-	return FText::FromString(GitSourceControl.GetProvider().GetPathToRepositoryRoot());
+	return GitSourceControl.GetProvider().GetPathToRepositoryRoot();
 }
 
 FText SGitSourceControlSettings::GetUserName() const
