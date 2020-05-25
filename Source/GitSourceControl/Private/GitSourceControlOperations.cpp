@@ -42,11 +42,17 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 	{
 		// Now update the status of assets in Content/ directory and also Config files
 		TArray<FString> ProjectDirs;
-		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()));
-		ProjectDirs.Add(FPaths::ConvertRelativePathToFull(FPaths::ProjectConfigDir()));
+		FString ProjContentDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir());
+		FString ProjectConfigDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectConfigDir());
+		if (ProjContentDir.Contains(InCommand.PathToRepositoryRoot))
+		{
+			ProjectDirs.Add(ProjContentDir);
+		}
+		if (ProjectConfigDir.Contains(InCommand.PathToRepositoryRoot))
+		{
+			ProjectDirs.Add(ProjectConfigDir);
+		}
 		InCommand.bCommandSuccessful = GitSourceControlUtils::RunUpdateStatus(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.bUsingGitLfsLocking, ProjectDirs, InCommand.ErrorMessages, States);
-		// TODO: determine if the commented part below is neccessary and if so adjust it to changes in git root / else delete
-		/**
 		if(!InCommand.bCommandSuccessful || InCommand.ErrorMessages.Num() > 0)
 		{
 			Operation->SetErrorText(LOCTEXT("NotAGitRepository", "Failed to enable Git source control. You need to initialize the project as a Git repository first."));
@@ -62,7 +68,7 @@ bool FGitConnectWorker::Execute(FGitSourceControlCommand& InCommand)
 				InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("lfs locks"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
 			}
 		}
-		*/
+
 		GitSourceControlUtils::GetCommitInfo(InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, InCommand.CommitId, InCommand.CommitSummary);
 
 		if (InCommand.bUsingGitLfsLocking)
