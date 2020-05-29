@@ -161,10 +161,10 @@ void FGitSourceControlMenu::ReloadPackages(TArray<UPackage*>& InPackagesToReload
 	});
 
 	// Hot-reload the new packages...
-	PackageTools::ReloadPackages(InPackagesToReload);
+	UPackageTools::ReloadPackages(InPackagesToReload);
 
 	// Unload any deleted packages...
-	PackageTools::UnloadPackages(PackagesToUnload);
+	UPackageTools::UnloadPackages(PackagesToUnload);
 }
 
 // Ask the user if he wants to stash any modification and try to unstash them afterward, which could lead to conflicts

@@ -1161,7 +1161,32 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 
 	UE_LOG(LogSourceControl, Log, TEXT("RunDumpToFile: 'git %s'"), *FullCommand);
 
-	FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*InPathToGitBinary, *FullCommand, bLaunchDetached, bLaunchHidden, bLaunchReallyHidden, nullptr, 0, *InRepositoryRoot, PipeWrite);
+    FString PathToGitOrEnvBinary = InPathToGitBinary;
+    #if PLATFORM_MAC
+        // The Cocoa application does not inherit shell environment variables, so add the path expected to have git-lfs to PATH
+        FString PathEnv = FPlatformMisc::GetEnvironmentVariable(TEXT("PATH"));
+        FString GitInstallPath = FPaths::GetPath(InPathToGitBinary);
+
+        TArray<FString> PathArray;
+        PathEnv.ParseIntoArray(PathArray, FPlatformMisc::GetPathVarDelimiter());
+        bool bHasGitInstallPath = false;
+        for (auto Path : PathArray)
+        {
+            if (GitInstallPath.Equals(Path, ESearchCase::CaseSensitive))
+            {
+                bHasGitInstallPath = true;
+                break;
+            }
+        }
+
+        if (!bHasGitInstallPath)
+        {
+            PathToGitOrEnvBinary = FString("/usr/bin/env");
+            FullCommand = FString::Printf(TEXT("PATH=\"%s%s%s\" \"%s\" %s"), *GitInstallPath, FPlatformMisc::GetPathVarDelimiter(), *PathEnv, *InPathToGitBinary, *FullCommand);
+        }
+    #endif
+    
+	FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*PathToGitOrEnvBinary, *FullCommand, bLaunchDetached, bLaunchHidden, bLaunchReallyHidden, nullptr, 0, *InRepositoryRoot, PipeWrite);
 	if(ProcessHandle.IsValid())
 	{
 		FPlatformProcess::Sleep(0.01);
