@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+// Copyright (c) 2014-2020 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 //
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
@@ -57,7 +57,7 @@ namespace GitSourceControlUtils
 {
 
 // Launch the Git command line process and extract its results & errors
-static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors)
+static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors, const int32 ExpectedReturnCode = 0)
 {
 	int32 ReturnCode = 0;
 	FString FullCommand;
@@ -102,9 +102,7 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 
 	FullCommand += LogableCommand;
 
-//#if UE_BUILD_DEBUG
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommand: 'git %s'"), *LogableCommand);
-//#endif
 
 	FString PathToGitOrEnvBinary = InPathToGitBinary;
 #if PLATFORM_MAC
@@ -132,22 +130,21 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 #endif
 	FPlatformProcess::ExecProcess(*PathToGitOrEnvBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
 
-//#if UE_BUILD_DEBUG
-	UE_LOG(LogSourceControl, Log, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutResults);
-	if(ReturnCode != 0 || OutErrors.Len() > 0)
+	// TODO: add a setting to easily enable Verbose logging
+	UE_LOG(LogSourceControl, Verbose, TEXT("RunCommand(%s):\n%s"), *InCommand, *OutResults);
+	if(ReturnCode != ExpectedReturnCode || OutErrors.Len() > 0)
 	{
 		UE_LOG(LogSourceControl, Warning, TEXT("RunCommand(%s) ReturnCode=%d:\n%s"), *InCommand, ReturnCode, *OutErrors);
 	}
-//#endif
 
 	// Move push/pull progress information from the error stream to the info stream
-	if(ReturnCode == 0 && OutErrors.Len() > 0)
+	if(ReturnCode == ExpectedReturnCode && OutErrors.Len() > 0)
 	{
 		OutResults.Append(OutErrors);
 		OutErrors.Empty();
 	}
 
-	return ReturnCode == 0;
+	return ReturnCode == ExpectedReturnCode;
 }
 
 // Basic parsing or results & errors from the Git command line process
@@ -396,7 +393,7 @@ void FindGitCapabilities(const FString& InPathToGitBinary, FGitVersion *OutVersi
 {
 	FString InfoMessages;
 	FString ErrorMessages;
-	RunCommandInternalRaw(TEXT("cat-file -h"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages);
+	RunCommandInternalRaw(TEXT("cat-file -h"), InPathToGitBinary, FString(), TArray<FString>(), TArray<FString>(), InfoMessages, ErrorMessages, 129);
 	if (InfoMessages.Contains("--filters"))
 	{
 		OutVersion->bHasCatFileWithFilters = true;
@@ -1164,7 +1161,32 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 
 	UE_LOG(LogSourceControl, Log, TEXT("RunDumpToFile: 'git %s'"), *FullCommand);
 
-	FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*InPathToGitBinary, *FullCommand, bLaunchDetached, bLaunchHidden, bLaunchReallyHidden, nullptr, 0, *InRepositoryRoot, PipeWrite);
+    FString PathToGitOrEnvBinary = InPathToGitBinary;
+    #if PLATFORM_MAC
+        // The Cocoa application does not inherit shell environment variables, so add the path expected to have git-lfs to PATH
+        FString PathEnv = FPlatformMisc::GetEnvironmentVariable(TEXT("PATH"));
+        FString GitInstallPath = FPaths::GetPath(InPathToGitBinary);
+
+        TArray<FString> PathArray;
+        PathEnv.ParseIntoArray(PathArray, FPlatformMisc::GetPathVarDelimiter());
+        bool bHasGitInstallPath = false;
+        for (auto Path : PathArray)
+        {
+            if (GitInstallPath.Equals(Path, ESearchCase::CaseSensitive))
+            {
+                bHasGitInstallPath = true;
+                break;
+            }
+        }
+
+        if (!bHasGitInstallPath)
+        {
+            PathToGitOrEnvBinary = FString("/usr/bin/env");
+            FullCommand = FString::Printf(TEXT("PATH=\"%s%s%s\" \"%s\" %s"), *GitInstallPath, FPlatformMisc::GetPathVarDelimiter(), *PathEnv, *InPathToGitBinary, *FullCommand);
+        }
+    #endif
+    
+	FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*PathToGitOrEnvBinary, *FullCommand, bLaunchDetached, bLaunchHidden, bLaunchReallyHidden, nullptr, 0, *InRepositoryRoot, PipeWrite);
 	if(ProcessHandle.IsValid())
 	{
 		FPlatformProcess::Sleep(0.01);
@@ -1478,7 +1500,7 @@ bool UpdateCachedStates(const TArray<FGitSourceControlState>& InStates)
 
 	for(const auto& InState : InStates)
 	{
-		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename, bUsingGitLfsLocking);
+		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename);
 		*State = InState;
 		State->TimeStamp = Now;
 	}

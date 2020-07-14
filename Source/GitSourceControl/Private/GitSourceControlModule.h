@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+// Copyright (c) 2014-2020 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 //
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
@@ -31,10 +31,13 @@ Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
 - migrate an asset between two projects if both are using Git
 - solve a merge conflict on a blueprint
 - show current branch name in status text
-- Sync to Pull (rebase) the current branch if there is no localy modified files
+- Sync to Pull (rebase) the current branch
 - Git LFS (Github, Gitlab, Bitbucket) is working with Git 2.10+ under Windows
 - Git LFS 2 File Locking is working with Git 2.10+ and Git LFS 2.0.0
 - Windows, Mac and Linux
+
+### TODO 
+1. configure the name of the remote instead of default "origin"
 
 ### TODO LFS 2.x File Locking
 
@@ -51,7 +54,7 @@ Use "TODO LFS" in the code to track things left to do/improve/refactor:
    is not working after Git LFS 2 has switched "read-only" flag on files (which needs the Checkout operation to be editable)!
    - temporarily deactivating locks may be required if we want to be able to work while not connected (do we really need this ???)
    - does Git LFS have a command to do this deactivation ?
-     - perhaps should we rely on detection of such flags to detect LFS 2 usage (ie the need to do a checkout)
+     - perhaps should we rely on detection of such flags to detect LFS 2 usage (ie. the need to do a checkout)
        - see SubversionSourceControl plugin that deals with such flags
        - this would need a rework of the way the "bIsUsingFileLocking" si propagated, since this would no more be a configuration (or not only) but a file state
      - else we should at least revert those read-only flags when going out of "Lock mode"
@@ -64,9 +67,9 @@ Use "TODO LFS" in the code to track things left to do/improve/refactor:
 - Configure user name & email ('git config user.name' & git config user.email')
 
 ### Known issues
-- the Editor does not show deleted files (only when deleted externaly?)
+- the Editor does not show deleted files (only when deleted externally?)
 - the Editor does not show missing files
-- missing localisation for git specific messages
+- missing localization for git specific messages
 - displaying states of 'Engine' assets (also needs management of 'out of tree' files)
 - renaming a Blueprint in Editor leaves a redirector file, AND modify too much the asset to enable git to track its history through renaming
 - standard Editor commit dialog asks if user wants to "Keep Files Checked Out" => no use for Git or Mercurial CanCheckOut()==false

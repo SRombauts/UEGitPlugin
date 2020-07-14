@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+// Copyright (c) 2014-2020 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 //
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
@@ -37,6 +37,9 @@ void FGitSourceControlProvider::Init(bool bForceConnection)
 		}
 
 		CheckGitAvailability();
+
+		const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+		bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
 	}
 
 	// bForceConnection: not used anymore
@@ -113,7 +116,7 @@ void FGitSourceControlProvider::Close()
 	UserEmail.Empty();
 }
 
-TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvider::GetStateInternal(const FString& Filename, const bool bUsingGitLfsLocking)
+TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvider::GetStateInternal(const FString& Filename)
 {
 	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe>* State = StateCache.Find(Filename);
 	if(State != NULL)
@@ -132,10 +135,6 @@ TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvide
 
 FText FGitSourceControlProvider::GetStatusText() const
 {
-	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoid doing this here so frequently
-//	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
-//	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
-
 	FFormatNamedArguments Args;
 	Args.Add( TEXT("RepositoryName"), FText::FromString(PathToRepositoryRoot) );
 	Args.Add( TEXT("RemoteUrl"), FText::FromString(RemoteUrl) );
@@ -179,13 +178,9 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 		Execute(ISourceControlOperation::Create<FUpdateStatus>(), AbsoluteFiles);
 	}
 
-	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoid doing this here so frequently
-	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
-	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
-
 	for(const auto& AbsoluteFile : AbsoluteFiles)
 	{
-		OutState.Add(GetStateInternal(*AbsoluteFile, bUsingGitLfsLocking));
+		OutState.Add(GetStateInternal(*AbsoluteFile));
 	}
 
 	return ECommandResult::Succeeded;
@@ -289,9 +284,7 @@ void FGitSourceControlProvider::CancelOperation( const TSharedRef<ISourceControl
 
 bool FGitSourceControlProvider::UsesLocalReadOnlyState() const
 {
-	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
-	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
-	return GitSourceControl.AccessSettings().IsUsingGitLfsLocking(); // Git LFS Lock uses read-only state
+	return bUsingGitLfsLocking; // Git LFS Lock uses read-only state
 }
 
 bool FGitSourceControlProvider::UsesChangelists() const
@@ -301,9 +294,7 @@ bool FGitSourceControlProvider::UsesChangelists() const
 
 bool FGitSourceControlProvider::UsesCheckout() const
 {
-	// TODO LFS IsUsingGitLfsLocking() should be cached in the Provider to avoir doing this here so frequently
-	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
-	return GitSourceControl.AccessSettings().IsUsingGitLfsLocking(); // Git LFS Lock uses read-only state
+	return bUsingGitLfsLocking; // Git LFS Lock uses read-only state
 }
 
 TSharedPtr<IGitSourceControlWorker, ESPMode::ThreadSafe> FGitSourceControlProvider::CreateWorker(const FName& InOperationName) const
@@ -422,7 +413,7 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 
 			Progress.Tick();
 
-			// Sleep for a bit so we don't busy-wait so much.
+			// Sleep so we don't busy-wait so much.
 			FPlatformProcess::Sleep(0.01f);
 		}
 

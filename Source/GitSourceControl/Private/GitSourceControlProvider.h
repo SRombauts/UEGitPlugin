@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+// Copyright (c) 2014-2020 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 //
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
@@ -130,7 +130,7 @@ public:
 	}
 
 	/** Helper function used to update state cache */
-	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> GetStateInternal(const FString& Filename, const bool bUsingGitLfsLocking);
+	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> GetStateInternal(const FString& Filename);
 
 	/**
 	 * Register a worker with the provider.
@@ -151,6 +151,9 @@ private:
 
 	/** Is git repository found. */
 	bool bGitRepositoryFound;
+
+	/** Is LFS File Locking enabled? */
+	bool bUsingGitLfsLocking = false;
 
 	/** Helper function for Execute() */
 	TSharedPtr<class IGitSourceControlWorker, ESPMode::ThreadSafe> CreateWorker(const FName& InOperationName) const;

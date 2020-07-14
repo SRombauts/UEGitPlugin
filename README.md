@@ -4,9 +4,9 @@ Unreal Engine 4 Git Source Control Plugin
 [![release](https://img.shields.io/github/release/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/releases)
 [![Git Plugin issues](https://img.shields.io/github/issues/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/issues)
 [![Join the chat at https://gitter.im/SRombauts/UE4GitPlugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SRombauts/UE4GitPlugin)
-UE4GitPlugin is a simple Git Source Control Plugin for **Unreal Engine 4.22**.
+UE4GitPlugin is a simple Git Source Control Plugin for **Unreal Engine 4.25**.
 
-Developed and contributed by Sébastien Rombauts 2014-2019 (sebastien.rombauts@gmail.com)
+Developed and contributed by Sébastien Rombauts 2014-2020 (sebastien.rombauts@gmail.com)
 <a href="https://www.paypal.me/SRombauts" title="Pay Me a Beer! Donate with PayPal :)"><img src="https://www.paypalobjects.com/webstatic/paypalme/images/pp_logo_small.png" width="118"></a>
 
 - First version of the plugin has been **integrated by default in UE4.7 in "beta version"**.
@@ -14,7 +14,7 @@ Developed and contributed by Sébastien Rombauts 2014-2019 (sebastien.rombauts@g
 
 You need to install it into your Project **Plugins/** folder, and it will overwrite (replace) the default "Git (beta version)" Source Control Provider with the "Git LFS 2" plugin.
 
-Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.com/Git_source_control_%28Tutorial%29).
+Have a look at the [Git Plugin Tutorial on the Wiki](https://wiki.unrealengine.com/Git_source_control_%28Tutorial%29).  ([alternate link](https://michaeljcole.github.io/wiki.unrealengine.com/Git_source_control_%28Tutorial%29/))
 
 Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
 
@@ -83,7 +83,6 @@ Status Icons:
 - #46 Merge Conflicts - Accept Target - causes engine to crash bug
 - #47 Git LFS conflict resolution not working
 - #49 Git LFS 2: False error in logs after a successful push
-- #50 Git LFS not working on Mac
 - #51 Git LFS 2: cannot revert a modified/unchecked-out asset
 - #53 Git LFS 2: document the configuration and workflow
 - #54 Poor performances of 'lfs locks' on Windows command line
@@ -169,7 +168,7 @@ See also the [Source Control official Documentation](https://docs.unrealengine.c
 
 ### License
 
-Copyright (c) 2014-2018 Sébastien Rombauts (sebastien.rombauts@gmail.com)
+Copyright (c) 2014-2020 Sébastien Rombauts (sebastien.rombauts@gmail.com)
 
 Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 or copy at http://opensource.org/licenses/MIT)

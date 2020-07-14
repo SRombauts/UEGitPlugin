@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+// Copyright (c) 2014-2020 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 //
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
@@ -23,6 +23,7 @@ FName FGitPush::GetName() const
 
 FText FGitPush::GetInProgressString() const
 {
+	// TODO Configure origin
 	return LOCTEXT("SourceControl_Push", "Pushing local commits to remote origin...");
 }
 
@@ -445,9 +446,10 @@ FName FGitSyncWorker::GetName() const
 bool FGitSyncWorker::Execute(FGitSourceControlCommand& InCommand)
 {
 	// pull the branch to get remote changes by rebasing any local commits (not merging them to avoid complex graphs)
-	// (this cannot work if any local files are modified but not commited)
 	TArray<FString> Parameters;
 	Parameters.Add(TEXT("--rebase"));
+	Parameters.Add(TEXT("--autostash"));
+	// TODO Configure origin
 	Parameters.Add(TEXT("origin"));
 	Parameters.Add(TEXT("HEAD"));
 	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("pull"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
@@ -526,6 +528,7 @@ bool FGitPushWorker::Execute(FGitSourceControlCommand& InCommand)
 	// (works only if the default remote "origin" is set and does not require authentication)
 	TArray<FString> Parameters;
 	Parameters.Add(TEXT("--set-upstream"));
+	// TODO Configure origin
 	Parameters.Add(TEXT("origin"));
 	Parameters.Add(TEXT("HEAD"));
 	InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, Parameters, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
@@ -616,14 +619,13 @@ bool FGitUpdateStatusWorker::UpdateStates() const
 
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>( "GitSourceControl" );
 	FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
-	const bool bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
 
 	const FDateTime Now = FDateTime::Now();
 
 	// add history, if any
 	for(const auto& History : Histories)
 	{
-		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(History.Key, bUsingGitLfsLocking);
+		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(History.Key);
 		State->History = History.Value;
 		State->TimeStamp = Now;
 		bUpdated = true;

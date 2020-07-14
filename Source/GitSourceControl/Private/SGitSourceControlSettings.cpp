@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+// Copyright (c) 2014-2020 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 //
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
@@ -181,6 +181,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				]
 			]
 			// Option to configure the URL of the default remote 'origin'
+			// TODO: option to configure the name of the remote instead of the default origin
 			+SVerticalBox::Slot()
 			.AutoHeight()
 			.Padding(2.0f)
@@ -293,7 +294,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 					.Font(Font)
 				]
 			]
-			// Option to use the Git LFS file Locking workflow (false by default)
+			// Option to use the Git LFS File Locking workflow (false by default)
 			// Enabled even after init to switch it off in case of no network
 			// TODO LFS turning it off afterwards does not work because all files are readonly !
 			+SVerticalBox::Slot()
@@ -302,7 +303,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 			.VAlign(VAlign_Center)
 			[
 				SNew(SHorizontalBox)
-				.ToolTipText(LOCTEXT("UseGitLfsLocking_Tooltip", "Uses Git LFS 2 file Locking worflow (CheckOut and Commit/Push)."))
+				.ToolTipText(LOCTEXT("UseGitLfsLocking_Tooltip", "Uses Git LFS 2 File Locking workflow (CheckOut and Commit/Push)."))
 				+SHorizontalBox::Slot()
 				.FillWidth(0.1f)
 				[
@@ -316,7 +317,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 				.VAlign(VAlign_Center)
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("UseGitLfsLocking", "Uses Git LFS 2 file Locking worflow"))
+					.Text(LOCTEXT("UseGitLfsLocking", "Uses Git LFS 2 File Locking workflow"))
 					.Font(Font)
 				]
 				// Username credential used to access the Git LFS 2 File Locks server
@@ -340,7 +341,7 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 			[
 				SNew(SHorizontalBox)
 				.Visibility(this, &SGitSourceControlSettings::MustInitializeGitRepository)
-				.ToolTipText(LOCTEXT("InitialGitCommit_Tooltip", "Make the initial Git Commit"))
+				.ToolTipText(LOCTEXT("InitialGitCommit_Tooltip", "Make the initial Git commit"))
 				+SHorizontalBox::Slot()
 				.FillWidth(0.1f)
 				[

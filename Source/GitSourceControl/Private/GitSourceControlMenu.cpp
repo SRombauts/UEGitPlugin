@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Sebastien Rombauts (sebastien.rombauts@gmail.com)
+// Copyright (c) 2014-2020 Sebastien Rombauts (sebastien.rombauts@gmail.com)
 //
 // Distributed under the MIT License (MIT) (See accompanying file LICENSE.txt
 // or copy at http://opensource.org/licenses/MIT)
@@ -161,10 +161,10 @@ void FGitSourceControlMenu::ReloadPackages(TArray<UPackage*>& InPackagesToReload
 	});
 
 	// Hot-reload the new packages...
-	PackageTools::ReloadPackages(InPackagesToReload);
+	UPackageTools::ReloadPackages(InPackagesToReload);
 
 	// Unload any deleted packages...
-	PackageTools::UnloadPackages(PackagesToUnload);
+	UPackageTools::UnloadPackages(PackagesToUnload);
 }
 
 // Ask the user if he wants to stash any modification and try to unstash them afterward, which could lead to conflicts
