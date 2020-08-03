@@ -187,7 +187,9 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 			UE_LOG(LogSourceControl, Log, TEXT("commit successful: %s"), *Message);
 
 			// git-lfs: push and unlock files
-			if(InCommand.bUsingGitLfsLocking && InCommand.bCommandSuccessful)
+			if(InCommand.bUsingGitLfsLocking &&
+				InCommand.bCommandSuccessful &&
+				GitSourceControl.AccessSettings().IsPushAfterCommitEnabled())
 			{
                 TArray<FString> Parameters2;
                 // TODO Configure origin
