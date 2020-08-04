@@ -95,6 +95,7 @@ void FGitSourceControlSettings::LoadSettings()
 	GConfig->GetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), BinaryPath, IniFile);
 	GConfig->GetBool(*GitSettingsConstants::SettingsSection, TEXT("UsingGitLfsLocking"), bUsingGitLfsLocking, IniFile);
 	GConfig->GetString(*GitSettingsConstants::SettingsSection, TEXT("LfsUserName"), LfsUserName, IniFile);
+	GConfig->GetBool(*GitSettingsConstants::SettingsSection, TEXT("IsPushAfterCommitEnabled"), bIsPushAfterCommitEnabled, IniFile);
 }
 
 void FGitSourceControlSettings::SaveSettings() const
@@ -104,4 +105,5 @@ void FGitSourceControlSettings::SaveSettings() const
 	GConfig->SetString(*GitSettingsConstants::SettingsSection, TEXT("BinaryPath"), *BinaryPath, IniFile);
 	GConfig->SetBool(*GitSettingsConstants::SettingsSection, TEXT("UsingGitLfsLocking"), bUsingGitLfsLocking, IniFile);
 	GConfig->SetString(*GitSettingsConstants::SettingsSection, TEXT("LfsUserName"), *LfsUserName, IniFile);
+	GConfig->SetBool(*GitSettingsConstants::SettingsSection, TEXT("IsPushAfterCommitEnabled"), bIsPushAfterCommitEnabled, IniFile);
 }
