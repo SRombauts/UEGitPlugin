@@ -341,6 +341,7 @@ void FGitSourceControlProvider::UpdateRepositoryStatus(const class FGitSourceCon
 void FGitSourceControlProvider::Tick()
 {	
 	bool bStatesUpdated = false;
+
 	for(int32 CommandIndex = 0; CommandIndex < CommandQueue.Num(); ++CommandIndex)
 	{
 		FGitSourceControlCommand& Command = *CommandQueue[CommandIndex];
@@ -384,6 +385,9 @@ TArray< TSharedRef<ISourceControlLabel> > FGitSourceControlProvider::GetLabels( 
 {
 	TArray< TSharedRef<ISourceControlLabel> > Tags;
 
+	// NOTE list labels. Called by CrashDebugHelper() (to remote debug Engine crash)
+	//					 and by SourceControlHelpers::AnnotateFile() (to add source file to report)
+	// Reserved for internal use by Epic Games with Perforce only
 	return Tags;
 }
 
