@@ -185,7 +185,7 @@ use the tools provided by GitHub:
 - You can also email me directly, I will answer any questions and requests.
 
 ### Coding Style Guidelines
-The source code follow the UnreaEngine official [Coding Standard](https://docs.unrealengine.com/latest/INT/Programming/Development/CodingStandard/index.html):
+The source code follow the Unreal Engine official [Coding Standard](https://docs.unrealengine.com/latest/INT/Programming/Development/CodingStandard/index.html):
 - CamelCase naming convention, with a prefix letter to differentiate classes ('F'), interfaces ('I'), templates ('T')
 - files (.cpp/.h) are named like the class they contains
 - Doxygen comments, documentation is located with declaration, on headers
