@@ -254,6 +254,8 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 
 	FGitSourceControlCommand* Command = new FGitSourceControlCommand(InOperation, Worker.ToSharedRef());
 	Command->Files = AbsoluteFiles;
+	Command->UpdateRepositoryRootIfSubmodule(AbsoluteFiles);
+
 	Command->OperationCompleteDelegate = InOperationCompleteDelegate;
 
 	// fire off operation

@@ -25,7 +25,38 @@ FGitSourceControlCommand::FGitSourceControlCommand(const TSharedRef<class ISourc
 	bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
 	PathToRepositoryRoot = GitSourceControl.GetProvider().GetPathToRepositoryRoot();
 }
+void FGitSourceControlCommand::UpdateRepositoryRootIfSubmodule(const TArray<FString>& AbsoluteFilePaths)
+{
+	FString PluginsRoot = FPaths::ConvertRelativePathToFull(FPaths::ProjectPluginsDir());
+	// note this is not going to support operations where selected files are both in the root repo and the submodule/plugin's repo
+	int NumPluginFiles = 0;
 
+	for (auto& FilePath : AbsoluteFilePaths)
+	{
+		if (FilePath.Contains(PluginsRoot))
+		{
+			NumPluginFiles++;
+		}
+	}
+	// if all plugins?
+	// modify Source control base path
+	if((NumPluginFiles == AbsoluteFilePaths.Num()) && (AbsoluteFilePaths.Num() > 0))
+	{
+		FString FullPath = AbsoluteFilePaths[0];
+
+		FString PluginPart = FullPath.Replace(*PluginsRoot, *FString(""));
+		PluginPart = PluginPart.Left(PluginPart.Find("/"));
+
+
+		FString CandidateRepoRoot = PluginsRoot + PluginPart;
+
+		FString IsItUsingGitPath = CandidateRepoRoot + "/.git";
+		if (FPaths::FileExists(IsItUsingGitPath))
+		{
+			PathToRepositoryRoot = CandidateRepoRoot;
+		}
+	}
+}
 bool FGitSourceControlCommand::DoWork()
 {
 	bCommandSuccessful = Worker->Execute(*this);
