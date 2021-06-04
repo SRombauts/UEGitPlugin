@@ -38,8 +38,19 @@ namespace GitSourceControlUtils
 /**
 *  Returns an updated the repo root if all selected files are in a plugin subfolder, and the plugin subfolder is a git repo
 *  This supports the case where each plugin is a sub module
+* 
+* @param AbsoluteFilePaths		The list of files in the SC operation
+* @param PathToRepositoryRoot	The original path to the repository root (used by default)
 */
 FString ChangeRepositoryRootIfSubmodule(const TArray<FString>& AbsoluteFilePaths, const FString& PathToRepositoryRoot);
+
+/**
+*  Returns an updated the repo root if all selected file is in a plugin subfolder, and the plugin subfolder is a git repo
+*  This supports the case where each plugin is a sub module
+*
+* @param AbsoluteFilePath		The files in the SC operation
+* @param PathToRepositoryRoot	The original path to the repository root (used by default)
+*/
 FString ChangeRepositoryRootIfSubmodule(const FString& AbsoluteFilePath, const FString& PathToRepositoryRoot);
 
 /**
