@@ -35,6 +35,12 @@ struct FGitVersion;
 
 namespace GitSourceControlUtils
 {
+/**
+*  Returns an updated the repo root if all selected files are in a plugin subfolder, and the plugin subfolder is a git repo
+*  This supports the case where each plugin is a sub module
+*/
+FString ChangeRepositoryRootIfSubmodule(const TArray<FString>& AbsoluteFilePaths, const FString& PathToRepositoryRoot);
+FString ChangeRepositoryRootIfSubmodule(const FString& AbsoluteFilePath, const FString& PathToRepositoryRoot);
 
 /**
  * Find the path to the Git binary, looking into a few places (standalone Git install, and other common tools embedding Git)
