@@ -2,4 +2,5 @@
 /Binaries/*/*Debug*
 /Binaries/*/*.dylib
 /Binaries/*/*.modules
+!/Binaries/Win64/*.modules
 /Intermediate

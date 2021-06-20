@@ -4,7 +4,7 @@ Unreal Engine 4 Git Source Control Plugin
 [![release](https://img.shields.io/github/release/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/releases)
 [![Git Plugin issues](https://img.shields.io/github/issues/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/issues)
 [![Join the chat at https://gitter.im/SRombauts/UE4GitPlugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SRombauts/UE4GitPlugin)
-UE4GitPlugin is a simple Git Source Control Plugin for **Unreal Engine 4.26**.
+UEGitPlugin is a simple Git Source Control Plugin for **Unreal Engine 4.26**.
 
 Developed and contributed by Sébastien Rombauts 2014-2020 (sebastien.rombauts@gmail.com)
 <a href="https://www.paypal.me/SRombauts" title="Pay Me a Beer! Donate with PayPal :)"><img src="https://www.paypalobjects.com/webstatic/paypalme/images/pp_logo_small.png" width="118"></a>
@@ -48,7 +48,7 @@ Status Icons:
 ![Moved/Renamed](Screenshots/Icons/Renamed.png)
 
 ### Supported features
-- initialize a new Git local repository ('git init') to manage your UE4 Game Project
+- initialize a new Git local repository ('git init') to manage your UE Game Project
   - can also create an appropriate .gitignore file as part of initialization
   - can also create a .gitattributes file to enable Git LFS (Large File System) as part of initialization
   - can also enable Git LFS 2.x File Locks as part of initialization
