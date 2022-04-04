@@ -13,6 +13,7 @@
 #include "GitSourceControlCommand.h"
 #include "GitSourceControlUtils.h"
 #include "Logging/MessageLog.h"
+#include "Misc/MessageDialog.h"
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"
 
@@ -209,50 +210,17 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 					}
 					if (bWasOutOfDate)
 					{
-						UE_LOG(LogSourceControl, Log, TEXT("Push failed because we're out of date, pulling automatically to try to resolve"));
-						// Use pull --rebase since that's what the pull command does by default
-						// This requires that we stash if dirty working copy though
-						bool bStashed = false;
-						bool bStashNeeded = false;
-						const TArray<FString> ParametersStatus{"--porcelain --untracked-files=no"};
-						TArray<FString> StatusInfoMessages;
-						TArray<FString> StatusErrorMessages;
-						// Check if there is any modification to the working tree
-						const bool bStatusOk = GitSourceControlUtils::RunCommand(TEXT("status"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, ParametersStatus, TArray<FString>(), StatusInfoMessages, StatusErrorMessages);
-						if ((bStatusOk) && (StatusInfoMessages.Num() > 0))
-						{
-							bStashNeeded = true;
-							const TArray<FString> ParametersStash{ "save \"Stashed by Unreal Engine Git Plugin\"" };
-							bStashed = GitSourceControlUtils::RunCommand(TEXT("stash"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, ParametersStash, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
-							if (!bStashed)
-							{
-								FMessageLog SourceControlLog("SourceControl");
-								SourceControlLog.Warning(LOCTEXT("SourceControlMenu_StashFailed", "Stashing away modifications failed!"));
-								SourceControlLog.Notify();
-							}
-						}
-						if (!bStashNeeded || bStashed)
-						{
-							InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("pull --rebase"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
-							if (InCommand.bCommandSuccessful)
-							{
-								// Repeat the push
-								InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("push origin HEAD"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, TArray<FString>(), TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
-							}
-
-							// Succeed or fail, restore the stash
-							if (bStashed)
-							{
-								const TArray<FString> ParametersStashPop{ "pop" };
-								InCommand.bCommandSuccessful = GitSourceControlUtils::RunCommand(TEXT("stash"), InCommand.PathToGitBinary, InCommand.PathToRepositoryRoot, ParametersStashPop, TArray<FString>(), InCommand.InfoMessages, InCommand.ErrorMessages);
-								if (!InCommand.bCommandSuccessful)
-								{
-									FMessageLog SourceControlLog("SourceControl");
-									SourceControlLog.Warning(LOCTEXT("SourceControlMenu_UnstashFailed", "Unstashing previously saved modifications failed!"));
-									SourceControlLog.Notify();
-								}
-							}
-						}
+						// Trying to resolve this automatically can cause too many problems because UE being open prevents
+						// LFS files from being replaced, meaning the rebase fails which is a nasty place to be for
+						// unfamiliar Git users. Better to ask them to close UE and pull externally to be safe
+						FText PushFailMessage(LOCTEXT("GitPush_OutOfDate_Msg", "Git Push failed because there are changes you need to pull. \n"
+							"However, pulling while the Unreal Editor is open can cause conflicts since files cannot always be replaced. We recommend"
+							"you exit the editor, and run the following command:\n\n"
+							"   git pull --rebase --autostash\n\n"
+							"Or run the equivalent in a Git GUI client of your choice"));
+						FText PushFailTitle(LOCTEXT("GitPush_OutOfDate_Title", "Git Pull Required"));
+						FMessageDialog::Open(EAppMsgType::Ok, PushFailMessage, &PushFailTitle);
+						UE_LOG(LogSourceControl, Log, TEXT("Push failed because we're out of date, prompting user to resolve manually"));
 					}
 				}
 				if(InCommand.bCommandSuccessful)
