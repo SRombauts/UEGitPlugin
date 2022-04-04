@@ -236,16 +236,65 @@ void FGitSourceControlMenu::SyncClicked()
 		const bool bSaved = SaveDirtyPackages();
 		if (bSaved)
 		{
-			// Find and Unlink all packages in Content directory to allow to update them
-			PackagesToReload = UnlinkPackages(ListAllPackages());
+			// Better way to do a pull/sync
+			// First fetch and check what files have really changed
+			// Then unload only the necessary packages instead of everything
+			// Then reload the changed package.
+			FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
+			FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
+			const FString& PathToRepositoryRoot = Provider.GetPathToRepositoryRoot();
+			const FString& PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
 
-			// Ask the user if he wants to stash any modification and try to unstash them afterward, which could lead to conflicts
+			FString BranchName;
+			GitSourceControlUtils::GetBranchName(PathToGitBinary, PathToRepositoryRoot, BranchName);
+
+			FString DiffOrigin("..origin/");
+			DiffOrigin.Append(BranchName);
+
+			TArray<FString> ChangedFiles;
+			{
+				TArray<FString> ErrorMessages;
+				TArray<FString> Parameters;
+				Parameters.Add(TEXT("--stat"));
+				Parameters.Add(TEXT("--name-only"));
+				Parameters.Add(DiffOrigin);
+
+				// Get changed files remote and on local commits (we need to determine which ones are local commits)
+				GitSourceControlUtils::RunCommand(TEXT("diff"), PathToGitBinary, PathToRepositoryRoot, Parameters, TArray<FString>(), ChangedFiles, ErrorMessages);
+
+				// Handle uncommitted changes
+				TArray<FString> LocalChangedFiles;
+				const TArray<FString> ParametersStatus{"--porcelain --untracked-files=no"};
+				GitSourceControlUtils::RunCommand(TEXT("status"), PathToGitBinary, PathToRepositoryRoot, ParametersStatus, TArray<FString>(), LocalChangedFiles, ErrorMessages);
+
+				for(FString& Filename: LocalChangedFiles)
+				{
+					if(Filename.StartsWith(" M") || Filename.StartsWith(" A"))
+					{
+						ChangedFiles.Add(Filename.RightChop(3));
+					}
+				}
+			}
+
+			// TODO: Handle local commits
+			TArray<FString> PackagesToUnlink;
+			for(FString& Filename: ChangedFiles)
+			{
+				FString AbsolutePath = FPaths::ConvertRelativePathToFull(PathToRepositoryRoot, Filename);
+				FString PackageName;
+				if(FPackageName::TryConvertFilenameToLongPackageName(AbsolutePath, PackageName))
+				{
+					UE_LOG(LogTemp, Warning, TEXT("%s - %s"), *AbsolutePath, *PackageName);
+					PackagesToUnlink.Add(PackageName);
+				}
+			}
+		
+			PackagesToReload = UnlinkPackages(PackagesToUnlink);
+			
+			// // Ask the user if he wants to stash any modification and try to unstash them afterward, which could lead to conflicts
 			const bool bStashed = StashAwayAnyModifications();
 			if (bStashed)
 			{
-				// Launch a "Sync" operation
-				FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
-				FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 				TSharedRef<FSync, ESPMode::ThreadSafe> SyncOperation = ISourceControlOperation::Create<FSync>();
 				const ECommandResult::Type Result = Provider.Execute(SyncOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
 				if (Result == ECommandResult::Succeeded)
