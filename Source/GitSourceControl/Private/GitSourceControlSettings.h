@@ -28,6 +28,12 @@ public:
 	/** Set the username used by the Git LFS 2 File Locks server */
 	bool SetLfsUserName(const FString& InString);
 
+	/** Set whether Submit means Commit AND push (default true) */
+	bool SetIsPushAfterCommitEnabled(bool bCond);
+
+	/** Get whether Submit means Commit AND push (default true) */
+	bool IsPushAfterCommitEnabled() const;
+
 	/** Load settings from ini file */
 	void LoadSettings();
 
@@ -46,4 +52,7 @@ private:
 
 	/** Username used by the Git LFS 2 File Locks server */
 	FString LfsUserName;
+
+	/** Does Submit mean Commit AND push */
+	bool bIsPushAfterCommitEnabled = true;
 };

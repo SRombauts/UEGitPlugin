@@ -66,6 +66,10 @@ private:
 	void OnCheckedUseGitLfsLocking(ECheckBoxState NewCheckedState);
 	ECheckBoxState IsUsingGitLfsLocking() const;
 	bool GetIsUsingGitLfsLocking() const;
+	
+	void OnIsPushAfterCommitEnabled(ECheckBoxState NewCheckedState);
+	bool GetIsPushAfterCommitEnabled() const;
+	ECheckBoxState IsPushAfterCommitEnabled() const;
 
 	void OnLfsUserNameCommited(const FText& InText, ETextCommit::Type InCommitType);
 	FText GetLfsUserName() const;

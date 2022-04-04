@@ -333,6 +333,36 @@ void SGitSourceControlSettings::Construct(const FArguments& InArgs)
 					.Font(Font)
 				]
 			]
+			// Option that can be disabled to make Submit ONLY commit and not push
+			// This is useful in these cases:
+			//   - To do a bunch of local commits more quickly and push in one go
+			//   - Working disconnected
+			//   - To combine asset changes with C++ changes in one commit; you can amend the UE commit to add the C++ changes before push
+			// Push can be used separately and will unlock files if using LFS locking.
+			+SVerticalBox::Slot()
+            .AutoHeight()
+            .Padding(2.0f)
+            .VAlign(VAlign_Center)
+            [
+                SNew(SHorizontalBox)
+                .ToolTipText(LOCTEXT("GitPushAfterCommit_Tooltip", "Always try to Push (and unlock) after Commit on Submit when using LFS. Turning this off means you have to Push separately; Push will unlock LFS files."))
+                +SHorizontalBox::Slot()
+                .FillWidth(0.1f)
+                [
+                    SNew(SCheckBox)
+                    .IsChecked(SGitSourceControlSettings::IsPushAfterCommitEnabled())
+                    .OnCheckStateChanged(this, &SGitSourceControlSettings::OnIsPushAfterCommitEnabled)
+					.IsEnabled(this, &SGitSourceControlSettings::GetIsUsingGitLfsLocking)
+                ]
+                +SHorizontalBox::Slot()
+                .FillWidth(3.f)
+                .VAlign(VAlign_Center)
+                [
+                    SNew(STextBlock)
+                    .Text(LOCTEXT("GitPushAfterCommit", "Submit means Commit AND Push"))
+                    .Font(Font)
+                ]
+            ]
 			// Option to Make the initial Git commit with custom message
 			+SVerticalBox::Slot()
 			.AutoHeight()
@@ -697,6 +727,24 @@ bool SGitSourceControlSettings::GetIsUsingGitLfsLocking() const
 {
 	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	return GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
+}
+
+void SGitSourceControlSettings::OnIsPushAfterCommitEnabled(ECheckBoxState NewCheckedState)
+{
+	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	GitSourceControl.AccessSettings().SetIsPushAfterCommitEnabled(NewCheckedState == ECheckBoxState::Checked);
+	GitSourceControl.AccessSettings().SaveSettings();
+}
+
+bool SGitSourceControlSettings::GetIsPushAfterCommitEnabled() const
+{
+	const FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
+	return GitSourceControl.AccessSettings().IsPushAfterCommitEnabled();
+}
+
+ECheckBoxState SGitSourceControlSettings::IsPushAfterCommitEnabled() const
+{
+	return (GetIsPushAfterCommitEnabled() ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
 }
 
 ECheckBoxState SGitSourceControlSettings::IsUsingGitLfsLocking() const
