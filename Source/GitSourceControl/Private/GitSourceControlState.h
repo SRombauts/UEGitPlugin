@@ -39,7 +39,7 @@ namespace ELockState
 	};
 }
 
-class FGitSourceControlState : public ISourceControlState, public TSharedFromThis<FGitSourceControlState, ESPMode::ThreadSafe>
+class FGitSourceControlState : public ISourceControlState
 {
 public:
 	FGitSourceControlState( const FString& InLocalFilename, const bool InUsingLfsLocking)

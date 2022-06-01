@@ -9,7 +9,7 @@
 #include "ISourceControlRevision.h"
 
 /** Revision of a file, linked to a specific commit */
-class FGitSourceControlRevision : public ISourceControlRevision, public TSharedFromThis<FGitSourceControlRevision, ESPMode::ThreadSafe>
+class FGitSourceControlRevision : public ISourceControlRevision
 {
 public:
 	FGitSourceControlRevision()
