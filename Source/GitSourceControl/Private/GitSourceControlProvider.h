@@ -12,6 +12,7 @@
 #include "IGitSourceControlWorker.h"
 #include "GitSourceControlState.h"
 #include "GitSourceControlMenu.h"
+#include "GitSourceControlConsole.h"
 
 class FGitSourceControlCommand;
 
@@ -207,4 +208,7 @@ private:
 
 	/** Source Control Menu Extension */
 	FGitSourceControlMenu GitSourceControlMenu;
+
+	/** Source Control Console commands */
+	FGitSourceControlConsole GitSourceControlConsole;
 };
