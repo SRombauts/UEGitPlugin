@@ -26,6 +26,8 @@
 
 #include "Logging/MessageLog.h"
 
+#include "Runtime/Launch/Resources/Version.h"
+
 static const FName GitSourceControlMenuTabName("GitSourceControlMenu");
 
 #define LOCTEXT_NAMESPACE "GitSourceControl"
@@ -296,7 +298,11 @@ void FGitSourceControlMenu::SyncClicked()
 			if (bStashed)
 			{
 				TSharedRef<FSync, ESPMode::ThreadSafe> SyncOperation = ISourceControlOperation::Create<FSync>();
+#if ENGINE_MAJOR_VERSION == 5
+				const ECommandResult::Type Result = Provider.Execute(SyncOperation, FSourceControlChangelistPtr(), TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+#else
 				const ECommandResult::Type Result = Provider.Execute(SyncOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+#endif
 				if (Result == ECommandResult::Succeeded)
 				{
 					// Display an ongoing notification during the whole operation (packages will be reloaded at the completion of the operation)
@@ -339,7 +345,11 @@ void FGitSourceControlMenu::PushClicked()
 		FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
 		FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 		TSharedRef<FGitPush, ESPMode::ThreadSafe> PushOperation = ISourceControlOperation::Create<FGitPush>();
+#if ENGINE_MAJOR_VERSION == 5
+		const ECommandResult::Type Result = Provider.Execute(PushOperation, FSourceControlChangelistPtr(), TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+#else
 		const ECommandResult::Type Result = Provider.Execute(PushOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+#endif
 		if (Result == ECommandResult::Succeeded)
 		{
 			// Display an ongoing notification during the whole operation
@@ -377,7 +387,11 @@ void FGitSourceControlMenu::RevertClicked()
 			FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
 			FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 			TSharedRef<FRevert, ESPMode::ThreadSafe> RevertOperation = ISourceControlOperation::Create<FRevert>();
+#if ENGINE_MAJOR_VERSION == 5
+			const ECommandResult::Type Result = Provider.Execute(RevertOperation, FSourceControlChangelistPtr(), TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+#else
 			const ECommandResult::Type Result = Provider.Execute(RevertOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+#endif
 			if (Result == ECommandResult::Succeeded)
 			{
 				// Display an ongoing notification during the whole operation
@@ -408,7 +422,11 @@ void FGitSourceControlMenu::RefreshClicked()
 		FGitSourceControlProvider& Provider = GitSourceControl.GetProvider();
 		TSharedRef<FUpdateStatus, ESPMode::ThreadSafe> RefreshOperation = ISourceControlOperation::Create<FUpdateStatus>();
 		RefreshOperation->SetCheckingAllFiles(true);
+#if ENGINE_MAJOR_VERSION == 5
+		const ECommandResult::Type Result = Provider.Execute(RefreshOperation, FSourceControlChangelistPtr(), TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+#else
 		const ECommandResult::Type Result = Provider.Execute(RefreshOperation, TArray<FString>(), EConcurrency::Asynchronous, FSourceControlOperationComplete::CreateRaw(this, &FGitSourceControlMenu::OnSourceControlOperationComplete));
+#endif
 		if (Result == ECommandResult::Succeeded)
 		{
 			// Display an ongoing notification during the whole operation

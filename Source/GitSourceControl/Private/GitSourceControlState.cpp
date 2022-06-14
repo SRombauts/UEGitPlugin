@@ -58,6 +58,38 @@ TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlS
 	return nullptr;
 }
 
+#if ENGINE_MAJOR_VERSION == 5
+
+FSlateIcon FGitSourceControlState::GetIcon() const
+{
+	switch (WorkingCopyState)
+	{
+	case EWorkingCopyState::Modified:
+		return FSlateIcon(FAppStyle::GetAppStyleSetName(), "Subversion.CheckedOut");
+	case EWorkingCopyState::Added:
+		return FSlateIcon(FAppStyle::GetAppStyleSetName(), "Subversion.OpenForAdd");
+	case EWorkingCopyState::Renamed:
+	case EWorkingCopyState::Copied:
+		return FSlateIcon(FAppStyle::GetAppStyleSetName(), "Subversion.Branched");
+	case EWorkingCopyState::Deleted: // Deleted & Missing files does not show in Content Browser
+	case EWorkingCopyState::Missing:
+		return FSlateIcon(FAppStyle::GetAppStyleSetName(), "Subversion.MarkedForDelete");
+	case EWorkingCopyState::Conflicted:
+		return FSlateIcon(FAppStyle::GetAppStyleSetName(), "Subversion.NotAtHeadRevision");
+	case EWorkingCopyState::NotControlled:
+		return FSlateIcon(FAppStyle::GetAppStyleSetName(), "Subversion.NotInDepot");
+	case EWorkingCopyState::Unknown:
+	case EWorkingCopyState::Unchanged: // Unchanged is the same as "Pristine" (not checked out) for Perforce, ie no icon
+	case EWorkingCopyState::Ignored:
+	default:
+		return FSlateIcon();
+	}
+
+	return FSlateIcon();
+}
+
+#else
+
 // @todo add Slate icons for git specific states (NotAtHead vs Conflicted...)
 FName FGitSourceControlState::GetIconName() const
 {
@@ -154,6 +186,8 @@ FName FGitSourceControlState::GetSmallIconName() const
 
 	return NAME_None;
 }
+
+#endif
 
 FText FGitSourceControlState::GetDisplayName() const
 {
@@ -350,7 +384,7 @@ bool FGitSourceControlState::IsModified() const
 	// so for a clean "check-in" (commit) checked-out files unmodified should be removed from the changeset (the index)
 	// http://stackoverflow.com/questions/12357971/what-does-revert-unchanged-files-mean-in-perforce
 	//
-	// Thus, before check-in UE4 Editor call RevertUnchangedFiles() in PromptForCheckin() and CheckinFiles().
+	// Thus, before check-in UE Editor call RevertUnchangedFiles() in PromptForCheckin() and CheckinFiles().
 	//
 	// So here we must take care to enumerate all states that need to be commited,
 	// all other will be discarded :
