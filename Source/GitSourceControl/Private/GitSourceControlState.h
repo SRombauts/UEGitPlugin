@@ -68,12 +68,12 @@ public:
 	virtual bool CanCheckout() const override;
 	virtual bool IsCheckedOut() const override;
 	virtual bool IsCheckedOutOther(FString* Who = nullptr) const override;
-	virtual bool IsCheckedOutInOtherBranch(const FString& CurrentBranch = FString()) const /* UE4.20 override */ { return false;  }
-	virtual bool IsModifiedInOtherBranch(const FString& CurrentBranch = FString()) const /* UE4.20 override */ { return false; }
-	virtual bool IsCheckedOutOrModifiedInOtherBranch(const FString& CurrentBranch = FString()) const /* UE4.20 override */ { return IsCheckedOutInOtherBranch(CurrentBranch) || IsModifiedInOtherBranch(CurrentBranch); }
-	virtual TArray<FString> GetCheckedOutBranches() const /* UE4.20 override */ { return TArray<FString>(); }
-	virtual FString GetOtherUserBranchCheckedOuts() const /* UE4.20 override */ { return FString(); }
-	virtual bool GetOtherBranchHeadModification(FString& HeadBranchOut, FString& ActionOut, int32& HeadChangeListOut) const /* UE4.20 override */ { return false; }
+	virtual bool IsCheckedOutInOtherBranch(const FString& CurrentBranch = FString()) const override;
+	virtual bool IsModifiedInOtherBranch(const FString& CurrentBranch = FString()) const override;
+	virtual bool IsCheckedOutOrModifiedInOtherBranch(const FString& CurrentBranch = FString()) const override { return IsCheckedOutInOtherBranch(CurrentBranch) || IsModifiedInOtherBranch(CurrentBranch); }
+	virtual TArray<FString> GetCheckedOutBranches() const override { return TArray<FString>(); }
+	virtual FString GetOtherUserBranchCheckedOuts() const override { return FString(); }
+	virtual bool GetOtherBranchHeadModification(FString& HeadBranchOut, FString& ActionOut, int32& HeadChangeListOut) const override;
 	virtual bool IsCurrent() const override;
 	virtual bool IsSourceControlled() const override;
 	virtual bool IsAdded() const override;
