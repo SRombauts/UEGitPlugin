@@ -2,7 +2,6 @@
 
 #include "GitSourceControlConsole.h"
 
-#include "HAL/IConsoleManager.h"
 #include "ISourceControlModule.h"
 
 #include "GitSourceControlModule.h"
