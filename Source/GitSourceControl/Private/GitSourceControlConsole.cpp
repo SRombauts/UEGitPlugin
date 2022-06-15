@@ -2,21 +2,31 @@
 
 #include "GitSourceControlConsole.h"
 
-#include "HAL/IConsoleManager.h"
 #include "ISourceControlModule.h"
 
 #include "GitSourceControlModule.h"
 #include "GitSourceControlUtils.h"
 
-// Auto-registered console commands:
-// No re-register on hot reload, and unregistered only once on editor shutdown.
-static FAutoConsoleCommand g_executeGitConsoleCommand(TEXT("git"),
-	TEXT("Git Command Line Interface.\n")
-	TEXT("Run any 'git' command directly from the Unreal Editor Console.\n")
-	TEXT("Type 'git help' to get a command list."),
-	FConsoleCommandWithArgsDelegate::CreateStatic(&GitSourceControlConsole::ExecuteGitConsoleCommand));
+void FGitSourceControlConsole::Register()
+{
+	if (!GitConsoleCommand.IsValid())
+	{
+		GitConsoleCommand = MakeUnique<FAutoConsoleCommand>(
+			TEXT("git"),
+			TEXT("Git Command Line Interface.\n")
+			TEXT("Run any 'git' command directly from the Unreal Editor Console.\n")
+			TEXT("Type 'git help' to get a list of commands."),
+			FConsoleCommandWithArgsDelegate::CreateRaw(this, &FGitSourceControlConsole::ExecuteGitConsoleCommand)
+		);
+	}
+}
 
-void GitSourceControlConsole::ExecuteGitConsoleCommand(const TArray<FString>& a_args)
+void FGitSourceControlConsole::Unregister()
+{
+	GitConsoleCommand.Reset();
+}
+
+void FGitSourceControlConsole::ExecuteGitConsoleCommand(const TArray<FString>& a_args)
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::LoadModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	const FString& PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();

@@ -66,6 +66,9 @@ void FGitSourceControlProvider::CheckGitAvailability()
 		if(bGitAvailable)
 		{
 			CheckRepositoryStatus(PathToGitBinary);
+
+			// Register Console Commands (even without a workspace)
+			GitSourceControlConsole.Register();
 		}
 	}
 	else
@@ -109,6 +112,8 @@ void FGitSourceControlProvider::Close()
 	StateCache.Empty();
 	// Remove all extensions to the "Source Control" menu in the Editor Toolbar
 	GitSourceControlMenu.Unregister();
+	// Unregister Console Commands
+	GitSourceControlConsole.Unregister();
 
 	bGitAvailable = false;
 	bGitRepositoryFound = false;
