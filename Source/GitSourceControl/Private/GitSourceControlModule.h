@@ -17,7 +17,7 @@ UE4GitPlugin is a simple Git Source Control Plugin for Unreal Engine
 Written and contributed by Sebastien Rombauts (sebastien.rombauts@gmail.com)
 
 ### Supported features
-- initialize a new Git local repository ('git init') to manage your UE4 Game Project
+- initialize a new Git local repository ('git init') to manage your Unreal Engine 4 and 5 Game Project
   - can also create an appropriate .gitignore file as part of initialization
   - can also create a .gitattributes file to enable Git LFS (Large File System) as part of initialization
   - can also make the initial commit, with custom multi-line message
@@ -56,7 +56,7 @@ Use "TODO LFS" in the code to track things left to do/improve/refactor:
    - does Git LFS have a command to do this deactivation ?
      - perhaps should we rely on detection of such flags to detect LFS 2 usage (ie. the need to do a checkout)
        - see SubversionSourceControl plugin that deals with such flags
-       - this would need a rework of the way the "bIsUsingFileLocking" si propagated, since this would no more be a configuration (or not only) but a file state
+       - this would need a rework of the way the "bIsUsingFileLocking" is propagated, since this would no more be a configuration (or not only) but a file state
      - else we should at least revert those read-only flags when going out of "Lock mode"
 4. Optimize usage of "git lfs locks", ie reduce the use of UdpateStatus() in Operations
 
