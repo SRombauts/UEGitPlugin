@@ -1,4 +1,4 @@
-Unreal Engine 4 Git Source Control Plugin
+Unreal Engine 5 Git Source Control Plugin
 -----------------------------------------
 
 [![release](https://img.shields.io/github/release/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/releases)
