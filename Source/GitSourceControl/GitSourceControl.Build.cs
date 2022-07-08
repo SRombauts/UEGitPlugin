@@ -25,9 +25,15 @@ public class GitSourceControl : ModuleRules
 				"DesktopWidgets",
 				"EditorStyle",
 				"UnrealEd",
+			//?	"LevelEditor",
 				"SourceControl",
 				"Projects",
 			}
 		);
+
+		if (Target.Version.MajorVersion == 5)
+		{
+			PrivateDependencyModuleNames.Add("ToolMenus");
+		}
 	}
 }

@@ -191,6 +191,13 @@ ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>&
 	return ECommandResult::Succeeded;
 }
 
+#if ENGINE_MAJOR_VERSION == 5
+ECommandResult::Type FGitSourceControlProvider::GetState(const TArray<FSourceControlChangelistRef>& InChangelists, TArray<FSourceControlChangelistStateRef>& OutState, EStateCacheUsage::Type InStateCacheUsage)
+{
+	return ECommandResult::Failed;
+}
+#endif
+
 TArray<FSourceControlStateRef> FGitSourceControlProvider::GetCachedStateByPredicate(TFunctionRef<bool(const FSourceControlStateRef&)> Predicate) const
 {
 	TArray<FSourceControlStateRef> Result;
@@ -231,7 +238,11 @@ void FGitSourceControlProvider::UnregisterSourceControlStateChanged_Handle( FDel
 	OnSourceControlStateChanged.Remove( Handle );
 }
 
-ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation, const TArray<FString>& InFiles, EConcurrency::Type InConcurrency, const FSourceControlOperationComplete& InOperationCompleteDelegate )
+#if ENGINE_MAJOR_VERSION == 5
+ECommandResult::Type FGitSourceControlProvider::Execute(const FSourceControlOperationRef& InOperation, FSourceControlChangelistPtr InChangelist, const TArray<FString>& InFiles, EConcurrency::Type InConcurrency /* = EConcurrency::Synchronous */, const FSourceControlOperationComplete& InOperationCompleteDelegate)
+#else
+ECommandResult::Type FGitSourceControlProvider::Execute(const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation, const TArray<FString>& InFiles, EConcurrency::Type InConcurrency /* = EConcurrency::Synchronous */, const FSourceControlOperationComplete& InOperationCompleteDelegate)
+#endif
 {
 	if(!IsEnabled() && !(InOperation->GetName() == "Connect")) // Only Connect operation allowed while not Enabled (Repository found)
 	{
@@ -278,12 +289,12 @@ ECommandResult::Type FGitSourceControlProvider::Execute( const TSharedRef<ISourc
 	}
 }
 
-bool FGitSourceControlProvider::CanCancelOperation( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation ) const
+bool FGitSourceControlProvider::CanCancelOperation( const FSourceControlOperationRef& InOperation ) const
 {
 	return false;
 }
 
-void FGitSourceControlProvider::CancelOperation( const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation )
+void FGitSourceControlProvider::CancelOperation( const FSourceControlOperationRef& InOperation )
 {
 }
 
@@ -396,6 +407,13 @@ TArray< TSharedRef<ISourceControlLabel> > FGitSourceControlProvider::GetLabels( 
 	return Tags;
 }
 
+#if ENGINE_MAJOR_VERSION == 5
+TArray<FSourceControlChangelistRef> FGitSourceControlProvider::GetChangelists( EStateCacheUsage::Type InStateCacheUsage )
+{
+	return TArray<FSourceControlChangelistRef>();
+}
+#endif
+
 #if SOURCE_CONTROL_WITH_SLATE
 TSharedRef<class SWidget> FGitSourceControlProvider::MakeSettingsWidget() const
 {
@@ -422,7 +440,7 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 
 			Progress.Tick();
 
-			// Sleep so we don't busy-wait so much.
+			// Sleep for a bit so we don't busy-wait so much.
 			FPlatformProcess::Sleep(0.01f);
 		}
 

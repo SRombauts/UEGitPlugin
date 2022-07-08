@@ -8,8 +8,7 @@
 #include "CoreMinimal.h"
 #include "ISourceControlProvider.h"
 
-class FToolBarBuilder;
-class FMenuBuilder;
+#include "Runtime/Launch/Resources/Version.h"
 
 /** Git extension of the Source Control toolbar menu */
 class FGitSourceControlMenu
@@ -35,9 +34,12 @@ private:
 	bool StashAwayAnyModifications();
 	void ReApplyStashedModifications();
 
-	void AddMenuExtension(FMenuBuilder& Builder);
-
+#if ENGINE_MAJOR_VERSION == 5
+	void AddMenuExtension(struct FToolMenuSection& Builder);
+#else
+	void AddMenuExtension(class FMenuBuilder& Builder);
 	TSharedRef<class FExtender> OnExtendLevelEditorViewMenu(const TSharedRef<class FUICommandList> CommandList);
+#endif
 
 	void DisplayInProgressNotification(const FText& InOperationInProgressString);
 	void RemoveInProgressNotification();
@@ -45,7 +47,9 @@ private:
 	void DisplayFailureNotification(const FName& InOperationName);
 
 private:
+#if ENGINE_MAJOR_VERSION == 4
 	FDelegateHandle ViewMenuExtenderHandle;
+#endif
 
 	/** Was there a need to stash away modifications before Sync? */
 	bool bStashMadeBeforeSync;
