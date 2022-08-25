@@ -4,17 +4,14 @@ Unreal Engine 5 Git Source Control Plugin
 [![release](https://img.shields.io/github/release/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/releases)
 [![Git Plugin issues](https://img.shields.io/github/issues/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/issues)
 [![Join the chat at https://gitter.im/SRombauts/UE4GitPlugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SRombauts/UE4GitPlugin)
-UE4GitPlugin is a simple Git Source Control Plugin for **Unreal Engine 4.27**.
+UE4GitPlugin is a simple Git Source Control Plugin for **Unreal Engine 5.x and 4.27**.
 
 Developed and contributed by Sébastien Rombauts 2014-2022 (sebastien.rombauts@gmail.com)
 
-- First version of the plugin has been **integrated by default in UE4.7 in "beta version"**.
-- This is a developement fork named "**Git LFS 2**" adding File Locks supported by Github.
-
-### Better Fork maintained by ProjectBorealis
-
-ProjectBorealis has been busy fixing and improve this plugin to make it work robustly with LFS, and battle test.
-**See [ProjectBorealis GitPlugin v3](https://github.com/ProjectBorealis/UEGitPlugin)**
+ 1. First version of the plugin has been **integrated by default in UE4.7 in "beta version"**.
+ 2. This is a developement fork named "**Git LFS 2**" adding File Locks supported by Github.
+ 3. ProjectBorealis has been busy fixing and improving this plugin to make it work robustly with LFS Locks.
+    **See [ProjectBorealis GitPlugin v3](https://github.com/ProjectBorealis/UEGitPlugin)**
 
 ### Instructions
 
