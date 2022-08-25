@@ -507,7 +507,11 @@ void FGitSourceControlMenu::DisplaySucessNotification(const FName& InOperationNa
 	);
 	FNotificationInfo Info(NotificationText);
 	Info.bUseSuccessFailIcons = true;
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
+	Info.Image = FAppStyle::GetBrush(TEXT("NotificationList.SuccessImage"));
+#else
 	Info.Image = FEditorStyle::GetBrush(TEXT("NotificationList.SuccessImage"));
+#endif
 	FSlateNotificationManager::Get().AddNotification(Info);
 	UE_LOG(LogSourceControl, Log, TEXT("%s"), *NotificationText.ToString());
 }
