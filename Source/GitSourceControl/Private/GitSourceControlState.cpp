@@ -4,6 +4,9 @@
 // or copy at http://opensource.org/licenses/MIT)
 
 #include "GitSourceControlState.h"
+#if ENGINE_MAJOR_VERSION == 5
+#include "Styling/AppStyle.h"
+#endif
 
 #define LOCTEXT_NAMESPACE "GitSourceControl.State"
 
