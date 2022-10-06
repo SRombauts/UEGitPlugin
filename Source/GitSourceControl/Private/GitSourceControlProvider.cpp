@@ -313,6 +313,32 @@ bool FGitSourceControlProvider::UsesCheckout() const
 	return bUsingGitLfsLocking; // Git LFS Lock uses read-only state
 }
 
+/** Whether the provider uses individual file revisions. Used to enable partial 'Sync' operations on Content Browser Folders. */
+bool FGitSourceControlProvider::UsesFileRevisions() const
+{
+	return false; // Partial 'Sync' doesn't make sense for Git, only for Perforce
+}
+
+/**
+ * Whether the current source control client is at the latest version. Used to enable a global 'Sync' button on the Toolbar.
+ * @note Experimental, hidden behind an setting in XxxEditor.ini [SourceControlSettings] DisplaySourceControlSyncStatus=true
+ * @note This concept is currently only implemented for the Skein source control provider.
+ */
+TOptional<bool> FGitSourceControlProvider::IsAtLatestRevision() const
+{
+	return TOptional<bool>();
+}
+
+/**
+ * Returns the number of changes in the local workspace. Used to enable a global 'CheckIn' button on the Toolbar.
+ * @note Experimental, hidden behind an setting in XxxEditor.ini [SourceControlSettings] DisplaySourceControlCheckInStatus=true
+ * @note This concept is currently only implemented for the Skein source control provider.
+ */
+TOptional<int> FGitSourceControlProvider::GetNumLocalChanges() const
+{
+	return TOptional<int>();
+}
+
 TSharedPtr<IGitSourceControlWorker, ESPMode::ThreadSafe> FGitSourceControlProvider::CreateWorker(const FName& InOperationName) const
 {
 	const FGetGitSourceControlWorker* Operation = WorkersMap.Find(InOperationName);
