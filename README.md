@@ -4,9 +4,9 @@ Unreal Engine 5 Git Source Control Plugin
 [![release](https://img.shields.io/github/release/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/releases)
 [![Git Plugin issues](https://img.shields.io/github/issues/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/issues)
 [![Join the chat at https://gitter.im/SRombauts/UE4GitPlugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SRombauts/UE4GitPlugin)
-UE4GitPlugin is a simple Git Source Control Plugin for **Unreal Engine 5.x and 4.27**.
+UEGitPlugin is a simple Git Source Control Plugin for **Unreal Engine 5.0, 5.1 and 4.27**.
 
-Developed and contributed by Sébastien Rombauts 2014-2022 (sebastien.rombauts@gmail.com)
+Developed and contributed by Sébastien Rombauts 2014-2023 (sebastien.rombauts@gmail.com)
 
  1. First version of the plugin has been **integrated by default in UE4.7 in "beta version"**.
  2. This is a developement fork named "**Git LFS 2**" adding File Locks supported by Github.
@@ -70,6 +70,7 @@ Status Icons:
 - Push the current branch
 - Git LFS (Github, Gitlab, Bitbucket), git-annex, git-fat and git-media are working with Git 2.10+
 - Git LFS 2 File Locks
+- Git console command for the Editor
 - Windows, Mac and Linux
 
 ### What *cannot* be done presently
