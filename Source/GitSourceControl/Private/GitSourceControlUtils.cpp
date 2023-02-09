@@ -7,7 +7,11 @@
 
 #include "GitSourceControlCommand.h"
 #include "HAL/PlatformProcess.h"
+#if ENGINE_MAJOR_VERSION >= 5
+#include "HAL/PlatformFileManager.h" 
+#else
 #include "HAL/PlatformFilemanager.h"
+#endif
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
