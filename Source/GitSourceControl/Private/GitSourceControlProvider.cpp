@@ -28,10 +28,10 @@ static FName ProviderName("Git LFS 2");
 void FGitSourceControlProvider::Init(bool bForceConnection)
 {
 	// Init() is called multiple times at startup: do not check git each time
-	if(!bGitAvailable)
+	if (!bGitAvailable)
 	{
 		const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin(TEXT("GitSourceControl"));
-		if(Plugin.IsValid())
+		if (Plugin.IsValid())
 		{
 			UE_LOG(LogSourceControl, Log, TEXT("Git plugin '%s'"), *(Plugin->GetDescriptor().VersionName));
 		}
@@ -49,21 +49,21 @@ void FGitSourceControlProvider::CheckGitAvailability()
 {
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	FString PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
-	if(PathToGitBinary.IsEmpty())
+	if (PathToGitBinary.IsEmpty())
 	{
 		// Try to find Git binary, and update settings accordingly
 		PathToGitBinary = GitSourceControlUtils::FindGitBinaryPath();
-		if(!PathToGitBinary.IsEmpty())
+		if (!PathToGitBinary.IsEmpty())
 		{
 			GitSourceControl.AccessSettings().SetBinaryPath(PathToGitBinary);
 		}
 	}
 
-	if(!PathToGitBinary.IsEmpty())
+	if (!PathToGitBinary.IsEmpty())
 	{
 		UE_LOG(LogSourceControl, Log, TEXT("Using '%s'"), *PathToGitBinary);
 		bGitAvailable = GitSourceControlUtils::CheckGitAvailability(PathToGitBinary, &GitVersion);
-		if(bGitAvailable)
+		if (bGitAvailable)
 		{
 			CheckRepositoryStatus(PathToGitBinary);
 
@@ -82,13 +82,13 @@ void FGitSourceControlProvider::CheckRepositoryStatus(const FString& InPathToGit
 	// Find the path to the root Git directory (if any, else uses the ProjectDir)
 	const FString PathToProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
 	bGitRepositoryFound = GitSourceControlUtils::FindRootDirectory(PathToProjectDir, PathToRepositoryRoot);
-	if(bGitRepositoryFound)
+	if (bGitRepositoryFound)
 	{
 		GitSourceControlMenu.Register();
 
 		// Get branch name
 		bGitRepositoryFound = GitSourceControlUtils::GetBranchName(InPathToGitBinary, PathToRepositoryRoot, BranchName);
-		if(bGitRepositoryFound)
+		if (bGitRepositoryFound)
 		{
 			GitSourceControlUtils::GetRemoteUrl(InPathToGitBinary, PathToRepositoryRoot, RemoteUrl);
 		}
@@ -124,7 +124,7 @@ void FGitSourceControlProvider::Close()
 TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvider::GetStateInternal(const FString& Filename)
 {
 	TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe>* State = StateCache.Find(Filename);
-	if(State != NULL)
+	if (State != NULL)
 	{
 		// found cached item
 		return (*State);
@@ -132,7 +132,7 @@ TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvide
 	else
 	{
 		// cache an unknown state for this item
-		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> NewState = MakeShareable( new FGitSourceControlState(Filename, bUsingGitLfsLocking) );
+		TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> NewState = MakeShareable(new FGitSourceControlState(Filename, bUsingGitLfsLocking));
 		StateCache.Add(Filename, NewState);
 		return NewState;
 	}
@@ -141,15 +141,15 @@ TSharedRef<FGitSourceControlState, ESPMode::ThreadSafe> FGitSourceControlProvide
 FText FGitSourceControlProvider::GetStatusText() const
 {
 	FFormatNamedArguments Args;
-	Args.Add( TEXT("RepositoryName"), FText::FromString(PathToRepositoryRoot) );
-	Args.Add( TEXT("RemoteUrl"), FText::FromString(RemoteUrl) );
-	Args.Add( TEXT("UserName"), FText::FromString(UserName) );
-	Args.Add( TEXT("UserEmail"), FText::FromString(UserEmail) );
-	Args.Add( TEXT("BranchName"), FText::FromString(BranchName) );
-	Args.Add( TEXT("CommitId"), FText::FromString(CommitId.Left(8)) );
-	Args.Add( TEXT("CommitSummary"), FText::FromString(CommitSummary) );
+	Args.Add(TEXT("RepositoryName"), FText::FromString(PathToRepositoryRoot));
+	Args.Add(TEXT("RemoteUrl"), FText::FromString(RemoteUrl));
+	Args.Add(TEXT("UserName"), FText::FromString(UserName));
+	Args.Add(TEXT("UserEmail"), FText::FromString(UserEmail));
+	Args.Add(TEXT("BranchName"), FText::FromString(BranchName));
+	Args.Add(TEXT("CommitId"), FText::FromString(CommitId.Left(8)));
+	Args.Add(TEXT("CommitSummary"), FText::FromString(CommitSummary));
 
-	return FText::Format( NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Local repository: {RepositoryName}\nRemote origin: {RemoteUrl}\nUser: {UserName}\nE-mail: {UserEmail}\n[{BranchName} {CommitId}] {CommitSummary}"), Args );
+	return FText::Format(NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Local repository: {RepositoryName}\nRemote origin: {RemoteUrl}\nUser: {UserName}\nE-mail: {UserEmail}\n[{BranchName} {CommitId}] {CommitSummary}"), Args);
 }
 
 /** Quick check if source control is enabled */
@@ -169,21 +169,21 @@ const FName& FGitSourceControlProvider::GetName(void) const
 	return ProviderName;
 }
 
-ECommandResult::Type FGitSourceControlProvider::GetState( const TArray<FString>& InFiles, TArray< TSharedRef<ISourceControlState, ESPMode::ThreadSafe> >& OutState, EStateCacheUsage::Type InStateCacheUsage )
+ECommandResult::Type FGitSourceControlProvider::GetState(const TArray<FString>& InFiles, TArray<TSharedRef<ISourceControlState, ESPMode::ThreadSafe>>& OutState, EStateCacheUsage::Type InStateCacheUsage)
 {
-	if(!IsEnabled())
+	if (!IsEnabled())
 	{
 		return ECommandResult::Failed;
 	}
 
 	TArray<FString> AbsoluteFiles = SourceControlHelpers::AbsoluteFilenames(InFiles);
 
-	if(InStateCacheUsage == EStateCacheUsage::ForceUpdate)
+	if (InStateCacheUsage == EStateCacheUsage::ForceUpdate)
 	{
 		Execute(ISourceControlOperation::Create<FUpdateStatus>(), AbsoluteFiles);
 	}
 
-	for(const auto& AbsoluteFile : AbsoluteFiles)
+	for (const auto& AbsoluteFile : AbsoluteFiles)
 	{
 		OutState.Add(GetStateInternal(*AbsoluteFile));
 	}
@@ -201,10 +201,10 @@ ECommandResult::Type FGitSourceControlProvider::GetState(const TArray<FSourceCon
 TArray<FSourceControlStateRef> FGitSourceControlProvider::GetCachedStateByPredicate(TFunctionRef<bool(const FSourceControlStateRef&)> Predicate) const
 {
 	TArray<FSourceControlStateRef> Result;
-	for(const auto& CacheItem : StateCache)
+	for (const auto& CacheItem : StateCache)
 	{
 		FSourceControlStateRef State = CacheItem.Value;
-		if(Predicate(State))
+		if (Predicate(State))
 		{
 			Result.Add(State);
 		}
@@ -228,14 +228,14 @@ TArray<FString> FGitSourceControlProvider::GetFilesInCache()
 	return Files;
 }
 
-FDelegateHandle FGitSourceControlProvider::RegisterSourceControlStateChanged_Handle( const FSourceControlStateChanged::FDelegate& SourceControlStateChanged )
+FDelegateHandle FGitSourceControlProvider::RegisterSourceControlStateChanged_Handle(const FSourceControlStateChanged::FDelegate& SourceControlStateChanged)
 {
-	return OnSourceControlStateChanged.Add( SourceControlStateChanged );
+	return OnSourceControlStateChanged.Add(SourceControlStateChanged);
 }
 
-void FGitSourceControlProvider::UnregisterSourceControlStateChanged_Handle( FDelegateHandle Handle )
+void FGitSourceControlProvider::UnregisterSourceControlStateChanged_Handle(FDelegateHandle Handle)
 {
-	OnSourceControlStateChanged.Remove( Handle );
+	OnSourceControlStateChanged.Remove(Handle);
 }
 
 #if ENGINE_MAJOR_VERSION == 5
@@ -244,7 +244,7 @@ ECommandResult::Type FGitSourceControlProvider::Execute(const FSourceControlOper
 ECommandResult::Type FGitSourceControlProvider::Execute(const TSharedRef<ISourceControlOperation, ESPMode::ThreadSafe>& InOperation, const TArray<FString>& InFiles, EConcurrency::Type InConcurrency /* = EConcurrency::Synchronous */, const FSourceControlOperationComplete& InOperationCompleteDelegate)
 #endif
 {
-	if(!IsEnabled() && !(InOperation->GetName() == "Connect")) // Only Connect operation allowed while not Enabled (Repository found)
+	if (!IsEnabled() && !(InOperation->GetName() == "Connect")) // Only Connect operation allowed while not Enabled (Repository found)
 	{
 		InOperationCompleteDelegate.ExecuteIfBound(InOperation, ECommandResult::Failed);
 		return ECommandResult::Failed;
@@ -254,12 +254,12 @@ ECommandResult::Type FGitSourceControlProvider::Execute(const TSharedRef<ISource
 
 	// Query to see if we allow this operation
 	TSharedPtr<IGitSourceControlWorker, ESPMode::ThreadSafe> Worker = CreateWorker(InOperation->GetName());
-	if(!Worker.IsValid())
+	if (!Worker.IsValid())
 	{
 		// this operation is unsupported by this source control provider
 		FFormatNamedArguments Arguments;
-		Arguments.Add( TEXT("OperationName"), FText::FromName(InOperation->GetName()) );
-		Arguments.Add( TEXT("ProviderName"), FText::FromName(GetName()) );
+		Arguments.Add(TEXT("OperationName"), FText::FromName(InOperation->GetName()));
+		Arguments.Add(TEXT("ProviderName"), FText::FromName(GetName()));
 		FText Message(FText::Format(LOCTEXT("UnsupportedOperation", "Operation '{OperationName}' not supported by source control provider '{ProviderName}'"), Arguments));
 		FMessageLog("SourceControl").Error(Message);
 		InOperation->AddErrorMessge(Message);
@@ -273,7 +273,7 @@ ECommandResult::Type FGitSourceControlProvider::Execute(const TSharedRef<ISource
 	Command->OperationCompleteDelegate = InOperationCompleteDelegate;
 
 	// fire off operation
-	if(InConcurrency == EConcurrency::Synchronous)
+	if (InConcurrency == EConcurrency::Synchronous)
 	{
 		Command->bAutoDelete = false;
 
@@ -289,12 +289,12 @@ ECommandResult::Type FGitSourceControlProvider::Execute(const TSharedRef<ISource
 	}
 }
 
-bool FGitSourceControlProvider::CanCancelOperation( const FSourceControlOperationRef& InOperation ) const
+bool FGitSourceControlProvider::CanCancelOperation(const FSourceControlOperationRef& InOperation) const
 {
 	return false;
 }
 
-void FGitSourceControlProvider::CancelOperation( const FSourceControlOperationRef& InOperation )
+void FGitSourceControlProvider::CancelOperation(const FSourceControlOperationRef& InOperation)
 {
 }
 
@@ -339,10 +339,15 @@ TOptional<int> FGitSourceControlProvider::GetNumLocalChanges() const
 	return TOptional<int>();
 }
 
+bool FGitSourceControlProvider::UsesUncontrolledChangelists() const
+{
+	return true;
+}
+
 TSharedPtr<IGitSourceControlWorker, ESPMode::ThreadSafe> FGitSourceControlProvider::CreateWorker(const FName& InOperationName) const
 {
 	const FGetGitSourceControlWorker* Operation = WorkersMap.Find(InOperationName);
-	if(Operation != nullptr)
+	if (Operation != nullptr)
 	{
 		return Operation->Execute();
 	}
@@ -350,21 +355,21 @@ TSharedPtr<IGitSourceControlWorker, ESPMode::ThreadSafe> FGitSourceControlProvid
 	return nullptr;
 }
 
-void FGitSourceControlProvider::RegisterWorker( const FName& InName, const FGetGitSourceControlWorker& InDelegate )
+void FGitSourceControlProvider::RegisterWorker(const FName& InName, const FGetGitSourceControlWorker& InDelegate)
 {
-	WorkersMap.Add( InName, InDelegate );
+	WorkersMap.Add(InName, InDelegate);
 }
 
 void FGitSourceControlProvider::OutputCommandMessages(const FGitSourceControlCommand& InCommand) const
 {
 	FMessageLog SourceControlLog("SourceControl");
 
-	for(int32 ErrorIndex = 0; ErrorIndex < InCommand.ErrorMessages.Num(); ++ErrorIndex)
+	for (int32 ErrorIndex = 0; ErrorIndex < InCommand.ErrorMessages.Num(); ++ErrorIndex)
 	{
 		SourceControlLog.Error(FText::FromString(InCommand.ErrorMessages[ErrorIndex]));
 	}
 
-	for(int32 InfoIndex = 0; InfoIndex < InCommand.InfoMessages.Num(); ++InfoIndex)
+	for (int32 InfoIndex = 0; InfoIndex < InCommand.InfoMessages.Num(); ++InfoIndex)
 	{
 		SourceControlLog.Info(FText::FromString(InCommand.InfoMessages[InfoIndex]));
 	}
@@ -381,13 +386,13 @@ void FGitSourceControlProvider::UpdateRepositoryStatus(const class FGitSourceCon
 }
 
 void FGitSourceControlProvider::Tick()
-{	
+{
 	bool bStatesUpdated = false;
 
-	for(int32 CommandIndex = 0; CommandIndex < CommandQueue.Num(); ++CommandIndex)
+	for (int32 CommandIndex = 0; CommandIndex < CommandQueue.Num(); ++CommandIndex)
 	{
 		FGitSourceControlCommand& Command = *CommandQueue[CommandIndex];
-		if(Command.bExecuteProcessed)
+		if (Command.bExecuteProcessed)
 		{
 			// Remove command from the queue
 			CommandQueue.RemoveAt(CommandIndex);
@@ -405,7 +410,7 @@ void FGitSourceControlProvider::Tick()
 			Command.ReturnResults();
 
 			// commands that are left in the array during a tick need to be deleted
-			if(Command.bAutoDelete)
+			if (Command.bAutoDelete)
 			{
 				// Only delete commands that are not running 'synchronously'
 				delete &Command;
@@ -417,15 +422,15 @@ void FGitSourceControlProvider::Tick()
 		}
 	}
 
-	if(bStatesUpdated)
+	if (bStatesUpdated)
 	{
 		OnSourceControlStateChanged.Broadcast();
 	}
 }
 
-TArray< TSharedRef<ISourceControlLabel> > FGitSourceControlProvider::GetLabels( const FString& InMatchingSpec ) const
+TArray<TSharedRef<ISourceControlLabel>> FGitSourceControlProvider::GetLabels(const FString& InMatchingSpec) const
 {
-	TArray< TSharedRef<ISourceControlLabel> > Tags;
+	TArray<TSharedRef<ISourceControlLabel>> Tags;
 
 	// NOTE list labels. Called by CrashDebugHelper() (to remote debug Engine crash)
 	//					 and by SourceControlHelpers::AnnotateFile() (to add source file to report)
@@ -434,7 +439,7 @@ TArray< TSharedRef<ISourceControlLabel> > FGitSourceControlProvider::GetLabels( 
 }
 
 #if ENGINE_MAJOR_VERSION == 5
-TArray<FSourceControlChangelistRef> FGitSourceControlProvider::GetChangelists( EStateCacheUsage::Type InStateCacheUsage )
+TArray<FSourceControlChangelistRef> FGitSourceControlProvider::GetChangelists(EStateCacheUsage::Type InStateCacheUsage)
 {
 	return TArray<FSourceControlChangelistRef>();
 }
@@ -456,10 +461,10 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 		FScopedSourceControlProgress Progress(Task);
 
 		// Issue the command asynchronously...
-		IssueCommand( InCommand );
+		IssueCommand(InCommand);
 
 		// ... then wait for its completion (thus making it synchronous)
-		while(!InCommand.bExecuteProcessed)
+		while (!InCommand.bExecuteProcessed)
 		{
 			// Tick the command queue and update progress.
 			Tick();
@@ -473,7 +478,7 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 		// always do one more Tick() to make sure the command queue is cleaned up.
 		Tick();
 
-		if(InCommand.bCommandSuccessful)
+		if (InCommand.bCommandSuccessful)
 		{
 			Result = ECommandResult::Succeeded;
 		}
@@ -483,9 +488,9 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 	check(!InCommand.bAutoDelete);
 
 	// ensure commands that are not auto deleted do not end up in the command queue
-	if ( CommandQueue.Contains( &InCommand ) )
+	if (CommandQueue.Contains(&InCommand))
 	{
-		CommandQueue.Remove( &InCommand );
+		CommandQueue.Remove(&InCommand);
 	}
 	delete &InCommand;
 
@@ -494,7 +499,7 @@ ECommandResult::Type FGitSourceControlProvider::ExecuteSynchronousCommand(FGitSo
 
 ECommandResult::Type FGitSourceControlProvider::IssueCommand(FGitSourceControlCommand& InCommand)
 {
-	if(GThreadPool != nullptr)
+	if (GThreadPool != nullptr)
 	{
 		// Queue this to our worker thread(s) for resolving
 		GThreadPool->AddQueuedWork(&InCommand);
