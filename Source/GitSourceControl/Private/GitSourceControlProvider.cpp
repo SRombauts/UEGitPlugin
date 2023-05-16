@@ -349,6 +349,11 @@ bool FGitSourceControlProvider::UsesSnapshots() const
 	return false;
 }
 
+bool FGitSourceControlProvider::AllowsDiffAgainstDepot() const
+{
+	return true;
+}
+
 TSharedPtr<IGitSourceControlWorker, ESPMode::ThreadSafe> FGitSourceControlProvider::CreateWorker(const FName& InOperationName) const
 {
 	const FGetGitSourceControlWorker* Operation = WorkersMap.Find(InOperationName);
