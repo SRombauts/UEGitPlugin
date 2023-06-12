@@ -9,7 +9,6 @@ public class GitSourceControl : ModuleRules
 {
 	public GitSourceControl(ReadOnlyTargetRules Target) : base(Target)
 	{
-		IWYUSupport = IWYUSupport.Full;
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PrivatePCHHeaderFile = "Private/GitSourceControlPrivatePCH.h";
 
@@ -23,7 +22,6 @@ public class GitSourceControl : ModuleRules
 				"DesktopWidgets",
 				"EditorStyle",
 				"UnrealEd",
-			//?	"LevelEditor",
 				"SourceControl",
 				"Projects",
 			}

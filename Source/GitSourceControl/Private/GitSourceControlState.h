@@ -61,6 +61,7 @@ public:
 	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FindHistoryRevision(int32 RevisionNumber) const override;
 	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FindHistoryRevision(const FString& InRevision) const override;
 	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetBaseRevForMerge() const override;
+	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetCurrentRevision() const; /* override	NOTE: added in UE5.2 */
 #if ENGINE_MAJOR_VERSION == 5
 	virtual FSlateIcon GetIcon() const override;
 #else
@@ -93,7 +94,6 @@ public:
 	virtual bool CanDelete() const override;
 	virtual bool IsConflicted() const override;
 	virtual bool CanRevert() const override;
-	virtual TSharedPtr<ISourceControlRevision, ESPMode::ThreadSafe> GetCurrentRevision() const override;
 
 public:
 	/** History of the item, if any */
