@@ -4,7 +4,7 @@ Unreal Engine 5 Git Source Control Plugin
 [![release](https://img.shields.io/github/release/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/releases)
 [![Git Plugin issues](https://img.shields.io/github/issues/SRombauts/UE4GitPlugin.svg)](https://github.com/SRombauts/UE4GitPlugin/issues)
 [![Join the chat at https://gitter.im/SRombauts/UE4GitPlugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SRombauts/UE4GitPlugin)
-UEGitPlugin is a simple Git Source Control Plugin for **Unreal Engine 5.0, 5.1 and 4.27**.
+UEGitPlugin is a simple Git Source Control Plugin for **Unreal Engine 5.0, 5.1, 5.2 and 4.27**.
 
 Developed and contributed by Sébastien Rombauts 2014-2023 (sebastien.rombauts@gmail.com)
 
