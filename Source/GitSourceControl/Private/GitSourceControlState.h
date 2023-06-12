@@ -17,7 +17,8 @@ namespace EWorkingCopyState
 	enum Type
 	{
 		Unknown,
-		Unchanged, // called "clean" in SVN, "Pristine" in Perforce
+		Unchanged,
+		// called "clean" in SVN, "Pristine" in Perforce
 		Added,
 		Deleted,
 		Modified,
@@ -44,13 +45,13 @@ namespace ELockState
 class FGitSourceControlState : public ISourceControlState
 {
 public:
-	FGitSourceControlState( const FString& InLocalFilename, const bool InUsingLfsLocking)
+	FGitSourceControlState(const FString& InLocalFilename, const bool InUsingLfsLocking)
 		: LocalFilename(InLocalFilename)
-		, WorkingCopyState(EWorkingCopyState::Unknown)
-		, LockState(ELockState::Unknown)
-		, bUsingGitLfsLocking(InUsingLfsLocking)
-		, bNewerVersionOnServer(false)
-		, TimeStamp(0)
+		  , WorkingCopyState(EWorkingCopyState::Unknown)
+		  , LockState(ELockState::Unknown)
+		  , bUsingGitLfsLocking(InUsingLfsLocking)
+		  , bNewerVersionOnServer(false)
+		  , TimeStamp(0)
 	{
 	}
 
@@ -74,7 +75,7 @@ public:
 	virtual bool CanCheckout() const override;
 	virtual bool IsCheckedOut() const override;
 	virtual bool IsCheckedOutOther(FString* Who = nullptr) const override;
-	virtual bool IsCheckedOutInOtherBranch(const FString& CurrentBranch = FString()) const override { return false;  }
+	virtual bool IsCheckedOutInOtherBranch(const FString& CurrentBranch = FString()) const override { return false; }
 	virtual bool IsModifiedInOtherBranch(const FString& CurrentBranch = FString()) const override { return false; }
 	virtual bool IsCheckedOutOrModifiedInOtherBranch(const FString& CurrentBranch = FString()) const override { return IsCheckedOutInOtherBranch(CurrentBranch) || IsModifiedInOtherBranch(CurrentBranch); }
 	virtual TArray<FString> GetCheckedOutBranches() const override { return TArray<FString>(); }
@@ -92,6 +93,7 @@ public:
 	virtual bool CanDelete() const override;
 	virtual bool IsConflicted() const override;
 	virtual bool CanRevert() const override;
+	virtual TSharedPtr<ISourceControlRevision, ESPMode::ThreadSafe> GetCurrentRevision() const override;
 
 public:
 	/** History of the item, if any */

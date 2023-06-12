@@ -29,6 +29,7 @@
 #include "FileHelpers.h"
 
 #include "Logging/MessageLog.h"
+#include "UObject/Linker.h"
 
 #if ENGINE_MAJOR_VERSION == 5
 #include "ToolMenus.h"

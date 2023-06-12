@@ -88,6 +88,9 @@ public:
 	virtual bool UsesFileRevisions() const; /* override				NOTE: added in UE5.1 */
 	virtual TOptional<bool> IsAtLatestRevision() const; /* override	NOTE: added in UE5.1 */
 	virtual TOptional<int> GetNumLocalChanges() const; /* override	NOTE: added in UE5.1 */
+	virtual bool UsesUncontrolledChangelists() const; /* override   NOTE: added in UE5.2 */
+	virtual bool UsesSnapshots() const; /* override   NOTE: added in UE5.2 */
+	virtual bool AllowsDiffAgainstDepot() const; /* override   NOTE: added in UE5.2 */
 	virtual void Tick() override;
 	virtual TArray< TSharedRef<class ISourceControlLabel> > GetLabels(const FString& InMatchingSpec) const override;
 #if ENGINE_MAJOR_VERSION == 5

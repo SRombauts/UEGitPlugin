@@ -15,17 +15,17 @@ int32 FGitSourceControlState::GetHistorySize() const
 	return History.Num();
 }
 
-TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::GetHistoryItem( int32 HistoryIndex ) const
+TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::GetHistoryItem(int32 HistoryIndex) const
 {
 	check(History.IsValidIndex(HistoryIndex));
 	return History[HistoryIndex];
 }
 
-TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::FindHistoryRevision( int32 RevisionNumber ) const
+TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::FindHistoryRevision(int32 RevisionNumber) const
 {
-	for(const auto& Revision : History)
+	for (const auto& Revision : History)
 	{
-		if(Revision->GetRevisionNumber() == RevisionNumber)
+		if (Revision->GetRevisionNumber() == RevisionNumber)
 		{
 			return Revision;
 		}
@@ -36,9 +36,9 @@ TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlS
 
 TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::FindHistoryRevision(const FString& InRevision) const
 {
-	for(const auto& Revision : History)
+	for (const auto& Revision : History)
 	{
-		if(Revision->GetRevision() == InRevision)
+		if (Revision->GetRevision() == InRevision)
 		{
 			return Revision;
 		}
@@ -49,10 +49,10 @@ TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlS
 
 TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::GetBaseRevForMerge() const
 {
-	for(const auto& Revision : History)
+	for (const auto& Revision : History)
 	{
 		// look for the the SHA1 id of the file, not the commit id (revision)
-		if(Revision->FileHash == PendingMergeBaseFileHash)
+		if (Revision->FileHash == PendingMergeBaseFileHash)
 		{
 			return Revision;
 		}
@@ -194,20 +194,20 @@ FName FGitSourceControlState::GetSmallIconName() const
 
 FText FGitSourceControlState::GetDisplayName() const
 {
-	if(LockState == ELockState::Locked)
+	if (LockState == ELockState::Locked)
 	{
 		return LOCTEXT("Locked", "Locked For Editing");
 	}
-	else if(LockState == ELockState::LockedOther)
+	else if (LockState == ELockState::LockedOther)
 	{
-		return FText::Format( LOCTEXT("LockedOther", "Locked by "), FText::FromString(LockUser) );
+		return FText::Format(LOCTEXT("LockedOther", "Locked by "), FText::FromString(LockUser));
 	}
 	else if (!IsCurrent())
 	{
 		return LOCTEXT("NotCurrent", "Not current");
 	}
 
-	switch(WorkingCopyState)
+	switch (WorkingCopyState)
 	{
 	case EWorkingCopyState::Unknown:
 		return LOCTEXT("Unknown", "Unknown");
@@ -238,20 +238,20 @@ FText FGitSourceControlState::GetDisplayName() const
 
 FText FGitSourceControlState::GetDisplayTooltip() const
 {
-	if(LockState == ELockState::Locked)
+	if (LockState == ELockState::Locked)
 	{
 		return LOCTEXT("Locked_Tooltip", "Locked for editing by current user");
 	}
-	else if(LockState == ELockState::LockedOther)
+	else if (LockState == ELockState::LockedOther)
 	{
-		return FText::Format( LOCTEXT("LockedOther_Tooltip", "Locked for editing by: {0}"), FText::FromString(LockUser) );
+		return FText::Format(LOCTEXT("LockedOther_Tooltip", "Locked for editing by: {0}"), FText::FromString(LockUser));
 	}
 	else if (!IsCurrent())
 	{
 		return LOCTEXT("NotCurrent_Tooltip", "The file(s) are not at the head revision");
 	}
 
-	switch(WorkingCopyState)
+	switch (WorkingCopyState)
 	{
 	case EWorkingCopyState::Unknown:
 		return LOCTEXT("Unknown_Tooltip", "Unknown source control state");
@@ -293,9 +293,9 @@ const FDateTime& FGitSourceControlState::GetTimeStamp() const
 // Deleted and Missing assets cannot appear in the Content Browser, but the do in the Submit files to Source Control window!
 bool FGitSourceControlState::CanCheckIn() const
 {
-	if(bUsingGitLfsLocking)
+	if (bUsingGitLfsLocking)
 	{
-		return ( ( (LockState == ELockState::Locked) && !IsConflicted() ) || (WorkingCopyState == EWorkingCopyState::Added) ) && IsCurrent();
+		return (((LockState == ELockState::Locked) && !IsConflicted()) || (WorkingCopyState == EWorkingCopyState::Added)) && IsCurrent();
 	}
 	else
 	{
@@ -309,7 +309,7 @@ bool FGitSourceControlState::CanCheckIn() const
 
 bool FGitSourceControlState::CanCheckout() const
 {
-	if(bUsingGitLfsLocking)
+	if (bUsingGitLfsLocking)
 	{
 		// We don't want to allow checkout if the file is out-of-date, as modifying an out-of-date binary file will most likely result in a merge conflict
 		return (WorkingCopyState == EWorkingCopyState::Unchanged || WorkingCopyState == EWorkingCopyState::Modified) && LockState == ELockState::NotLocked && IsCurrent();
@@ -418,6 +418,11 @@ bool FGitSourceControlState::IsConflicted() const
 bool FGitSourceControlState::CanRevert() const
 {
 	return CanCheckIn();
+}
+
+TSharedPtr<ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::GetCurrentRevision() const
+{
+	return nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE

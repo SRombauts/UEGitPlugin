@@ -9,14 +9,12 @@ public class GitSourceControl : ModuleRules
 {
 	public GitSourceControl(ReadOnlyTargetRules Target) : base(Target)
 	{
-		// Enable the Include-What-You-Use (IWYU) UE4.15 policy (see https://docs.unrealengine.com/en-us/Programming/UnrealBuildSystem/IWYUReferenceGuide)
-		// "Shared PCHs may be used if an explicit private PCH is not set through PrivatePCHHeaderFile. In either case, none of the source files manually include a module PCH, and should include a matching header instead."
-		bEnforceIWYU = true;
+		IWYUSupport = IWYUSupport.Full;
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PrivatePCHHeaderFile = "Private/GitSourceControlPrivatePCH.h";
 
 		PrivateDependencyModuleNames.AddRange(
-			new string[] {
+			new[] {
 				"Core",
 				"CoreUObject",
 				"Slate",
