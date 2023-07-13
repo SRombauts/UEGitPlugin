@@ -40,7 +40,7 @@ Visual Diffing of two revisions of a Blueprint:
 <img src="https://cdn2.unrealengine.com/blog/DiffTool-1009x542-719850393.png" width="720">
 
 Merge conflict of a Blueprint:
-<img src="https://docs.unrealengine.com/Images/WhatsNew/Builds/ReleaseNotes/2015/4_7/BPmergeTool.webp" width="720">
+<img src="https://cdn2.unrealengine.com/blog/47_release/image08-1731x884-262756803.png" width="720">
 
 Status Icons:
 
