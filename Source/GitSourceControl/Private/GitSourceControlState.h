@@ -60,7 +60,11 @@ public:
 	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetHistoryItem(int32 HistoryIndex) const override;
 	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FindHistoryRevision(int32 RevisionNumber) const override;
 	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FindHistoryRevision(const FString& InRevision) const override;
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
+	virtual FResolveInfo GetResolveInfo() const override;
+#else
 	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetBaseRevForMerge() const override;
+#endif
 	virtual TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> GetCurrentRevision() const; /* override	NOTE: added in UE5.2 */
 #if ENGINE_MAJOR_VERSION == 5
 	virtual FSlateIcon GetIcon() const override;
@@ -102,8 +106,13 @@ public:
 	/** Filename on disk */
 	FString LocalFilename;
 
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
+	/** Pending rev info with which a file must be resolved, invalid if no resolve pending */
+	FResolveInfo PendingResolveInfo;
+#else
 	/** File Id with which our local revision diverged from the remote revision */
 	FString PendingMergeBaseFileHash;
+#endif
 
 	/** State of the working copy */
 	EWorkingCopyState::Type WorkingCopyState;

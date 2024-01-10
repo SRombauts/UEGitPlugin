@@ -221,7 +221,11 @@ bool FGitCheckInWorker::Execute(FGitSourceControlCommand& InCommand)
 							"   git pull --rebase --autostash\n\n"
 							"Or run the equivalent in a Git GUI client of your choice"));
 						FText PushFailTitle(LOCTEXT("GitPush_OutOfDate_Title", "Git Pull Required"));
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
+						FMessageDialog::Open(EAppMsgType::Ok, PushFailMessage, PushFailTitle);
+#else
 						FMessageDialog::Open(EAppMsgType::Ok, PushFailMessage, &PushFailTitle);
+#endif
 						UE_LOG(LogSourceControl, Log, TEXT("Push failed because we're out of date, prompting user to resolve manually"));
 					}
 				}

@@ -152,6 +152,23 @@ FText FGitSourceControlProvider::GetStatusText() const
 	return FText::Format(NSLOCTEXT("Status", "Provider: Git\nEnabledLabel", "Local repository: {RepositoryName}\nRemote origin: {RemoteUrl}\nUser: {UserName}\nE-mail: {UserEmail}\n[{BranchName} {CommitId}] {CommitSummary}"), Args);
 }
 
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
+
+TMap<ISourceControlProvider::EStatus, FString> FGitSourceControlProvider::GetStatus() const
+{
+	TMap<EStatus, FString> Result;
+	Result.Add(EStatus::Enabled, IsEnabled() ? TEXT("Yes") : TEXT("No") );
+	Result.Add(EStatus::Connected, (IsEnabled() && IsAvailable()) ? TEXT("Yes") : TEXT("No") );
+	Result.Add(EStatus::User, UserName);
+	Result.Add(EStatus::Repository, PathToRepositoryRoot);
+	Result.Add(EStatus::Remote, RemoteUrl);
+	Result.Add(EStatus::Branch, BranchName);
+	Result.Add(EStatus::Email, UserEmail);
+	return Result;
+}
+
+#endif
+
 /** Quick check if source control is enabled */
 bool FGitSourceControlProvider::IsEnabled() const
 {
@@ -287,6 +304,11 @@ ECommandResult::Type FGitSourceControlProvider::Execute(const TSharedRef<ISource
 		UE_LOG(LogSourceControl, Log, TEXT("IssueAsynchronousCommand(%s)"), *InOperation->GetName().ToString());
 		return IssueCommand(*Command);
 	}
+}
+
+bool FGitSourceControlProvider::CanExecuteOperation( const FSourceControlOperationRef& InOperation ) const
+{
+	return WorkersMap.Find(InOperation->GetName()) != nullptr;
 }
 
 bool FGitSourceControlProvider::CanCancelOperation(const FSourceControlOperationRef& InOperation) const

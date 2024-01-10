@@ -47,6 +47,15 @@ TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlS
 	return nullptr;
 }
 
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3
+
+ISourceControlState::FResolveInfo FGitSourceControlState::GetResolveInfo() const
+{
+	return PendingResolveInfo;
+}
+
+#else
+
 TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlState::GetBaseRevForMerge() const
 {
 	for (const auto& Revision : History)
@@ -60,6 +69,8 @@ TSharedPtr<class ISourceControlRevision, ESPMode::ThreadSafe> FGitSourceControlS
 
 	return nullptr;
 }
+
+#endif
 
 #if ENGINE_MAJOR_VERSION == 5
 
