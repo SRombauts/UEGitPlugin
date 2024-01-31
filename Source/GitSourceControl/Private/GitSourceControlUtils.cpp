@@ -59,7 +59,45 @@ const FString& FGitScopedTempFile::GetFilename() const
 
 namespace GitSourceControlUtils
 {
+FString ChangeRepositoryRootIfSubmodule(const TArray<FString>& AbsoluteFilePaths, const FString& PathToRepositoryRoot)
+{
+	FString Ret = PathToRepositoryRoot;
+	FString PluginsRoot = FPaths::ConvertRelativePathToFull(FPaths::ProjectPluginsDir());
+	// note this is not going to support operations where selected files are both in the root repo and the submodule/plugin's repo
+	int NumPluginFiles = 0;
 
+	for (auto& FilePath : AbsoluteFilePaths)
+	{
+		if (FilePath.Contains(PluginsRoot))
+		{
+			NumPluginFiles++;
+		}
+	}
+	// if all plugins?
+	// modify Source control base path
+	if ((NumPluginFiles == AbsoluteFilePaths.Num()) && (AbsoluteFilePaths.Num() > 0))
+	{
+		FString FullPath = AbsoluteFilePaths[0];
+
+		FString PluginPart = FullPath.Replace(*PluginsRoot, *FString(""));
+		PluginPart = PluginPart.Left(PluginPart.Find("/"));
+
+
+		FString CandidateRepoRoot = PluginsRoot + PluginPart;
+
+		FString IsItUsingGitPath = CandidateRepoRoot + "/.git";
+		if (FPaths::FileExists(IsItUsingGitPath) || FPaths::DirectoryExists(IsItUsingGitPath))
+		{
+			Ret = CandidateRepoRoot;
+		}
+	}
+	return Ret;
+}
+FString ChangeRepositoryRootIfSubmodule(const FString& AbsoluteFilePath, const FString& PathToRepositoryRoot)
+{
+	TArray<FString> AbsoluteFilePaths = { AbsoluteFilePath };
+	return ChangeRepositoryRootIfSubmodule(AbsoluteFilePaths, PathToRepositoryRoot);
+}
 // Launch the Git command line process and extract its results & errors
 bool RunCommandInternalRaw(const FString& InCommand, const FString& InPathToGitBinary, const FString& InRepositoryRoot, const TArray<FString>& InParameters, const TArray<FString>& InFiles, FString& OutResults, FString& OutErrors, const int32 ExpectedReturnCode /* = 0 */)
 {
@@ -1481,6 +1519,7 @@ bool RunGetHistory(const FString& InPathToGitBinary, const FString& InRepository
 			Revision->FileHash = LsTree.FileHash;
 			Revision->FileSize = LsTree.FileSize;
 		}
+		Revision->PathToRepoRoot = InRepositoryRoot;
 	}
 
 	return bResults;

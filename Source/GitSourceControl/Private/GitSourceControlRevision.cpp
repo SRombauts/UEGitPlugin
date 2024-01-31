@@ -29,8 +29,13 @@ bool FGitSourceControlRevision::Get(FString& InOutFilename) const
 
 	FGitSourceControlModule& GitSourceControl = FModuleManager::GetModuleChecked<FGitSourceControlModule>("GitSourceControl");
 	const FString PathToGitBinary = GitSourceControl.AccessSettings().GetBinaryPath();
-	const FString PathToRepositoryRoot = GitSourceControl.GetProvider().GetPathToRepositoryRoot();
+	FString PathToRepositoryRoot = GitSourceControl.GetProvider().GetPathToRepositoryRoot();
 
+	// the repo root can be customised if in a plugin that has it's own repo
+	if (PathToRepoRoot.Len())
+	{
+		PathToRepositoryRoot = PathToRepoRoot;
+	}
 	// if a filename for the temp file wasn't supplied generate a unique-ish one
 	if(InOutFilename.Len() == 0)
 	{
@@ -40,7 +45,6 @@ bool FGitSourceControlRevision::Get(FString& InOutFilename) const
 		const FString TempFileName = FString::Printf(TEXT("%stemp-%s-%s"), *FPaths::DiffDir(), *CommitId, *FPaths::GetCleanFilename(Filename));
 		InOutFilename = FPaths::ConvertRelativePathToFull(TempFileName);
 	}
-
 	// Diff against the revision
 	const FString Parameter = FString::Printf(TEXT("%s:%s"), *CommitId, *Filename);
 

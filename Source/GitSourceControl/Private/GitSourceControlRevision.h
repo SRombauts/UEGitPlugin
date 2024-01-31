@@ -72,6 +72,8 @@ public:
 
 	/** The size of the file at this revision */
 	int32 FileSize;
+
+	FString PathToRepoRoot;
 };
 
 /** History composed of the last 100 revisions of the file */

@@ -7,6 +7,7 @@
 
 #include "Modules/ModuleManager.h"
 #include "GitSourceControlModule.h"
+#include "GitSourceControlUtils.h"
 
 FGitSourceControlCommand::FGitSourceControlCommand(const TSharedRef<class ISourceControlOperation, ESPMode::ThreadSafe>& InOperation, const TSharedRef<class IGitSourceControlWorker, ESPMode::ThreadSafe>& InWorker, const FSourceControlOperationComplete& InOperationCompleteDelegate)
 	: Operation(InOperation)
@@ -25,7 +26,10 @@ FGitSourceControlCommand::FGitSourceControlCommand(const TSharedRef<class ISourc
 	bUsingGitLfsLocking = GitSourceControl.AccessSettings().IsUsingGitLfsLocking();
 	PathToRepositoryRoot = GitSourceControl.GetProvider().GetPathToRepositoryRoot();
 }
-
+void FGitSourceControlCommand::UpdateRepositoryRootIfSubmodule(const TArray<FString>& AbsoluteFilePaths)
+{
+	PathToRepositoryRoot = GitSourceControlUtils::ChangeRepositoryRootIfSubmodule(AbsoluteFilePaths, PathToRepositoryRoot);
+}
 bool FGitSourceControlCommand::DoWork()
 {
 	bCommandSuccessful = Worker->Execute(*this);

@@ -19,6 +19,11 @@ public:
 	FGitSourceControlCommand(const TSharedRef<class ISourceControlOperation, ESPMode::ThreadSafe>& InOperation, const TSharedRef<class IGitSourceControlWorker, ESPMode::ThreadSafe>& InWorker, const FSourceControlOperationComplete& InOperationCompleteDelegate = FSourceControlOperationComplete() );
 
 	/**
+	 *  Modify the repo root if all selected files are in a plugin subfolder, and the plugin subfolder is a git repo
+	 *  This supports the case where each plugin is a sub module
+	 */
+	void UpdateRepositoryRootIfSubmodule(const TArray<FString>& AbsoluteFilePaths);
+	/**
 	 * This is where the real thread work is done. All work that is done for
 	 * this queued object should be done from within the call to this function.
 	 */
